@@ -15,7 +15,9 @@ import Layout from '../layouts/Layout.astro';
       const snapshot = await getDocs(
         query(collection(db, 'directorio_asetemyt'), orderBy('createdAt', 'desc'))
       );
-      const entries = snapshot.docs.map((d) => d.data());
+      let entries = snapshot.docs.map((d) => d.data());
+      // Filtrar por idioma: mostrar entradas sin lang o con el lang actual
+      entries = entries.filter((e: any) => !e.lang || e.lang === lang);
 
       const artSnap = await getDocs(
         query(
