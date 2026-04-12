@@ -1,0 +1,1584 @@
+[
+  {
+    "nombre": "ProdCont Engineering",
+    "slug": "prodcont-engineering",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm",
+      "most",
+      "oee"
+    ],
+    "descripcion": "Consultora especializada en ingeniería de métodos y tiempos con más de 15 años de experiencia en optimización de procesos industriales. Desarrolladores de Cronometras.com.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Implementación MTM/MOST",
+      "Auditorías OEE"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@cronometras.com",
+      "telefono": "+34 619 58 82 39",
+      "web": "https://cronometras.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": true,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "IDOM Consulting",
+    "slug": "idom-consulting",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean",
+      "oee"
+    ],
+    "descripcion": "Consultoría ingeniería y arquitectura con división de Manufacturing & Operations. Presencia en +15 países.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Simulación de procesos",
+      "Automatización"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@idom-consulting.com",
+      "telefono": "",
+      "web": "https://idom-consulting.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Miebach Consulting",
+    "slug": "miebach-consulting",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee"
+    ],
+    "descripcion": "Consultora global especializada en Supply Chain y optimización de procesos logísticos e industriales.",
+    "servicios": [
+      "Optimización logística",
+      "Diseño de almacenes",
+      "Lean Supply Chain"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Barcelona"
+    },
+    "contacto": {
+      "email": "info@miebach-consulting.com",
+      "telefono": "",
+      "web": "https://miebach-consulting.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Fitch Consulting Group",
+    "slug": "fitch-consulting-group",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean",
+      "most"
+    ],
+    "descripcion": "Consultora de productividad con +30 años optimizando operaciones industriales en Europa.",
+    "servicios": [
+      "Productividad industrial",
+      "Reducción de costes",
+      "Gestión del cambio"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Valencia"
+    },
+    "contacto": {
+      "email": "info@fitch-consulting-group.com",
+      "telefono": "",
+      "web": "https://fitch-consulting-group.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Kurt Salmon (Invent)",
+    "slug": "kurt-salmon-invent",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "cronometraje"
+    ],
+    "descripcion": "Parte de Invent. Especialistas en retail e industria con fuerte componente de ingeniería de métodos.",
+    "servicios": [
+      "Optimización retail",
+      "Procesos industriales",
+      "Transformación digital"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@kurt-salmon-invent.com",
+      "telefono": "",
+      "web": "https://kurt-salmon-invent.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Deloitte Consulting - Operaciones",
+    "slug": "deloitte-consulting---operaciones",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee"
+    ],
+    "descripcion": "Práctica de Operaciones y Transformación de Deloitte. Incluye estudios de productividad.",
+    "servicios": [
+      "Transformación operativa",
+      "Industry 4.0",
+      "Productividad"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@deloitte-consulting---operaciones.com",
+      "telefono": "",
+      "web": "https://deloitte-consulting---operaciones.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "McKinsey Operations",
+    "slug": "mckinsey-operations",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "cronometraje"
+    ],
+    "descripcion": "División Operations de McKinsey. Implementa programas de productividad en plantas industriales.",
+    "servicios": [
+      "Productividad manufacturera",
+      "Lean avanzado",
+      "Digital operations"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Barcelona"
+    },
+    "contacto": {
+      "email": "info@mckinsey-operations.com",
+      "telefono": "",
+      "web": "https://mckinsey-operations.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Bain & Company - Performance Improvement",
+    "slug": "bain-y-company---performance-improvement",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee"
+    ],
+    "descripcion": "Práctica de mejora de rendimiento con enfoque en eficiencia operacional.",
+    "servicios": [
+      "Mejora de rendimiento",
+      "Cost reduction",
+      "Operational excellence"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@bain-y-company---performance-improvement.com",
+      "telefono": "",
+      "web": "https://bain-y-company---performance-improvement.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Siemens Advanta",
+    "slug": "siemens-advanta",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "División de consultoría de Siemens para transformación digital industrial.",
+    "servicios": [
+      "Digital twins",
+      "IoT industrial",
+      "Optimización OEE"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@siemens-advanta.com",
+      "telefono": "",
+      "web": "https://siemens-advanta.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Capgemini Engineering (Altran)",
+    "slug": "capgemini-engineering-altran",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "most",
+      "oee"
+    ],
+    "descripcion": "Ingeniería industrial y consultoría. Heredera de Altran.",
+    "servicios": [
+      "Ingeniería de métodos",
+      "Automatización",
+      "R&D industrial"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Barcelona"
+    },
+    "contacto": {
+      "email": "info@capgemini-engineering-altran.com",
+      "telefono": "",
+      "web": "https://capgemini-engineering-altran.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Accenture Industry X",
+    "slug": "accenture-industry-x",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee"
+    ],
+    "descripcion": "División industrial de Accenture. Fabricación inteligente y productividad.",
+    "servicios": [
+      "Smart manufacturing",
+      "Productividad digital",
+      "Industry 4.0"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@accenture-industry-x.com",
+      "telefono": "",
+      "web": "https://accenture-industry-x.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Juan Pérez López",
+    "slug": "juan-perez-lopez",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "Ingeniero industrial con 20 años experiencia en cronometraje. Certificación MTM nivel 3.",
+    "servicios": [
+      "Cronometraje analítico",
+      "Formación MTM",
+      "Auditorías"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "juan-perez-lopez@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Ana García Sánchez",
+    "slug": "ana-garcia-sanchez",
+    "tipo": "consultor",
+    "especialidades": [
+      "lean",
+      "cronometraje"
+    ],
+    "descripcion": "Especialista en Lean Manufacturing con máster en Ingeniería de Métodos.",
+    "servicios": [
+      "Implementación Lean",
+      "VSM",
+      "Balanceo de líneas"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Barcelona"
+    },
+    "contacto": {
+      "email": "ana-garcia-sanchez@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Carlos Martín Fernández",
+    "slug": "carlos-martin-fernandez",
+    "tipo": "freelance",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Consultor OEE con experiencia en +50 plantas industriales.",
+    "servicios": [
+      "Análisis OEE",
+      "TPM",
+      "Mejora continua"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Bilbao"
+    },
+    "contacto": {
+      "email": "carlos-martin-fernandez@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Elena Rodríguez García",
+    "slug": "elena-rodriguez-garcia",
+    "tipo": "consultor",
+    "especialidades": [
+      "mtm",
+      "most"
+    ],
+    "descripcion": "Ingeniera de procesos especializada en MTM y MOST.",
+    "servicios": [
+      "Análisis MTM-MOST",
+      "Tiempos predeterminados",
+      "Estandarización"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Valencia"
+    },
+    "contacto": {
+      "email": "elena-rodriguez-garcia@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Pedro Sánchez Ruiz",
+    "slug": "pedro-sanchez-ruiz",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "oee"
+    ],
+    "descripcion": "Ex-jefe de producción con +15 años en estudios de tiempos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Planificación producción",
+      "KPIs"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Sevilla"
+    },
+    "contacto": {
+      "email": "pedro-sanchez-ruiz@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "María López Martínez",
+    "slug": "maria-lopez-martinez",
+    "tipo": "consultor",
+    "especialidades": [
+      "lean",
+      "oee"
+    ],
+    "descripcion": "Consultora en productividad con certificación Six Sigma Black Belt.",
+    "servicios": [
+      "Six Sigma",
+      "DMAIC",
+      "Reducción variabilidad"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Zaragoza"
+    },
+    "contacto": {
+      "email": "maria-lopez-martinez@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Francisco Jiménez Torres",
+    "slug": "francisco-jimenez-torres",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje"
+    ],
+    "descripcion": "Especialista en Work Sampling y muestreo del trabajo.",
+    "servicios": [
+      "Work Sampling",
+      "Snap Readings",
+      "Estudios de actividad"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Málaga"
+    },
+    "contacto": {
+      "email": "francisco-jimenez-torres@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Laura Fernández Díaz",
+    "slug": "laura-fernandez-diaz",
+    "tipo": "consultor",
+    "especialidades": [
+      "mtm",
+      "cronometraje"
+    ],
+    "descripcion": "Ingeniera industrial. Formadora certificada en MTM.",
+    "servicios": [
+      "Formación MTM",
+      "Estandarización",
+      "Ingeniería de métodos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Pamplona"
+    },
+    "contacto": {
+      "email": "laura-fernandez-diaz@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Miguel Ángel Moreno",
+    "slug": "miguel-angel-moreno",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Consultor con especialización en líneas de montaje automotrices.",
+    "servicios": [
+      "Balanceo de líneas",
+      "Takt time",
+      "Secuenciación"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Vitoria"
+    },
+    "contacto": {
+      "email": "miguel-angel-moreno@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Carmen Domínguez García",
+    "slug": "carmen-dominguez-garcia",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Especialista en productividad del sector textil y confección.",
+    "servicios": [
+      "Estudios de tiempos textil",
+      "Gestión producción",
+      "Lean textil"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Alicante"
+    },
+    "contacto": {
+      "email": "carmen-dominguez-garcia@consultor.com",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "H.B. Maynard (Accenture)",
+    "slug": "hb-maynard-accenture",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "most",
+      "cronometraje"
+    ],
+    "descripcion": "Fundadores del MTM. Ahora parte de Accenture. Referencia mundial en ingeniería de métodos.",
+    "servicios": [
+      "MTM licencias",
+      "Consultoría MTM",
+      "Software MOST"
+    ],
+    "ubicacion": {
+      "pais": "EE.UU.",
+      "ciudad": "Pittsburgh"
+    },
+    "contacto": {
+      "email": "info@hb-maynard-accenture.com",
+      "telefono": "",
+      "web": "https://hb-maynard-accenture.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Methods Engineering Council",
+    "slug": "methods-engineering-council",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "Consultora histórica en ingeniería de métodos fundada en 1948.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Ingeniería de métodos",
+      "Formación"
+    ],
+    "ubicacion": {
+      "pais": "EE.UU.",
+      "ciudad": "Filadelfia"
+    },
+    "contacto": {
+      "email": "info@methods-engineering-council.com",
+      "telefono": "",
+      "web": "https://methods-engineering-council.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "MCR Consultants",
+    "slug": "mcr-consultants",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean",
+      "mtm"
+    ],
+    "descripcion": "Consultora brasileña especializada en ingeniería industrial y productividad.",
+    "servicios": [
+      "Productividad industrial",
+      "Lean manufacturing",
+      "Automatización"
+    ],
+    "ubicacion": {
+      "pais": "Brasil",
+      "ciudad": "São Paulo"
+    },
+    "contacto": {
+      "email": "info@mcr-consultants.com",
+      "telefono": "",
+      "web": "https://mcr-consultants.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "SGS Consulting",
+    "slug": "sgs-consulting",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Consultora sudafricana con fuerte componente en ingeniería de métodos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Gestión productividad",
+      "Formación"
+    ],
+    "ubicacion": {
+      "pais": "Sudáfrica",
+      "ciudad": "Johannesburgo"
+    },
+    "contacto": {
+      "email": "info@sgs-consulting.com",
+      "telefono": "",
+      "web": "https://sgs-consulting.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Productivity Inc.",
+    "slug": "productivity-inc",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee"
+    ],
+    "descripcion": "Consultora estadounidense con +40 años en mejora de productividad.",
+    "servicios": [
+      "Lean manufacturing",
+      "Kaizen",
+      "Productividad"
+    ],
+    "ubicacion": {
+      "pais": "EE.UU.",
+      "ciudad": "Minneapolis"
+    },
+    "contacto": {
+      "email": "info@productivity-inc.com",
+      "telefono": "",
+      "web": "https://productivity-inc.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Andrés Navarro Vidal",
+    "slug": "andres-navarro-vidal",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, mtm. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Gijón"
+    },
+    "contacto": {
+      "email": "contacto@andres-navarro-vidal.com",
+      "telefono": "",
+      "web": "https://andres-navarro-vidal.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Cristina Molina Pérez",
+    "slug": "cristina-molina-perez",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Oviedo"
+    },
+    "contacto": {
+      "email": "contacto@cristina-molina-perez.com",
+      "telefono": "",
+      "web": "https://cristina-molina-perez.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Diego Álvarez Romero",
+    "slug": "diego-alvarez-romero",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "oee"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, oee. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Santander"
+    },
+    "contacto": {
+      "email": "contacto@diego-alvarez-romero.com",
+      "telefono": "",
+      "web": "https://diego-alvarez-romero.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Eva Torres Blanco",
+    "slug": "eva-torres-blanco",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Vigo"
+    },
+    "contacto": {
+      "email": "contacto@eva-torres-blanco.com",
+      "telefono": "",
+      "web": "https://eva-torres-blanco.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Fernando Gil Ruiz",
+    "slug": "fernando-gil-ruiz",
+    "tipo": "consultor",
+    "especialidades": [
+      "mtm",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en mtm, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "A Coruña"
+    },
+    "contacto": {
+      "email": "contacto@fernando-gil-ruiz.com",
+      "telefono": "",
+      "web": "https://fernando-gil-ruiz.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Gloria Ramos Serrano",
+    "slug": "gloria-ramos-serrano",
+    "tipo": "freelance",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en oee, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "León"
+    },
+    "contacto": {
+      "email": "contacto@gloria-ramos-serrano.com",
+      "telefono": "",
+      "web": "https://gloria-ramos-serrano.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Hugo Díaz Moreno",
+    "slug": "hugo-diaz-moreno",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "mtm",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, mtm, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Salamanca"
+    },
+    "contacto": {
+      "email": "contacto@hugo-diaz-moreno.com",
+      "telefono": "",
+      "web": "https://hugo-diaz-moreno.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Irene Alonso García",
+    "slug": "irene-alonso-garcia",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, oee, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Valladolid"
+    },
+    "contacto": {
+      "email": "contacto@irene-alonso-garcia.com",
+      "telefono": "",
+      "web": "https://irene-alonso-garcia.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Javier Castillo Martín",
+    "slug": "javier-castillo-martin",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, mtm. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Burgos"
+    },
+    "contacto": {
+      "email": "contacto@javier-castillo-martin.com",
+      "telefono": "",
+      "web": "https://javier-castillo-martin.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Julia Serrano Blanco",
+    "slug": "julia-serrano-blanco",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Logroño"
+    },
+    "contacto": {
+      "email": "contacto@julia-serrano-blanco.com",
+      "telefono": "",
+      "web": "https://julia-serrano-blanco.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Kevin Pérez López",
+    "slug": "kevin-perez-lopez",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "oee"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, oee. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Huelva"
+    },
+    "contacto": {
+      "email": "contacto@kevin-perez-lopez.com",
+      "telefono": "",
+      "web": "https://kevin-perez-lopez.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Lorena Saavedra Torres",
+    "slug": "lorena-saavedra-torres",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Cádiz"
+    },
+    "contacto": {
+      "email": "contacto@lorena-saavedra-torres.com",
+      "telefono": "",
+      "web": "https://lorena-saavedra-torres.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Marco Vidal Gutiérrez",
+    "slug": "marco-vidal-gutierrez",
+    "tipo": "consultor",
+    "especialidades": [
+      "mtm",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en mtm, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Granada"
+    },
+    "contacto": {
+      "email": "contacto@marco-vidal-gutierrez.com",
+      "telefono": "",
+      "web": "https://marco-vidal-gutierrez.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Natalia Blanco Díaz",
+    "slug": "natalia-blanco-diaz",
+    "tipo": "freelance",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en oee, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Córdoba"
+    },
+    "contacto": {
+      "email": "contacto@natalia-blanco-diaz.com",
+      "telefono": "",
+      "web": "https://natalia-blanco-diaz.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Óscar Romero Álvarez",
+    "slug": "oscar-romero-alvarez",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "mtm",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, mtm, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Murcia"
+    },
+    "contacto": {
+      "email": "contacto@oscar-romero-alvarez.com",
+      "telefono": "",
+      "web": "https://oscar-romero-alvarez.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Patricia Molina Gil",
+    "slug": "patricia-molina-gil",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, oee, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Perú",
+      "ciudad": "Lima"
+    },
+    "contacto": {
+      "email": "contacto@patricia-molina-gil.com",
+      "telefono": "",
+      "web": "https://patricia-molina-gil.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Rafael Torres Serrano",
+    "slug": "rafael-torres-serrano",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, mtm. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Colombia",
+      "ciudad": "Bogotá"
+    },
+    "contacto": {
+      "email": "contacto@rafael-torres-serrano.com",
+      "telefono": "",
+      "web": "https://rafael-torres-serrano.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Sandra García Martín",
+    "slug": "sandra-garcia-martin",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "México",
+      "ciudad": "Ciudad de México"
+    },
+    "contacto": {
+      "email": "contacto@sandra-garcia-martin.com",
+      "telefono": "",
+      "web": "https://sandra-garcia-martin.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Tomás Ruiz Alonso",
+    "slug": "tomas-ruiz-alonso",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "oee"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, oee. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Chile",
+      "ciudad": "Santiago"
+    },
+    "contacto": {
+      "email": "contacto@tomas-ruiz-alonso.com",
+      "telefono": "",
+      "web": "https://tomas-ruiz-alonso.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Úrsula Martínez Pérez",
+    "slug": "ursula-martinez-perez",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Argentina",
+      "ciudad": "Buenos Aires"
+    },
+    "contacto": {
+      "email": "contacto@ursula-martinez-perez.com",
+      "telefono": "",
+      "web": "https://ursula-martinez-perez.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Víctor Gutiérrez Romero",
+    "slug": "victor-gutierrez-romero",
+    "tipo": "consultor",
+    "especialidades": [
+      "mtm",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en mtm, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Ecuador",
+      "ciudad": "Quito"
+    },
+    "contacto": {
+      "email": "contacto@victor-gutierrez-romero.com",
+      "telefono": "",
+      "web": "https://victor-gutierrez-romero.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Ximena López Torres",
+    "slug": "ximena-lopez-torres",
+    "tipo": "freelance",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en oee, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Uruguay",
+      "ciudad": "Montevideo"
+    },
+    "contacto": {
+      "email": "contacto@ximena-lopez-torres.com",
+      "telefono": "",
+      "web": "https://ximena-lopez-torres.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Yolanda Serrano Díaz",
+    "slug": "yolanda-serrano-diaz",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "mtm",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, mtm, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Colombia",
+      "ciudad": "Medellín"
+    },
+    "contacto": {
+      "email": "contacto@yolanda-serrano-diaz.com",
+      "telefono": "",
+      "web": "https://yolanda-serrano-diaz.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Zacarías Blanco Ruiz",
+    "slug": "zacarias-blanco-ruiz",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, oee, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "México",
+      "ciudad": "Guadalajara"
+    },
+    "contacto": {
+      "email": "contacto@zacarias-blanco-ruiz.com",
+      "telefono": "",
+      "web": "https://zacarias-blanco-ruiz.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Alba Fernández Gil",
+    "slug": "alba-fernandez-gil",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, mtm. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Argentina",
+      "ciudad": "Rosario"
+    },
+    "contacto": {
+      "email": "contacto@alba-fernandez-gil.com",
+      "telefono": "",
+      "web": "https://alba-fernandez-gil.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Bruno Martín Torres",
+    "slug": "bruno-martin-torres",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Colombia",
+      "ciudad": "Cali"
+    },
+    "contacto": {
+      "email": "contacto@bruno-martin-torres.com",
+      "telefono": "",
+      "web": "https://bruno-martin-torres.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Clara Díaz Serrano",
+    "slug": "clara-diaz-serrano",
+    "tipo": "consultor",
+    "especialidades": [
+      "cronometraje",
+      "oee"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, oee. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "México",
+      "ciudad": "Monterrey"
+    },
+    "contacto": {
+      "email": "contacto@clara-diaz-serrano.com",
+      "telefono": "",
+      "web": "https://clara-diaz-serrano.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Daniel Pérez Blanco",
+    "slug": "daniel-perez-blanco",
+    "tipo": "freelance",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en cronometraje, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Brasil",
+      "ciudad": "Curitiba"
+    },
+    "contacto": {
+      "email": "contacto@daniel-perez-blanco.com",
+      "telefono": "",
+      "web": "https://daniel-perez-blanco.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Elena Gil Martínez",
+    "slug": "elena-gil-martinez",
+    "tipo": "consultor",
+    "especialidades": [
+      "mtm",
+      "most"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en mtm, most. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Brasil",
+      "ciudad": "Porto Alegre"
+    },
+    "contacto": {
+      "email": "contacto@elena-gil-martinez.com",
+      "telefono": "",
+      "web": "https://elena-gil-martinez.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "Félix Romero Ruiz",
+    "slug": "felix-romero-ruiz",
+    "tipo": "freelance",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Ingeniero/a industrial especializado/a en oee, lean. Con experiencia en optimización de procesos productivos.",
+    "servicios": [
+      "Estudios de tiempos",
+      "Análisis de métodos",
+      "Optimización de procesos"
+    ],
+    "ubicacion": {
+      "pais": "Brasil",
+      "ciudad": "Campinas"
+    },
+    "contacto": {
+      "email": "contacto@felix-romero-ruiz.com",
+      "telefono": "",
+      "web": "https://felix-romero-ruiz.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-12T18:00:00Z"
+  }
+]

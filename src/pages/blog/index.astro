@@ -1,0 +1,74 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getArticles } from '../../lib/firebase';
+
+let articles: any[] = [];
+try {
+  articles = await getArticles();
+} catch (e) {
+  console.error('Error fetching articles:', e);
+}
+---
+
+<Layout title="Blog">
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">
+        Blog — Cronometraje Industrial
+      </h1>
+      <p class="text-steel-500 text-lg">
+        Artículos, guías y novedades sobre ingeniería de métodos y tiempos.
+      </p>
+    </div>
+
+    {articles.length === 0 ? (
+      <div class="text-center py-20 bg-white rounded-xl shadow">
+        <p class="text-steel-400 text-lg">No hay artículos publicados todavía.</p>
+        <p class="text-steel-300 mt-2">Vuelve pronto para leer las últimas novedades.</p>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {articles.map((article: any) => (
+          <a
+            href={`/blog/${article.slug}`}
+            class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group"
+          >
+            {article.coverImage && (
+              <img
+                src={article.coverImage}
+                alt={article.title}
+                class="w-full h-52 object-cover"
+                loading="lazy"
+              />
+            )}
+            <div class="p-6">
+              <div class="flex gap-2 mb-3 flex-wrap">
+                {article.tags?.map((tag: string) => (
+                  <span class="text-xs bg-primary-100 text-primary-700 px-2.5 py-1 rounded-full font-medium">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <h2 class="text-xl font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">
+                {article.title}
+              </h2>
+              <p class="text-steel-500 text-sm line-clamp-3">{article.excerpt}</p>
+              <div class="flex items-center justify-between mt-4 pt-4 border-t border-steel-100">
+                <span class="text-sm text-steel-400">
+                  {article.author || 'ASETEMYT'}
+                </span>
+                <span class="text-xs text-steel-400">
+                  {article.publishedAt?.toDate?.()?.toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  }) || 'Sin fecha'}
+                </span>
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+  </section>
+</Layout>

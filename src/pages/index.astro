@@ -1,0 +1,177 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getArticles, getDirectoryEntries } from '../lib/firebase';
+
+let articles: any[] = [];
+let entries: any[] = [];
+try {
+  articles = await getArticles(6);
+  entries = await getDirectoryEntries();
+} catch (e) {
+  console.error('Error fetching data:', e);
+}
+
+const stats = {
+  total: entries.length,
+  empresas: entries.filter((e) => e.tipo === 'empresa').length,
+  consultores: entries.filter((e) => e.tipo === 'consultor').length,
+  freelancers: entries.filter((e) => e.tipo === 'freelance').length,
+};
+---
+
+<Layout title="Inicio">
+  <!-- Hero -->
+  <section class="relative bg-gradient-to-br from-primary-900 via-primary-800 to-steel-800 text-white overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-10 left-10 w-72 h-72 bg-accent-500 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-500 rounded-full blur-3xl"></div>
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+      <div class="max-w-3xl">
+        <p class="text-accent-400 font-semibold tracking-wide uppercase text-sm mb-3">
+          Directorio Industrial
+        </p>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+          Cronometraje Industrial
+          <span class="block text-accent-400">y Métodos y Tiempos</span>
+        </h1>
+        <p class="text-lg md:text-xl text-steel-200 mb-8 leading-relaxed">
+          Encuentra técnicos, consultores y empresas especializadas en ingeniería de métodos,
+          cronometraje industrial, análisis de tiempos y optimización de procesos productivos.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a
+            href="/directorio"
+            class="inline-flex items-center justify-center bg-accent-500 hover:bg-accent-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all hover:shadow-lg hover:shadow-accent-500/25"
+          >
+            Explorar Directorio
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+          <a
+            href="/anadir"
+            class="inline-flex items-center justify-center border-2 border-steel-400 hover:border-accent-400 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all hover:bg-white/5"
+          >
+            Añadir mi Empresa
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-accent-500">
+        <p class="text-3xl md:text-4xl font-extrabold text-primary-800">{stats.total}</p>
+        <p class="text-steel-500 font-medium mt-1">Total Fichas</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-primary-500">
+        <p class="text-3xl md:text-4xl font-extrabold text-primary-800">{stats.empresas}</p>
+        <p class="text-steel-500 font-medium mt-1">Empresas</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-green-500">
+        <p class="text-3xl md:text-4xl font-extrabold text-primary-800">{stats.consultores}</p>
+        <p class="text-steel-500 font-medium mt-1">Consultores</p>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-purple-500">
+        <p class="text-3xl md:text-4xl font-extrabold text-primary-800">{stats.freelancers}</p>
+        <p class="text-steel-500 font-medium mt-1">Freelancers</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Categories -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-8">Especialidades</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {[
+        { name: 'Cronometraje', icon: '⏱️', slug: 'cronometraje' },
+        { name: 'MTM', icon: '📋', slug: 'mtm' },
+        { name: 'MOST', icon: '⚡', slug: 'most' },
+        { name: 'OEE', icon: '📊', slug: 'oee' },
+        { name: 'Lean Manufacturing', icon: '🏭', slug: 'lean' },
+      ].map((cat) => (
+        <a
+          href={`/directorio?especialidad=${cat.slug}`}
+          class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-1 text-center group"
+        >
+          <span class="text-3xl mb-3 block">{cat.icon}</span>
+          <h3 class="font-semibold text-primary-800 group-hover:text-accent-600 transition-colors">
+            {cat.name}
+          </h3>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Latest Articles -->
+  {articles.length > 0 && (
+    <section class="bg-white py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl md:text-3xl font-bold text-primary-800">Últimos Artículos</h2>
+          <a href="/blog" class="text-accent-600 hover:text-accent-700 font-semibold flex items-center gap-1">
+            Ver todos
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {articles.slice(0, 3).map((article: any) => (
+            <a
+              href={`/blog/${article.slug}`}
+              class="bg-steel-50 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group"
+            >
+              {article.coverImage && (
+                <img
+                  src={article.coverImage}
+                  alt={article.title}
+                  class="w-full h-48 object-cover"
+                  loading="lazy"
+                />
+              )}
+              <div class="p-5">
+                <div class="flex gap-2 mb-3">
+                  {article.tags?.slice(0, 2).map((tag: string) => (
+                    <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">
+                  {article.title}
+                </h3>
+                <p class="text-steel-500 text-sm line-clamp-2">{article.excerpt}</p>
+                <p class="text-xs text-steel-400 mt-3">
+                  {article.publishedAt?.toDate?.()?.toLocaleDateString('es-ES') || 'Sin fecha'}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- CTA -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 md:p-12 text-white text-center">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">¿Eres especialista en cronometraje?</h2>
+      <p class="text-steel-300 mb-6 max-w-2xl mx-auto">
+        Añade tu perfil o empresa al directorio y conecta con empresas que buscan tus servicios de ingeniería de métodos y tiempos.
+      </p>
+      <a
+        href="/anadir"
+        class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all"
+      >
+        Añadir mi Empresa
+        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+      </a>
+    </div>
+  </section>
+</Layout>
