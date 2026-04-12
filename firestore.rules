@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /directorio_asetemyt/{docId} {
+      allow read: if true;
+    }
+    match /articulos_asetemyt/{docId} {
+      allow read: if resource.data.status == 'published';
+    }
+    match /pending_asetemyt/{docId} {
+      allow create: if true;
+      allow read: if false;
+    }
+    match /spam_asetemyt/{docId} {
+      allow read: if false;
+    }
+  }
+}

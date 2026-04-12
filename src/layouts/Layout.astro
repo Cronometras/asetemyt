@@ -19,47 +19,45 @@ const {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <title>{title} | ASETEMYT</title>
   </head>
   <body class="bg-steel-50 text-steel-800 font-sans min-h-screen flex flex-col">
-    <!-- Navigation -->
     <nav class="bg-primary-900 text-white shadow-lg sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <a href="/" class="flex items-center gap-3 group">
-            <div class="w-9 h-9 bg-accent-500 rounded-lg flex items-center justify-center font-bold text-lg tracking-tight">
-              A
-            </div>
+            <div class="w-9 h-9 bg-accent-500 rounded-lg flex items-center justify-center font-bold text-lg tracking-tight">A</div>
             <span class="text-xl font-bold tracking-tight">ASETEMYT</span>
           </a>
-          <div class="hidden md:flex items-center gap-8">
-            <a href="/" class="hover:text-accent-400 transition-colors font-medium">Inicio</a>
-            <a href="/directorio" class="hover:text-accent-400 transition-colors font-medium">Directorio</a>
-            <a href="/blog" class="hover:text-accent-400 transition-colors font-medium">Blog</a>
-            <a
-              href="/anadir"
-              class="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
-            >
+          <div class="hidden md:flex items-center gap-6">
+            <a href="/" class="hover:text-accent-400 transition-colors font-medium" data-nav="home">Inicio</a>
+            <a href="/directorio" class="hover:text-accent-400 transition-colors font-medium" data-nav="dir">Directorio</a>
+            <a href="/blog" class="hover:text-accent-400 transition-colors font-medium" data-nav="blog">Blog</a>
+            <a href="/anadir" class="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors" data-nav="add">
               Añadir Empresa
             </a>
+            <!-- Language switcher -->
+            <div class="flex items-center border border-steel-600 rounded-lg overflow-hidden text-sm">
+              <button id="lang-es" class="px-2.5 py-1 bg-accent-500 text-white font-semibold transition-colors">ES</button>
+              <button id="lang-en" class="px-2.5 py-1 hover:bg-steel-700 transition-colors">EN</button>
+            </div>
           </div>
-          <!-- Mobile menu button -->
           <button id="mobile-menu-btn" class="md:hidden p-2">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
         </div>
-        <!-- Mobile menu -->
         <div id="mobile-menu" class="hidden md:hidden pb-4">
-          <a href="/" class="block py-2 hover:text-accent-400">Inicio</a>
-          <a href="/directorio" class="block py-2 hover:text-accent-400">Directorio</a>
-          <a href="/blog" class="block py-2 hover:text-accent-400">Blog</a>
-          <a href="/anadir" class="block py-2 text-accent-400 font-semibold">Añadir Empresa</a>
+          <a href="/" class="block py-2 hover:text-accent-400" data-nav="home">Inicio</a>
+          <a href="/directorio" class="block py-2 hover:text-accent-400" data-nav="dir">Directorio</a>
+          <a href="/blog" class="block py-2 hover:text-accent-400" data-nav="blog">Blog</a>
+          <a href="/anadir" class="block py-2 text-accent-400 font-semibold" data-nav="add">Añadir Empresa</a>
+          <div class="flex items-center gap-2 mt-3 border-t border-steel-700 pt-3">
+            <button id="mob-lang-es" class="px-3 py-1 bg-accent-500 text-white text-sm font-semibold rounded">ES</button>
+            <button id="mob-lang-en" class="px-3 py-1 text-steel-400 text-sm rounded hover:bg-steel-700">EN</button>
+          </div>
         </div>
       </div>
     </nav>
@@ -68,31 +66,28 @@ const {
       <slot />
     </main>
 
-    <!-- Footer -->
     <footer class="bg-primary-900 text-steel-300 mt-16">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div class="flex items-center gap-2 mb-4">
-              <div class="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center font-bold text-white">
-                A
-              </div>
+              <div class="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center font-bold text-white">A</div>
               <span class="text-lg font-bold text-white">ASETEMYT</span>
             </div>
-            <p class="text-sm">
+            <p class="text-sm" data-text="footerDesc">
               Directorio de técnicos, consultores y empresas especializadas en cronometraje industrial e ingeniería de métodos y tiempos.
             </p>
           </div>
           <div>
-            <h3 class="font-semibold text-white mb-3">Enlaces</h3>
+            <h3 class="font-semibold text-white mb-3" data-text="links">Enlaces</h3>
             <ul class="space-y-2 text-sm">
-              <li><a href="/directorio" class="hover:text-accent-400 transition-colors">Directorio</a></li>
-              <li><a href="/blog" class="hover:text-accent-400 transition-colors">Blog</a></li>
-              <li><a href="/anadir" class="hover:text-accent-400 transition-colors">Añadir Empresa</a></li>
+              <li><a href="/directorio" class="hover:text-accent-400 transition-colors" data-nav="dir">Directorio</a></li>
+              <li><a href="/blog" class="hover:text-accent-400 transition-colors" data-nav="blog">Blog</a></li>
+              <li><a href="/anadir" class="hover:text-accent-400 transition-colors" data-nav="add">Añadir Empresa</a></li>
             </ul>
           </div>
           <div>
-            <h3 class="font-semibold text-white mb-3">Proyectos Relacionados</h3>
+            <h3 class="font-semibold text-white mb-3" data-text="relatedProjects">Proyectos Relacionados</h3>
             <ul class="space-y-2 text-sm">
               <li><a href="https://cronometras.com" target="_blank" rel="noopener" class="hover:text-accent-400 transition-colors">Cronometras.com</a></li>
               <li><a href="https://induly.com" target="_blank" rel="noopener" class="hover:text-accent-400 transition-colors">Induly.com</a></li>
@@ -107,9 +102,75 @@ const {
     </footer>
 
     <script>
+      import { getLang, type Lang } from '../lib/firebase';
+
+      const navLabels: Record<Lang, Record<string, string>> = {
+        es: { home: 'Inicio', dir: 'Directorio', blog: 'Blog', add: 'Añadir Empresa' },
+        en: { home: 'Home', dir: 'Directory', blog: 'Blog', add: 'Add Company' },
+      };
+
+      const footerLabels: Record<Lang, Record<string, string>> = {
+        es: {
+          footerDesc: 'Directorio de técnicos, consultores y empresas especializadas en cronometraje industrial e ingeniería de métodos y tiempos.',
+          links: 'Enlaces',
+          relatedProjects: 'Proyectos Relacionados',
+        },
+        en: {
+          footerDesc: 'Directory of technicians, consultants and companies specialized in industrial time study and methods engineering.',
+          links: 'Links',
+          relatedProjects: 'Related Projects',
+        },
+      };
+
+      function setLang(lang: Lang) {
+        localStorage.setItem('asetemyt-lang', lang);
+
+        // Update nav links
+        document.querySelectorAll('[data-nav]').forEach((el) => {
+          const key = (el as HTMLElement).dataset.nav!;
+          const label = navLabels[lang][key];
+          if (label) el.textContent = label;
+        });
+
+        // Update footer texts
+        document.querySelectorAll('[data-text]').forEach((el) => {
+          const key = (el as HTMLElement).dataset.text!;
+          const label = footerLabels[lang][key];
+          if (label) el.textContent = label;
+        });
+
+        // Update buttons
+        const esBtn = document.getElementById('lang-es')!;
+        const enBtn = document.getElementById('lang-en')!;
+        const mobEsBtn = document.getElementById('mob-lang-es')!;
+        const mobEnBtn = document.getElementById('mob-lang-en')!;
+
+        [esBtn, mobEsBtn].forEach((b) => {
+          b.className = lang === 'es'
+            ? 'px-2.5 py-1 bg-accent-500 text-white font-semibold transition-colors'
+            : 'px-2.5 py-1 hover:bg-steel-700 transition-colors';
+        });
+        [enBtn, mobEnBtn].forEach((b) => {
+          b.className = lang === 'en'
+            ? 'px-2.5 py-1 bg-accent-500 text-white font-semibold transition-colors'
+            : 'px-2.5 py-1 hover:bg-steel-700 transition-colors';
+        });
+
+        // Broadcast to page scripts
+        window.dispatchEvent(new CustomEvent('langChange', { detail: lang }));
+      }
+
+      document.getElementById('lang-es')?.addEventListener('click', () => setLang('es'));
+      document.getElementById('lang-en')?.addEventListener('click', () => setLang('en'));
+      document.getElementById('mob-lang-es')?.addEventListener('click', () => setLang('es'));
+      document.getElementById('mob-lang-en')?.addEventListener('click', () => setLang('en'));
+
       document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
         document.getElementById('mobile-menu')?.classList.toggle('hidden');
       });
+
+      // Init on load
+      setLang(getLang());
     </script>
   </body>
 </html>

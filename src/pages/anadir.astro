@@ -4,55 +4,41 @@ import Layout from '../layouts/Layout.astro';
 
 <Layout title="Añadir al Directorio">
   <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="mb-10">
-      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">
-        Añadir al Directorio
-      </h1>
-      <p class="text-steel-500 text-lg">
-        Registra tu empresa o perfil profesional en el directorio de cronometraje industrial.
-      </p>
+    <div id="form-header" class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3" data-field="formTitle">Añadir al Directorio</h1>
+      <p class="text-steel-500 text-lg" data-field="formDesc">Registra tu empresa o perfil profesional en el directorio de cronometraje industrial.</p>
     </div>
 
     <form id="directory-form" class="bg-white rounded-2xl shadow-lg p-8 space-y-6">
       <!-- Nombre -->
       <div>
         <label for="nombre" class="block text-sm font-semibold text-steel-700 mb-1">
-          Nombre / Razón Social <span class="text-red-500">*</span>
+          <span data-field="nameRequired">Nombre / Razón Social</span> <span class="text-red-500">*</span>
         </label>
-        <input
-          type="text"
-          id="nombre"
-          name="nombre"
-          required
-          placeholder="Ej: Cronometría Industrial S.L."
-          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all"
-        />
+        <input type="text" id="nombre" name="nombre" required placeholder="Ej: Cronometría Industrial S.L."
+          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all" />
       </div>
 
       <!-- Tipo -->
       <div>
         <label for="tipo" class="block text-sm font-semibold text-steel-700 mb-1">
-          Tipo <span class="text-red-500">*</span>
+          <span data-field="typeRequired">Tipo</span> <span class="text-red-500">*</span>
         </label>
-        <select
-          id="tipo"
-          name="tipo"
-          required
-          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none bg-white"
-        >
-          <option value="">Seleccionar tipo</option>
-          <option value="empresa">Empresa</option>
-          <option value="consultor">Consultor</option>
-          <option value="freelance">Freelancer</option>
+        <select id="tipo" name="tipo" required
+          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none bg-white">
+          <option value="" data-field="selectType">Seleccionar tipo</option>
+          <option value="empresa" data-field="empresa">Empresa</option>
+          <option value="consultor" data-field="consultor">Consultor</option>
+          <option value="freelance" data-field="freelancer">Freelancer</option>
         </select>
       </div>
 
       <!-- Especialidades -->
       <div>
         <label class="block text-sm font-semibold text-steel-700 mb-2">
-          Especialidades <span class="text-red-500">*</span>
+          <span data-field="specialtiesRequired">Especialidades</span> <span class="text-red-500">*</span>
         </label>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="especialidades-grid">
           {['cronometraje', 'mtm', 'most', 'oee', 'lean', 'estudio_trabajo'].map((esp) => (
             <label class="flex items-center gap-2 p-3 border border-steel-200 rounded-lg hover:bg-steel-50 cursor-pointer transition-colors">
               <input type="checkbox" name="especialidades" value={esp} class="w-4 h-4 text-accent-500 rounded border-steel-300 focus:ring-accent-500" />
@@ -65,141 +51,94 @@ import Layout from '../layouts/Layout.astro';
       <!-- Descripción -->
       <div>
         <label for="descripcion" class="block text-sm font-semibold text-steel-700 mb-1">
-          Descripción <span class="text-red-500">*</span>
+          <span data-field="description">Descripción</span> <span class="text-red-500">*</span>
         </label>
-        <textarea
-          id="descripcion"
-          name="descripcion"
-          required
-          rows="4"
+        <textarea id="descripcion" name="descripcion" required rows="4"
+          data-field-placeholder="descriptionPlaceholder"
           placeholder="Describe tu empresa, experiencia y servicios principales..."
-          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all resize-y"
-        ></textarea>
+          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all resize-y"></textarea>
       </div>
 
       <!-- Servicios -->
       <div>
         <label for="servicios" class="block text-sm font-semibold text-steel-700 mb-1">
-          Servicios (uno por línea)
+          <span data-field="services">Servicios (uno por línea)</span>
         </label>
-        <textarea
-          id="servicios"
-          name="servicios"
-          rows="3"
+        <textarea id="servicios" name="servicios" rows="3"
+          data-field-placeholder="servicesPlaceholder"
           placeholder="Cronometraje de operaciones&#10;Análisis de métodos&#10;Consultoría Lean"
-          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all resize-y"
-        ></textarea>
+          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all resize-y"></textarea>
       </div>
 
       <!-- Ubicación -->
       <fieldset class="border border-steel-200 rounded-xl p-6">
-        <legend class="text-sm font-semibold text-steel-700 px-2">Ubicación</legend>
+        <legend class="text-sm font-semibold text-steel-700 px-2" data-field="location">Ubicación</legend>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label for="pais" class="block text-sm font-medium text-steel-600 mb-1">País</label>
-            <input
-              type="text"
-              id="pais"
-              name="pais"
-              placeholder="España"
-              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-            />
+            <label for="pais" class="block text-sm font-medium text-steel-600 mb-1" data-field="country">País</label>
+            <input type="text" id="pais" name="pais" data-field-placeholder="countryPlaceholder" placeholder="España"
+              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none" />
           </div>
           <div>
-            <label for="ciudad" class="block text-sm font-medium text-steel-600 mb-1">Ciudad</label>
-            <input
-              type="text"
-              id="ciudad"
-              name="ciudad"
-              placeholder="Barcelona"
-              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-            />
+            <label for="ciudad" class="block text-sm font-medium text-steel-600 mb-1" data-field="city">Ciudad</label>
+            <input type="text" id="ciudad" name="ciudad" data-field-placeholder="cityPlaceholder" placeholder="Barcelona"
+              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none" />
           </div>
         </div>
       </fieldset>
 
       <!-- Contacto -->
       <fieldset class="border border-steel-200 rounded-xl p-6">
-        <legend class="text-sm font-semibold text-steel-700 px-2">Contacto</legend>
+        <legend class="text-sm font-semibold text-steel-700 px-2" data-field="contact">Contacto</legend>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label for="email" class="block text-sm font-medium text-steel-600 mb-1">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="info@empresa.com"
-              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-            />
+            <label for="email" class="block text-sm font-medium text-steel-600 mb-1" data-field="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="info@empresa.com"
+              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none" />
           </div>
           <div>
-            <label for="telefono" class="block text-sm font-medium text-steel-600 mb-1">Teléfono</label>
-            <input
-              type="tel"
-              id="telefono"
-              name="telefono"
-              placeholder="+34 600 000 000"
-              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-            />
+            <label for="telefono" class="block text-sm font-medium text-steel-600 mb-1" data-field="phone">Teléfono</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="+34 600 000 000"
+              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none" />
           </div>
           <div>
-            <label for="web" class="block text-sm font-medium text-steel-600 mb-1">Web</label>
-            <input
-              type="url"
-              id="web"
-              name="web"
-              placeholder="https://www.empresa.com"
-              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-            />
+            <label for="web" class="block text-sm font-medium text-steel-600 mb-1" data-field="web">Web</label>
+            <input type="url" id="web" name="web" placeholder="https://www.empresa.com"
+              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none" />
           </div>
           <div>
-            <label for="linkedin" class="block text-sm font-medium text-steel-600 mb-1">LinkedIn</label>
-            <input
-              type="url"
-              id="linkedin"
-              name="linkedin"
-              placeholder="https://linkedin.com/company/..."
-              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-            />
+            <label for="linkedin" class="block text-sm font-medium text-steel-600 mb-1" data-field="linkedin">LinkedIn</label>
+            <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/company/..."
+              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none" />
           </div>
         </div>
       </fieldset>
 
       <!-- Logo URL -->
       <div>
-        <label for="logo" class="block text-sm font-semibold text-steel-700 mb-1">
-          URL del Logo
-        </label>
-        <input
-          type="url"
-          id="logo"
-          name="logo"
-          placeholder="https://ejemplo.com/logo.png"
-          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none"
-        />
+        <label for="logo" class="block text-sm font-semibold text-steel-700 mb-1" data-field="logoUrl">URL del Logo</label>
+        <input type="url" id="logo" name="logo" placeholder="https://ejemplo.com/logo.png"
+          class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none" />
       </div>
 
       <!-- Submit -->
       <div class="pt-4">
-        <button
-          type="submit"
-          id="submit-btn"
-          class="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-all hover:shadow-lg hover:shadow-accent-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Enviar Solicitud
+        <button type="submit" id="submit-btn"
+          class="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-4 px-8 rounded-lg text-lg transition-all hover:shadow-lg hover:shadow-accent-500/25 disabled:opacity-50 disabled:cursor-not-allowed">
+          <span data-field="submit">Enviar Solicitud</span>
         </button>
-        <p class="text-sm text-steel-400 mt-3 text-center">
+        <p class="text-sm text-steel-400 mt-3 text-center" data-field="submitNote">
           Tu ficha será revisada antes de publicarse en el directorio.
         </p>
       </div>
 
       <!-- Status messages -->
       <div id="form-success" class="hidden bg-green-50 border border-green-200 text-green-700 rounded-lg p-4 text-center">
-        <p class="font-semibold">¡Ficha enviada correctamente!</p>
-        <p class="text-sm mt-1">Tu solicitud será revisada y publicada pronto.</p>
+        <p class="font-semibold" data-field="successMsg">¡Ficha enviada correctamente!</p>
+        <p class="text-sm mt-1" data-field="successNote">Tu solicitud será revisada y publicada pronto.</p>
       </div>
       <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 text-center">
-        <p class="font-semibold">Error al enviar</p>
+        <p class="font-semibold" data-field="errorMsg">Error al enviar</p>
         <p id="error-message" class="text-sm mt-1">Ha ocurrido un error. Inténtalo de nuevo.</p>
       </div>
     </form>
@@ -208,9 +147,10 @@ import Layout from '../layouts/Layout.astro';
   <script>
     import { initializeApp } from 'firebase/app';
     import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+    import { t, getLang, type Lang } from '../lib/firebase';
 
     const firebaseConfig = {
-      apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || 'AIzaSyCmKlPNxiRgBhB5q3PUJ42Y3H6Q7nuiDs',
+      apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || 'AIzaSyCWrnHpOz_2-BSL8vPQDxmYRD_sAlZuiDs',
       authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || 'micaot-com.firebaseapp.com',
       projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'micaot-com',
       storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || 'micaot-com.firebasestorage.app',
@@ -221,11 +161,25 @@ import Layout from '../layouts/Layout.astro';
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const form = document.getElementById('directory-form') as HTMLFormElement;
-    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-    const successEl = document.getElementById('form-success');
-    const errorEl = document.getElementById('form-error');
-    const errorMsg = document.getElementById('error-message');
+    let lang: Lang = getLang();
+
+    function updateFormLabels() {
+      document.querySelectorAll('[data-field]').forEach((el) => {
+        const key = (el as HTMLElement).dataset.field!;
+        const label = t(key, lang);
+        if (el.tagName === 'OPTION') {
+          el.textContent = label;
+        } else if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          // skip
+        } else {
+          el.textContent = label;
+        }
+      });
+      document.querySelectorAll('[data-field-placeholder]').forEach((el) => {
+        const key = (el as HTMLElement).dataset.fieldPlaceholder!;
+        (el as HTMLInputElement).placeholder = t(key, lang);
+      });
+    }
 
     function generateSlug(nombre: string): string {
       return nombre
@@ -236,20 +190,23 @@ import Layout from '../layouts/Layout.astro';
         .replace(/^-|-$/g, '');
     }
 
+    const form = document.getElementById('directory-form') as HTMLFormElement;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const successEl = document.getElementById('form-success');
+    const errorEl = document.getElementById('form-error');
+    const errorMsg = document.getElementById('error-message');
+
     form?.addEventListener('submit', async (e) => {
       e.preventDefault();
-
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Enviando...';
+      const btnText = submitBtn.querySelector('[data-field="submit"]')!;
+      btnText.textContent = lang === 'es' ? 'Enviando...' : 'Submitting...';
       successEl?.classList.add('hidden');
       errorEl?.classList.add('hidden');
 
       const formData = new FormData(form);
       const especialidades = formData.getAll('especialidades');
-      const servicios = (formData.get('servicios') as string || '')
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean);
+      const servicios = (formData.get('servicios') as string || '').split('\n').map((s) => s.trim()).filter(Boolean);
 
       const data = {
         nombre: formData.get('nombre') as string,
@@ -270,21 +227,30 @@ import Layout from '../layouts/Layout.astro';
           linkedin: formData.get('linkedin') as string || '',
         },
         logo: formData.get('logo') as string || '',
+        lang,
         verificado: false,
+        status: 'pending',
         createdAt: serverTimestamp(),
       };
 
       try {
-        await addDoc(collection(db, 'directorio_asetemyt'), data);
+        await addDoc(collection(db, 'pending_asetemyt'), data);
         successEl?.classList.remove('hidden');
         form.reset();
       } catch (err: any) {
-        if (errorMsg) errorMsg.textContent = err.message || 'Ha ocurrido un error. Inténtalo de nuevo.';
+        if (errorMsg) errorMsg.textContent = err.message || 'Ha ocurrido un error.';
         errorEl?.classList.remove('hidden');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Enviar Solicitud';
+        btnText.textContent = t('submit', lang);
       }
     });
+
+    window.addEventListener('langChange', ((e: CustomEvent) => {
+      lang = e.detail;
+      updateFormLabels();
+    }) as EventListener);
+
+    updateFormLabels();
   </script>
 </Layout>
