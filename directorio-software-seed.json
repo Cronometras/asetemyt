@@ -1,0 +1,1738 @@
+[
+  {
+    "nombre": "TiCon (MTM Association)",
+    "slug": "ticon",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "TiCon representa una de las plataformas más consolidadas y reconocidas internacionalmente en el campo de la ingeniería de métodos y tiempos, desarrollada por la unidad de negocio Digital Solutions de la MTM Association en Dresde, Alemania. Esta solución integral permite a los ingenieros industriales analizar procesos de forma rápida y estandarizada utilizando los sistemas de bloques de construcción MTM u otros tiempos determinados como tiempos detenidos y valores empíricos. La plataforma abarca ",
+    "categoria": "Software de Estudio de Métodos y Tiempos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Dresde"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://mtm.org/en/software/software",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "1.1"
+  },
+  {
+    "nombre": "AVIX Suite (Kummerk / Solmeva)",
+    "slug": "avix-suite",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "AVIX Method constituye una solución tecnológica avanzada para el estudio de métodos y tiempos que revoluciona los enfoques tradicionales mediante el uso de video digital como base del análisis. A diferencia de los métodos clásicos que dependen del cronómetro y observaciones en campo, AVIX permite registrar un video del proceso a analizar y trabajar en un entorno de software para realizar estudios de tiempos, análisis VA/NVA (Valor Agregado/No Valor Agregado) y otros análisis de productividad. Es",
+    "categoria": "Software de Estudio de Métodos y Tiempos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Suecia",
+      "ciudad": "Estocolmo"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.kummerk.com/avix/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "1.2"
+  },
+  {
+    "nombre": "Proplanner (Advantive)",
+    "slug": "proplanner",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "Proplanner, ahora parte de Advantive, se posiciona como el líder en soluciones PLM-MDM (Manufacturing Data Management for the Product Lifecycle) para fabricantes de productos ensamblados. Su enfoque se centra en conectar el diseño del producto, el proceso y la producción para lograr una continuidad digital completa, eliminando los silos que tradicionalmente separan los datos de ingeniería, planificación y producción. La plataforma está optimizada para ensamblaje con flujos de trabajo y modelos d",
+    "categoria": "Software de Estudio de Métodos y Tiempos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.advantive.com/products/proplanner/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "1.3"
+  },
+  {
+    "nombre": "WorkStudy+ (QueTech)",
+    "slug": "workstudy",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "WorkStudy+ es una aplicación de software para la medición del trabajo y el estudio de tiempos que ha sido utilizada por profesionales de la mejora de productividad durante más de 20 años, habiendo sido probada en prácticamente todas las industrias incluyendo manufactura, salud, finanzas, seguros y retail. La plataforma es altamente personalizable, permitiendo la configuración completa de listas de elementos/tareas, datos importados e incluso plantillas de informes. Si una organización actualment",
+    "categoria": "Software de Estudio de Métodos y Tiempos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Canadá",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.quetch.com/workstudy",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "1.4"
+  },
+  {
+    "nombre": "Kaizen Copilot (Retrocausal)",
+    "slug": "kaizen-copilot",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm"
+    ],
+    "descripcion": "Kaizen Copilot representa la nueva generación de herramientas para estudios de tiempo manufacturero, combinando capacidades de inteligencia artificial con los principios del Lean Manufacturing para no solo conducir estudios de tiempo sino también analizarlos y proporcionar recomendaciones de mejora implementables en el piso de fabricación. Esta plataforma va más allá de la simple recolección de datos, clasificando automáticamente los pasos del proceso en tres categorías fundamentales: tiempo con",
+    "categoria": "Software de Estudio de Métodos y Tiempos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://retrocausal.ai",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "1.5"
+  },
+  {
+    "nombre": "MTM Software Solutions",
+    "slug": "mtm-software-solutions",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "most"
+    ],
+    "descripcion": "El sistema Methods-Time Measurement (MTM) es uno de los métodos más antiguos y ampliamente utilizados para el análisis y medición del trabajo manual. Desarrollado en Estados Unidos durante la década de 1940, el MTM-1 representa el sistema fundacional que analiza tareas desglosándolas en movimientos fundamentales como alcanzar (reach), mover (move), girar (turn) y agarrar (grasp), asignando a cada movimiento un valor de tiempo basado en unidades de medida de tiempo (TMU), donde 100,000 TMU equiva",
+    "categoria": "Software de Sistemas de Tiempos Predeterminados (PMTS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Dresde"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://mtm.org/en/software/software",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "2.1"
+  },
+  {
+    "nombre": "MOST (Maynard Operation Sequence Technique)",
+    "slug": "most",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "most"
+    ],
+    "descripcion": "MOST (Maynard Operation Sequence Technique), desarrollado por Kjell Zandin y H.B. Maynard and Company, Inc. en 1974, representa una evolución revolucionaria de los sistemas de tiempos predeterminados basada en el MTM. Su enfoque se centra en agrupar movimientos en modelos de secuencia predefinidos, lo que permite construir tiempos de manera similar a como se construyen oraciones con palabras. En lugar de analizar cada micromovimiento individual como en MTM-1, MOST trabaja con secuencias de activ",
+    "categoria": "Software de Sistemas de Tiempos Predeterminados (PMTS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.hbmaynard.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "2.2"
+  },
+  {
+    "nombre": "MODAPTS (Modular Arrangement of Predetermined Time Standards)",
+    "slug": "modapts",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "most"
+    ],
+    "descripcion": "MODAPTS representa una de las herramientas Lean más potentes y se considera una versión mejorada y simplificada del MTM. Su nombre proviene de MODular Arrangement of Predetermined Time Standards (Organización Modular de Tiempos Normalizados Predeterminados). MODAPTS se utiliza para medir el tiempo que lleva realizar un trabajo sin necesidad de medir cada movimiento individual con cronómetro, lo que elimina la subjetividad en la evaluación del rendimiento del operario y mejora las relaciones entr",
+    "categoria": "Software de Sistemas de Tiempos Predeterminados (PMTS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.modapts.org",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "2.3"
+  },
+  {
+    "nombre": "AVIX Resource Balance",
+    "slug": "avix-resource-balance",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "AVIX Resource Balance es un software de balanceo de líneas diseñado para optimizar flujos de trabajo y crear producciones fluidas y eficientes. La herramienta balancea operaciones de trabajo entre estaciones y operadores, soportando tanto operaciones multi-operario como operaciones hombre-máquina. Mediante la visualización gráfica y numérica de desequilibrios e ineficiencias, AVIX ayuda a identificar y reducir pérdidas de balanceo en líneas de producción. Una característica distintiva es su inte",
+    "categoria": "Software de Balanceo de Líneas y Optimización de Flujo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Suecia",
+      "ciudad": "Estocolmo"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.kummerk.com/avix/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "3.1"
+  },
+  {
+    "nombre": "ProBalance (Proplanner)",
+    "slug": "probalance",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "ProBalance es una herramienta independiente de balanceo de líneas ofrecida por Proplanner que proporciona una interfaz tipo spreadsheet para manipular tareas, estaciones, piezas, herramientas, modelos/opciones y restricciones de precedencia. Esta solución soporta funcionalidades regulares de Windows, gráficos intuitivos y sofisticados, técnicas de balanceo de líneas flexibles y rápidas, e informes que calculan la utilización y asignaciones de trabajo que pueden utilizarse directamente como instr",
+    "categoria": "Software de Balanceo de Líneas y Optimización de Flujo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.advantive.com/products/proplanner/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "3.2"
+  },
+  {
+    "nombre": "PowerArena AI Vision",
+    "slug": "powerarena-ai-vision",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "PowerArena representa una innovación significativa en el campo del balanceo de líneas al incorporar inteligencia artificial y visión por computadora para el análisis automático del desempeño de las líneas de producción. El sistema monitorea la producción de ensamblaje 24/7 y si una estación de trabajo excede el tiempo de ciclo estándar, el ingeniero de línea o gerente de producción recibe una alerta instantánea en el dashboard con video del proceso que causó la demora. Esta capacidad de visión a",
+    "categoria": "Software de Balanceo de Líneas y Optimización de Flujo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.powerarena.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "3.3"
+  },
+  {
+    "nombre": "LineView LBO",
+    "slug": "lineview-lbo",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "LineView ofrece una metodología de Optimización de Balance de Línea (LBO - Line Balance Optimisation) construida sobre su Perfect Flow Model, que es un proceso de 5 pasos para mejorar la configuración de la curva V, maximizar la acumulación de recuperación y controlar la línea sin intervenciones manuales. La solución incluye puntuaciones de balance de línea fáciles de entender para cada tipo de producto con comparaciones de línea base integradas, permitiendo a los equipos comparar datos en vivo ",
+    "categoria": "Software de Balanceo de Líneas y Optimización de Flujo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Reino Unido",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.lineviewsolutions.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "3.4"
+  },
+  {
+    "nombre": "Simul8 Line Balancing",
+    "slug": "simul8-line-balancing",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Simul8 es una plataforma de simulación de eventos discretos ampliamente utilizada para la implementación de técnicas de balanceo de línea mediante modelado virtual. La simulación permite a los fabricantes probar e implementar una línea bien balanceada que tenga la flexibilidad de alcanzar el rendimiento objetivo de forma consistente. Con Simul8, los fabricantes pueden probar cambios y optimizar una amplia gama de factores incluyendo recursos compartidos, tareas simultáneas, variantes de producto",
+    "categoria": "Software de Balanceo de Líneas y Optimización de Flujo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Reino Unido",
+      "ciudad": "Glasgow"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.simul8.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "3.5"
+  },
+  {
+    "nombre": "M4 PLANT (CAD Schroer)",
+    "slug": "m4-plant",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean"
+    ],
+    "descripcion": "M4 PLANT es una solución integral para el diseño de layout de fábricas y plantas industriales que permite diseñar edificios, líneas de producción e instalaciones de cualquier tamaño en 3D. Su manejo sencillo e interfaces completas aseguran un inicio rápido y fácil, acelerando y mejorando todo el proceso de diseño. El software aborda todo el proceso de diseño para proyectos de diseño de plantas y layout de fábricas, proporcionando la base para la creación de cotizaciones basadas en reglas, diseño",
+    "categoria": "Software de Diseño de Plantas y Layout Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Reino Unido",
+      "ciudad": "Cambridge"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.cad-schroer.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "4.1"
+  },
+  {
+    "nombre": "DELMIA Industrial Engineering (Dassault Systèmes)",
+    "slug": "delmia-industrial-engineering",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean"
+    ],
+    "descripcion": "DELMIA Industrial Engineering, parte de la plataforma 3DEXPERIENCE de Dassault Systèmes, está diseñado para agilizar las operaciones de manufactura integrando herramientas de modelado 3D, simulación virtual y optimización de procesos. Sus soluciones innovadoras permiten a los fabricantes planificar, definir y refinar operaciones con precisión y eficiencia para planificar de manera precisa con herramientas integrales de planificación de procesos y recursos en 3D. Al obtener un sistema de producci",
+    "categoria": "Software de Diseño de Plantas y Layout Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Francia",
+      "ciudad": "París"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.3ds.com/products/delmia/industrial-engineering",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "4.2"
+  },
+  {
+    "nombre": "Tecnomatix (Siemens)",
+    "slug": "tecnomatix",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean"
+    ],
+    "descripcion": "Tecnomatix, parte del portafolio de Siemens Digital Industries Software, es una solución de manufactura digital que permite modelar, simular y optimizar un gemelo digital completo de los procesos de manufactura, incluyendo robots, automatización, sistemas de manejo de materiales y personas, para mejorar el rendimiento del negocio. La plataforma se utiliza para digitalizar la manufactura y el proceso de convertir ideas innovadoras en productos transformadores para los clientes, abarcando desde ve",
+    "categoria": "Software de Diseño de Plantas y Layout Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Múnich"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.siemens.com/en-us/products/tecnomatix/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "4.3"
+  },
+  {
+    "nombre": "Autodesk Solutions (Factory Design, Fusion)",
+    "slug": "autodesk-solutions",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean"
+    ],
+    "descripcion": "Autodesk ofrece un ecosistema completo de herramientas para el diseño de plantas y manufactura. Autodesk Fusion (anteriormente Fusion 360) es una plataforma completa de desarrollo de productos basada en la nube que combina CAD, CAM, CAE, PCB y gestión de datos en una única herramienta colaborativa. Su extensión Fusion for Manufacturing proporciona capacidades avanzadas de mecanizado simultáneo de 4 y 5 ejes, anidado y fabricación basada en láminas, y fabricación aditiva de metales, permitiendo c",
+    "categoria": "Software de Diseño de Plantas y Layout Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": "San Francisco"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "4.4"
+  },
+  {
+    "nombre": "ESAPRO 3D Piping (Esain)",
+    "slug": "esapro-3d-piping",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean"
+    ],
+    "descripcion": "ESAPRO 3D Piping es una solución especializada en el diseño de plantas industriales, específicamente enfocada en la modelación tridimensional de tuberías y la generación automática de listas de materiales. El software está diseñado para diseñadores de piping y permite modelar tuberías industriales, crear sketch isométricos, diseñar soportes y verificar la pérdida de presión en sistemas de tuberías. Con más de 4,000 instalaciones en todo el mundo, ESAPRO se ha consolidado como una solución líder ",
+    "categoria": "Software de Diseño de Plantas y Layout Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.esain.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "4.5"
+  },
+  {
+    "nombre": "FlexSim",
+    "slug": "flexsim",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "FlexSim es un software de simulación de manufactura que proporciona una experiencia visual inmersiva mediante simulación 3D completa, ayudando a responder preguntas críticas como si agregar equipamiento aumentará el throughput o creará cuellos de botella no previstos, si se puede agregar una nueva línea de producto y aun así cumplir objetivos de producción, o si se pueden identificar y minimizar las causas de defectos. La simulación 3D proporciona objetos 3D ricos y realismo mejorado que da vida",
+    "categoria": "Software de Simulación de Procesos y Eventos Discretos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": "Orem"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.flexsim.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "5.1"
+  },
+  {
+    "nombre": "Visual Components",
+    "slug": "visual-components",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Visual Components se presenta como la forma más rápida de pasar del concepto a la realidad en simulación de manufactura, proporcionando una plataforma integral que permite diseñar, optimizar y validar procesos y layouts de producción. La plataforma incluye un eCatalog con más de 3,500 componentes CAD listos para usar que incluyen más de 1,600 robots de más de 70 marcas, transportadores, máquinas, recursos, herramientas robóticas e instalaciones de fábrica. Los usuarios pueden importar archivos C",
+    "categoria": "Software de Simulación de Procesos y Eventos Discretos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Finlandia",
+      "ciudad": "Helsinki"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.visualcomponents.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "5.2"
+  },
+  {
+    "nombre": "ProModel",
+    "slug": "promodel",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "ProModel, ahora parte de BigBear.ai, es una plataforma de simulación predictiva basada en analítica diseñada para ayudar a las organizaciones a optimizar procesos, reducir ineficiencias y tomar decisiones basadas en datos. Al modelar escenarios del mundo real, ProModel permite a industrias como manufactura, almacenes, logística, salud y defensa predecir y mejorar resultados operacionales. La plataforma permite crear simulaciones detalladas de sistemas para pronosticar con precisión cómo se desem",
+    "categoria": "Software de Simulación de Procesos y Eventos Discretos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://bigbear.ai/solutions/modeling-and-simulation/promodel/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "5.3"
+  },
+  {
+    "nombre": "Simio",
+    "slug": "simio",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Simio es una plataforma de simulación de eventos discretos que proporciona un enfoque innovador para el modelado de sistemas complejos mediante el paradigma de objetos inteligentes (intelligent objects). A diferencia de las herramientas de simulación tradicionales que requieren programación compleja, Simio permite a los usuarios construir modelos arrastrando y soltando objetos predefinidos que encapsulan lógica de comportamiento, reduciendo significativamente el tiempo y la curva de aprendizaje ",
+    "categoria": "Software de Simulación de Procesos y Eventos Discretos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.simio.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "5.4"
+  },
+  {
+    "nombre": "Arena Simulation (Rockwell Automation)",
+    "slug": "arena-simulation",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Arena Simulation, desarrollada por Rockwell Automation, es una de las plataformas de simulación de eventos discretos más utilizadas en el mundo, con una trayectoria de más de 40 años en la industria. Arena proporciona un entorno de modelado basado en procesos que permite a los usuarios crear modelos de sistemas complejos mediante la combinación de módulos predefinidos que representan actividades, decisiones, recursos y flujos de entidades. Esta metodología facilita la creación rápida de modelos ",
+    "categoria": "Software de Simulación de Procesos y Eventos Discretos",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.rockwellautomation.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "5.5"
+  },
+  {
+    "nombre": "Software 5S y Auditoría Lean",
+    "slug": "software-5s-y-auditor-a-lean",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "La metodología 5S (Seiri/Clasificar, Seiton/Ordenar, Seiso/Limpiar, Seiketsu/Estandarizar, Shitsuke/Disciplina) constituye la base de la manufactura esbelta y múltiples plataformas digitales han emergido para facilitar su implementación y sostenimiento. SafetyCulture (iAuditor) es una de las herramientas más reconocidas mundialmente para auditorías digitales, con un constructor de formularios de clase mundial que permite crear sistemas de puntuación complejos para auditorías 5S con puntuaciones ",
+    "categoria": "Software de Lean Manufacturing y Mejora Continua",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Internacional",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.tulip.co",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "6.1"
+  },
+  {
+    "nombre": "Value Stream Mapping (VSM)",
+    "slug": "value-stream-mapping",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "El Value Stream Mapping (Mapeo del Flujo de Valor) es una técnica fundamental del Lean Manufacturing que analiza, diseñan y gestiona el flujo de materiales e información necesario para llevar un producto al cliente. Varios software especializados facilitan la creación y análisis de estos mapas. eVSM se destaca como el software especializado líder en VSM durante dos décadas, diseñado específicamente para profesionales Lean que necesitan precisión a nivel manufacturero. Proporciona bibliotecas de ",
+    "categoria": "Software de Lean Manufacturing y Mejora Continua",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Internacional",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.learnlean.in",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "6.2"
+  },
+  {
+    "nombre": "SMED (Single-Minute Exchange of Dies)",
+    "slug": "smed",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "El SMED (Cambio de Herramienta en un Solo Dígito de Minutos), desarrollado por Shigeo Shingo en Toyota, es una metodología fundamental del Lean Manufacturing que busca reducir los tiempos de cambio de producción a menos de 10 minutos. Si bien no existe software exclusivamente dedicado al SMED, múltiples plataformas integran funcionalidades específicas para facilitar su implementación. AVIX SMED es uno de los módulos especializados más completos, diseñado para reducir los tiempos de preparación d",
+    "categoria": "Software de Lean Manufacturing y Mejora Continua",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Internacional",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.smed.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "6.3"
+  },
+  {
+    "nombre": "Hoshin Kanri / Policy Deployment",
+    "slug": "hoshin-kanri-policy-deployment",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "El Hoshin Kanri (Gestión de la Dirección) es un método estructurado de planificación estratégica que asegura que los objetivos estratégicos de alto nivel se traduzcan en acciones concretas en todos los niveles de la organización. El término japonés \"Hoshin\" significa \"brújula\" o \"dirección\", mientras que \"Kanri\" significa \"gestión\" o \"control\". Este método se caracteriza por el proceso de \"catchball\", un diálogo iterativo donde la dirección comparte ideas con gerentes y personal, quienes devuelv",
+    "categoria": "Software de Lean Manufacturing y Mejora Continua",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Internacional",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.jampan.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "6.4"
+  },
+  {
+    "nombre": "Minitab",
+    "slug": "minitab",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Minitab es uno de los software estadísticos más reconocidos y utilizados en el ámbito de la calidad y la mejora de procesos Six Sigma. Desarrollado originalmente en 1972 en la Universidad Estatal de Pensilvania, Minitab proporciona un conjunto completo de herramientas estadísticas que facilitan el análisis de datos en todas las fases de la metodología DMAIC (Definir, Medir, Analizar, Mejorar, Controlar). Su interfaz intuitiva y su enfoque orientado a la calidad lo han convertido en el estándar d",
+    "categoria": "Software de Control de Calidad y Six Sigma",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": "State College"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.minitab.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "7.1"
+  },
+  {
+    "nombre": "JMP (SAS)",
+    "slug": "jmp",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "JMP, desarrollado por SAS Institute, es un software estadístico de alto rendimiento que ha sido utilizado principalmente por científicos e ingenieros para el diseño de experimentos (DOE), el soporte a la calidad y productividad (Six Sigma), y el modelado de la fiabilidad desde su lanzamiento en 1989. Originalmente desarrollado para aprovechar la interfaz gráfica de usuario del Apple Macintosh (de ahí su nombre original \"John's Macintosh Project\"), JMP se distingue por su enfoque en la visualizac",
+    "categoria": "Software de Control de Calidad y Six Sigma",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": "Cary"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.jmp.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "7.2"
+  },
+  {
+    "nombre": "Ellistat",
+    "slug": "ellistat",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "Ellistat se posiciona como un software de calidad plug & play para la industria de la ingeniería mecánica, diseñado por expertos en calidad dedicados a la optimización y el retorno de la inversión. Es un paquete único de software de calidad \"full web\" que centraliza y asegura todos los datos de producción en tiempo real, eliminando la necesidad de configuraciones complejas o mantenimiento pesado. Los usuarios pueden acceder a todas las herramientas desde un simple navegador web, con una arquitec",
+    "categoria": "Software de Control de Calidad y Six Sigma",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Francia",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.ellistat.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "7.3"
+  },
+  {
+    "nombre": "SigmaXL",
+    "slug": "sigmaxl",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean"
+    ],
+    "descripcion": "SigmaXL es un add-in de Excel ampliamente utilizado para análisis estadístico y gráfico en proyectos de mejora de calidad, Lean y Six Sigma. Su principal ventaja competitiva radica en su integración directa con la interfaz familiar de Microsoft Excel, eliminando la curva de aprendizaje asociada con software estadístico independiente y permitiendo a los usuarios aprovechar sus datos existentes en hojas de cálculo sin necesidad de importarlos a otra plataforma. SigmaXL proporciona herramientas est",
+    "categoria": "Software de Control de Calidad y Six Sigma",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Canadá",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.sigmaxl.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "7.4"
+  },
+  {
+    "nombre": "EAWS (Ergonomic Assessment Work Sheet)",
+    "slug": "eaws",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "El EAWS (Ergonomic Assessment Work Sheet) es una herramienta de evaluación ergonómica desarrollada específicamente para entornos de producción que permite evaluar el esfuerzo físico en el puesto de trabajo de manera estandarizada y cuantitativa. La herramienta integra múltiples factores de riesgo ergonómico incluyendo posturas forzadas, manipulación de cargas, movimientos repetitivos, fuerzas aplicadas y factores ambientales, proporcionando una puntuación global de riesgo que permite comparar di",
+    "categoria": "Software de Ergonomía Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Internacional",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://ergoweg.de",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "8.1"
+  },
+  {
+    "nombre": "Ergoniza (Ergonautas - UPV)",
+    "slug": "ergoniza",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "Ergoniza, desarrollada por Ergonautas de la Universitat Politècnica de València, es un software basado en la nube que integra más de 20 herramientas para la gestión de la ergonomía de los puestos de trabajo en la empresa. La plataforma permite evaluar todos los factores de riesgo ergonómico presentes en los puestos de trabajo, gestionar las evaluaciones y obtener informes editables y personalizables en formato Microsoft Word o Adobe PDF. Una característica distintiva de Ergoniza es su integració",
+    "categoria": "Software de Ergonomía Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Valencia"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://ergoniza.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "8.2"
+  },
+  {
+    "nombre": "RULA (Rapid Upper Limb Assessment)",
+    "slug": "rula",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "El RULA (Evaluación Rápida de Miembros Superiores) es un método de evaluación postural desarrollado para investigar la exposición a factores de riesgo ergonómico en los miembros superiores asociados con trastornos musculoesqueléticos (DME). El método evalúa específicamente las posturas del cuello, tronco, piernas, brazos, antebrazos y muñecas, así como la fuerza muscular y las actividades realizadas. Cada postura se puntúa según su desviación respecto a la postura neutra, y las puntuaciones indi",
+    "categoria": "Software de Ergonomía Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Internacional",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://ergonomics.com.au/rula",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "8.3"
+  },
+  {
+    "nombre": "REBA (Rapid Entire Body Assessment)",
+    "slug": "reba",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "El REBA (Evaluación Rápida de Todo el Cuerpo) es un método de evaluación postural que examina la postura de todo el cuerpo, incluyendo tronco, cuello, piernas, brazos, muñecas y agarre, para evaluar el riesgo de trastornos musculoesqueléticos en tareas que implican una variedad de posturas y actividades. A diferencia de RULA que se enfoca en miembros superiores, REBA evalúa el cuerpo completo y es especialmente útil para tareas que incluyen manipulación de cargas, posturas incómodas y actividade",
+    "categoria": "Software de Ergonomía Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Internacional",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.hse.gov.uk",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "8.4"
+  },
+  {
+    "nombre": "OWAS (Ovako Working Posture Analysing System)",
+    "slug": "owas",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "El OWAS (Sistema de Análisis de Posturas de Trabajo de Ovako) es uno de los métodos de evaluación postural más antiguos y ampliamente utilizados, desarrollado originalmente por un grupo de ergonomos, ingenieros y trabajadores de la industria del acero en Finlandia. OWAS evalúa las posturas de la espalda, brazos y piernas, así como la carga manipulada, clasificando las posturas observadas en 252 combinaciones posibles. Cada combinación se asigna a una Categoría de Riesgo de cuatro niveles que ind",
+    "categoria": "Software de Ergonomía Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Finlandia",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.owas.fi",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "8.5"
+  },
+  {
+    "nombre": "TeepTrak",
+    "slug": "teeptrak",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "TeepTrak es una plataforma de monitoreo de producción en tiempo real que proporciona la base de medición de OEE (Overall Equipment Effectiveness) que el TPM (Total Productive Maintenance) requiere para funcionar efectivamente. La plataforma captura el estado del equipo segundo a segundo a través de todas las 6 categorías de Grandes Pérdidas, proporcionando datos precisos sobre disponibilidad, rendimiento y calidad. Su sistema JEMBA AI realiza análisis automático de causas raíz para priorizar act",
+    "categoria": "Software de OEE, TPM y Mantenimiento Productivo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Francia",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.tptrak.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "9.1"
+  },
+  {
+    "nombre": "Vorne XL",
+    "slug": "vorne-xl",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Vorne XL es un sistema de monitoreo y mejora de producción diseñado como la forma más simple y rápida de monitorear y mejorar la producción, con un costo único de adquisición (no requiere suscripción mensual) y una instalación que toma solo un día. La plataforma ofrece una prueba gratuita de 90 días, permitiendo a los fabricantes evaluar su impacto antes de realizar cualquier inversión. Vorne XL se integra directamente con iniciativas de TPM y Lean Manufacturing, proporcionando visibilidad en ti",
+    "categoria": "Software de OEE, TPM y Mantenimiento Productivo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.vorne.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "9.2"
+  },
+  {
+    "nombre": "Fabrico",
+    "slug": "fabrico",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Fabrico se posiciona como la única plataforma diseñada para unificar nativamente los pilares centrales del TPM: OEE nativo, listas de verificación de mantenimiento autónomo digital (CILs) y CMMS preparado para el campo. La plataforma trata el TPM como un flujo de trabajo activo en lugar de una filosofía corporativa abstracta, utilizando la \"Tríada de Visibilidad\" para capturar el 100% de la verdad operacional. Cuando un operador identifica una deriva mecánica durante una ronda de mantenimiento a",
+    "categoria": "Software de OEE, TPM y Mantenimiento Productivo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.fabrico.ai",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "9.3"
+  },
+  {
+    "nombre": "Fiix (Rockwell Automation)",
+    "slug": "fiix",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee",
+      "lean"
+    ],
+    "descripcion": "Fiix, ahora parte de Rockwell Automation, es un robusto sistema CMMS (Computerized Maintenance Management System) de nivel empresarial que ha evolucionado para integrarse con el ecosistema de automatización Rockwell y soportar el pilar de Mantenimiento Planificado del TPM. La plataforma ofrece gestión completa de activos, programación de mantenimiento preventivo, gestión de órdenes de trabajo, seguimiento de inventario de repuestos y análisis de tendencias de mantenimiento. Su fortaleza radica e",
+    "categoria": "Software de OEE, TPM y Mantenimiento Productivo",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Canadá",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.fiixinc.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "9.4"
+  },
+  {
+    "nombre": "PlanetTogether",
+    "slug": "planettogether",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "PlanetTogether es un sistema APS (Advanced Planning and Scheduling) que proporciona programación de capacidad finita presentada en tableros Gantt visuales con capacidad de arrastrar y soltar, simulación de escenarios y restricciones de recursos detalladas. Con más de 20 años de resultados comprobados, PlanetTogether ha apoyado a fabricantes desde pequeñas operaciones hasta compañías Fortune 500. El sistema típicamente se conecta a ERPs para extraer datos maestros y acepta órdenes de trabajo y ru",
+    "categoria": "Software de Planificación y Scheduling Avanzado (APS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.planettogether.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "10.1"
+  },
+  {
+    "nombre": "Optessa",
+    "slug": "optessa",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "Optessa es un sistema de optimización de secuenciación basado en resolución de restricciones (constraint-driven optimizer) diseñado para problemas de secuenciación complejos donde las heurísticas manuales tienen dificultades para encontrar programaciones factibles y de alto rendimiento. La plataforma utiliza solvers de optimización matemática configurados para restricciones complejas como disponibilidad de herramientas, compartición de fixtures y minimización de cambios de formato. Optessa autom",
+    "categoria": "Software de Planificación y Scheduling Avanzado (APS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Canadá",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.optessa.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "10.2"
+  },
+  {
+    "nombre": "Accevo APS",
+    "slug": "accevo-aps",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "Accevo APS es un sistema de planificación y programación de producción que trabaja junto al ERP existente (SAP, Oracle, Microsoft) para transformar órdenes de producción aproximadas en programaciones detalladas y optimizadas. A diferencia de los ERP que manejan planificación básica con supuestos de capacidad infinita, Accevo APS utiliza programación de capacidad finita combinada con optimización por IA para equilibrar múltiples objetivos como reducción de tiempos de preparación y cumplimiento de",
+    "categoria": "Software de Planificación y Scheduling Avanzado (APS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Polonia",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.accevo.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "10.3"
+  },
+  {
+    "nombre": "GEPRO APS",
+    "slug": "gepro-aps",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "GEPRO APS es un software de planificación y programación de producción avanzada diseñado para crear un modelo de manufactura flexible y escalable, evitando quiebres de stock, cuellos de botella y retrasos que comprometen los tiempos de entrega a clientes. El sistema organiza los recursos de producción, asigna cargas de trabajo de manera inteligente y apoya la toma de decisiones para optimizar la eficiencia de la fábrica, adaptándose a todos los sectores industriales y siendo adecuado tanto para ",
+    "categoria": "Software de Planificación y Scheduling Avanzado (APS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "República Checa",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.gepro.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "10.4"
+  },
+  {
+    "nombre": "Siemens Opcenter APS",
+    "slug": "siemens-opcenter-aps",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "Siemens Opcenter APS (anteriormente Preactor) es una solución de planificación y programación avanzada que forma parte del portafolio de Siemens Digital Industries Software. La plataforma proporciona capacidades de programación de capacidad finita, programación basada en restricciones y optimización de secuencias para entornos de manufactura complejos. Opcenter APS se integra nativamente con el ecosistema Siemens incluyendo Teamcenter (PLM), Opcenter Execution (MES) y diversos sistemas ERP, prop",
+    "categoria": "Software de Planificación y Scheduling Avanzado (APS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Múnich"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.siemens.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "10.5"
+  },
+  {
+    "nombre": "Plex MES (Rockwell Automation)",
+    "slug": "plex-mes",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee"
+    ],
+    "descripcion": "Plex MES, ahora parte de Rockwell Automation, es una solución MES (Manufacturing Execution System) cloud-native, multi-tenant que proporciona gestión de producción en tiempo real, sin papel, para impulsar el cumplimiento, calidad y eficiencia a nivel empresarial. La plataforma ofrece visibilidad completa del ciclo de vida de la producción y conectividad total con el ERP, permitiendo automatizar tareas, prevenir errores, impulsar calidad en línea y sincronizar la dirección con el piso de planta. ",
+    "categoria": "Software de Manufacturing Execution System (MES)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.plex.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "11.1"
+  },
+  {
+    "nombre": "IQMS/DELMIAWorks",
+    "slug": "iqms-delmiaworks",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee"
+    ],
+    "descripcion": "DELMIAWorks (anteriormente IQMS) ofrece un ERP diseñado específicamente para manufactura, especialmente industrias de manufactura discreta y repetitiva, con una de las integraciones MES más robustas de su clase. La plataforma proporciona monitoreo fuerte de piso de planta y producción con recolección de datos en tiempo real desde máquinas, un sistema avanzado de gestión de calidad (QMS) con herramientas integradas de cumplimiento y trazabilidad, y soporte especializado para industrias de plástic",
+    "categoria": "Software de Manufacturing Execution System (MES)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.iqms.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "11.2"
+  },
+  {
+    "nombre": "Autodesk Prodsmart",
+    "slug": "autodesk-prodsmart",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee"
+    ],
+    "descripcion": "Autodesk Prodsmart es una solución MES enfocada en captura de datos de piso de planta en tiempo real y seguimiento a nivel de operador con capacidades básicas de programación y despacho. Su fortaleza principal radica en el seguimiento detallado de intervenciones manuales, captura de OEE y métricas de adherencia en tiempo real que proporcionan datos de verdad fundamental para calibrar sistemas APS más avanzados. Prodsmart es especialmente valioso para talleres que buscan visibilidad inmediata del",
+    "categoria": "Software de Manufacturing Execution System (MES)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": "San Francisco"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.autodesk.com/products/prodsmart",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "11.3"
+  },
+  {
+    "nombre": "MPDV HYDRA",
+    "slug": "mpdv-hydra",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee"
+    ],
+    "descripcion": "MPDV HYDRA es un sistema MES/MOM (Manufacturing Operations Management) completo que cubre todas las funciones de la gestión de operaciones de producción según la guía VDI 5600. La plataforma proporciona funcionalidades para la gestión de recursos (máquinas, herramientas, personal), gestión de órdenes de trabajo, control de producción, gestión de calidad, gestión de almacén y logística, y análisis de datos con KPIs y dashboards. HYDRA se caracteriza por su arquitectura modular que permite a las e",
+    "categoria": "Software de Manufacturing Execution System (MES)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.mpdv.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "11.4"
+  },
+  {
+    "nombre": "Autodesk Fusion",
+    "slug": "autodesk-fusion",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm"
+    ],
+    "descripcion": "Autodesk Fusion (anteriormente Fusion 360) es una plataforma completa de desarrollo de productos basada en la nube que combina CAD, CAM, CAE, PCB y gestión de datos (PDM/PLM) en una única herramienta colaborativa. Con más de 4.6 millones de profesionales que confían en la plataforma, Fusion permite a equipos conectar datos, personas y procesos para acelerar el ciclo de diseño a manufactura. La plataforma es única en la industria porque va más allá del modelado básico, incluyendo funciones de CAM",
+    "categoria": "Software de CAD/CAM/CAE para Manufactura",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": "San Francisco"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.autodesk.com/products/fusion-360",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "12.1"
+  },
+  {
+    "nombre": "Siemens NX",
+    "slug": "siemens-nx",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm"
+    ],
+    "descripcion": "Siemens NX es una plataforma integrada de diseño, ingeniería y manufactura que forma parte del ecosistema Xcelerator de Siemens. NX proporciona capacidades avanzadas de CAD paramétrico y directo, CAM de alta velocidad y precisión, CAE (análisis por elementos finitos) y gestión de datos de producto. La plataforma es especialmente reconocida por sus capacidades de CAM complejas que incluyen mecanizado de 5 ejes, torneado multi-spindle, programación de electroerosión por hilo (wire EDM) y mecanizad",
+    "categoria": "Software de CAD/CAM/CAE para Manufactura",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Múnich"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.plm.automation.siemens.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "12.2"
+  },
+  {
+    "nombre": "SolidWorks CAM",
+    "slug": "solidworks-cam",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm"
+    ],
+    "descripcion": "SolidWorks CAM es una solución de CAM totalmente integrada dentro del entorno SolidWorks CAD que proporciona programación CNC basada en reglas y reconocimiento de características automático. La integración nativa elimina la necesidad de exportar e importar archivos entre sistemas CAD y CAM separados, asegurando que cualquier cambio en el modelo se refleje automáticamente en las trayectorias de herramienta. SolidWorks CAM utiliza la base de datos de tolerancias del modelo para seleccionar automát",
+    "categoria": "Software de CAD/CAM/CAE para Manufactura",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Francia",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.solidworks.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "12.3"
+  },
+  {
+    "nombre": "Blue Yonder WMS",
+    "slug": "blue-yonder-wms",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "Blue Yonder WMS (anteriormente JDA Software) se posiciona como una de las plataformas de software WMS más innovadoras gracias al uso de inteligencia artificial y machine learning para predecir demandas, ajustar inventarios y reducir costos logísticos. El software ofrece análisis predictivos que ayudan a los responsables de almacén a tomar decisiones estratégicas, optimizando el uso de espacio en racks de picking, sistemas compactos o especializados. La plataforma se destaca por su capacidad de a",
+    "categoria": "Software de Gestión de Almacenes y Logística (WMS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://blueyonder.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "13.1"
+  },
+  {
+    "nombre": "SAP Extended Warehouse Management (EWM)",
+    "slug": "sap-extended-warehouse-management",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "SAP EWM es la solución de gestión de almacenes de nivel empresarial de SAP, diseñada para grandes corporaciones que buscan control total de la cadena de suministro. El sistema ofrece funcionalidades avanzadas para planificación, seguimiento y análisis de inventario, siendo compatible con procesos de automatización de racks dinámicos y compactos que mejoran la eficiencia operativa y reducen errores en la preparación de pedidos. SAP EWM proporciona visibilidad en tiempo real de todas las actividad",
+    "categoria": "Software de Gestión de Almacenes y Logística (WMS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Walldorf"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.sap.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "13.2"
+  },
+  {
+    "nombre": "Infor CloudSuite WMS",
+    "slug": "infor-cloudsuite-wms",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean"
+    ],
+    "descripcion": "Infor CloudSuite WMS es un sistema WMS totalmente basado en la nube que es altamente personalizable y se adapta a diferentes industrias, desde retail hasta automotriz. Su enfoque está en mejorar la experiencia del usuario y facilitar la integración con tecnologías móviles y sensores inteligentes, permitiendo a los operarios mayor control y seguridad, especialmente en almacenes que requieren precisión en el manejo de mercancías con racks industriales especializados. La plataforma ha sido moderniz",
+    "categoria": "Software de Gestión de Almacenes y Logística (WMS)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.infor.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "13.3"
+  },
+  {
+    "nombre": "Minitab Statistical Software",
+    "slug": "minitab-statistical-software",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje"
+    ],
+    "descripcion": "Minitab es una de las soluciones estadísticas más completas y accesibles para profesionales de la ingeniería industrial y la calidad. La plataforma ofrece un conjunto extenso de herramientas estadísticas que cubren desde análisis descriptivos básicos hasta técnicas avanzadas de modelado predictivo. Su interfaz intuitiva, organizada en menús temáticos (Stat, Graph, Editor, Calc, Assistant), facilita la navegación y aplicación de herramientas estadísticas sin necesidad de programación compleja, au",
+    "categoria": "Software Estadístico y Analítico para Ingeniería Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": "State College"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.minitab.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "14.1"
+  },
+  {
+    "nombre": "JMP Pro (SAS)",
+    "slug": "jmp-pro",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje"
+    ],
+    "descripcion": "JMP Pro es la versión avanzada de JMP que proporciona capacidades de modelado predictivo sofisticadas para entornos de ingeniería industrial donde el análisis de datos complejos es crítico. JMP Pro incluye todas las capacidades de JMP más funcionalidades avanzadas como modelado predictivo con validación cruzada, análisis de supervivencia y fiabilidad avanzado, modelos de efectos mixtos, análisis de datos funcionales, y capacidades de minería de datos con técnicas como Random Forest, Gradient Boo",
+    "categoria": "Software Estadístico y Analítico para Ingeniería Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": "Cary"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.jmp.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "14.2"
+  },
+  {
+    "nombre": "SigmaXL",
+    "slug": "sigmaxl",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje"
+    ],
+    "descripcion": "SigmaXL es un add-in de Excel diseñado específicamente para facilitar el análisis estadístico en proyectos de mejora de calidad, Lean y Six Sigma. Su integración directa con Excel elimina la necesidad de aprender una nueva interfaz de software, permitiendo a los usuarios aprovechar su familiaridad con hojas de cálculo mientras acceden a herramientas estadísticas sofisticadas. SigmaXL organiza sus herramientas en menús temáticos que siguen el ciclo DMAIC (Define, Measure, Analyze, Improve, Contro",
+    "categoria": "Software Estadístico y Analítico para Ingeniería Industrial",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Canadá",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.sigmaxl.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "14.3"
+  },
+  {
+    "nombre": "Siemens Tecnomatix Process Simulate",
+    "slug": "siemens-tecnomatix-process-simulate",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean"
+    ],
+    "descripcion": "Tecnomatix Process Simulate es un componente clave del portafolio de manufactura digital de Siemens que permite la simulación y validación de procesos de manufactura en un entorno virtual 3D. La plataforma permite a los ingenieros de manufactura planificar, simular y optimizar procesos de ensamblaje, soldadura, manipulación de materiales, logística y operaciones humanas antes de la implementación física. Process Simulate se integra directamente con Teamcenter para la gestión de datos de producto",
+    "categoria": "Software de Ingeniería Industrial Integrado y PLM de Manufactura",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Múnich"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.siemens.com/en-us/products/tecnomatix/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "15.1"
+  },
+  {
+    "nombre": "Dassault Systèmes DELMIA",
+    "slug": "dassault-syst-mes-delmia",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean"
+    ],
+    "descripcion": "DELMIA, parte de la plataforma 3DEXPERIENCE de Dassault Systèmes, ofrece un portafolio completo de soluciones para la planificación, simulación y operación de procesos de manufactura. Las soluciones de DELMIA abarcan desde la planificación de procesos y diseño de layouts hasta la programación de robots, simulación de operaciones humanas, y ejecución de operaciones en tiempo real. La plataforma se basa en el concepto del Virtual Twin Experience, que permite crear un modelo virtual completo del si",
+    "categoria": "Software de Ingeniería Industrial Integrado y PLM de Manufactura",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Francia",
+      "ciudad": "París"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.3ds.com/products/delmia/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "15.2"
+  },
+  {
+    "nombre": "Proplanner Assembly Planner (Advantive)",
+    "slug": "proplanner-assembly-planner",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "lean"
+    ],
+    "descripcion": "Proplanner Assembly Planner es una suite integral de herramientas de ingeniería de procesos de manufactura integradas a una base de datos que ayuda a los ingenieros a crear y gestionar información de procesos para mejorar sus operaciones de manufactura, con énfasis en tareas orientadas al ensamblaje. El conjunto de aplicaciones integradas de Proplanner incluye estimación de tiempos (soportando MTM, MOST, MODAPTS y tiempos observados), balanceo de líneas con interfaz tipo spreadsheet, instruccion",
+    "categoria": "Software de Ingeniería Industrial Integrado y PLM de Manufactura",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "Estados Unidos",
+      "ciudad": ""
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.advantive.com/products/proplanner/",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "15.3"
+  },
+  {
+    "nombre": "CRONOMETRAS — Software de Cronometraje Industrial",
+    "slug": "cronometras",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm",
+      "most",
+      "oee"
+    ],
+    "descripcion": "CRONOMETRAS es una aplicación profesional PWA (Progressive Web App) para el análisis de tiempos y movimientos diseñada por ingenieros industriales para ingenieros industriales. Desarrollada por ProdCont (España), representa una alternativa moderna y accesible a las soluciones tradicionales de cronometraje, ofreciendo funcionalidad completa desde cualquier dispositivo con navegador web y sincronización automática en la nube.",
+    "categoria": "Software Empresarial de Ingeniería Industrial (Ecosistema ProdCont)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@cronometras.com",
+      "telefono": "+34 619 58 82 39",
+      "web": "https://cronometras.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": true,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "16.1"
+  },
+  {
+    "nombre": "Worksamp — Software de Muestreo del Trabajo (Work Sampling)",
+    "slug": "worksamp",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm",
+      "most",
+      "oee"
+    ],
+    "descripcion": "Worksamp es una aplicación profesional PWA para realizar estudios de Muestreo del Trabajo (Work Sampling), la técnica de ingeniería industrial que permite analizar la distribución del tiempo laboral mediante observaciones aleatorias. Desarrollada por ProdCont, esta herramienta aplica metodología científica probada para que profesionales de la productividad puedan identificar tiempos improductivos y cuellos de botella con resultados estadísticamente válidos e intervalos de confianza.",
+    "categoria": "Software Empresarial de Ingeniería Industrial (Ecosistema ProdCont)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@cronometras.com",
+      "telefono": "+34 619 58 82 39",
+      "web": "https://worksamp.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": true,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "16.2"
+  },
+  {
+    "nombre": "Induly — Software de Control de Producción y Fichaje Industrial",
+    "slug": "induly",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm",
+      "most",
+      "oee"
+    ],
+    "descripcion": "Induly es una plataforma integral para el control de producción, fichaje industrial y gestión de la productividad diseñada para plantas de alta exigencia. Desarrollada por ProdCont, esta solución permite medir el rendimiento operativo y la rentabilidad en tiempo real, controlando el horario, midiendo la productividad y calculando costes de fabricación con precisión absoluta. Induly va más allá del simple control horario convencional al integrar la imputación de horas a órdenes de fabricación, pr",
+    "categoria": "Software Empresarial de Ingeniería Industrial (Ecosistema ProdCont)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@cronometras.com",
+      "telefono": "+34 619 58 82 39",
+      "web": "https://induly.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": true,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "16.3"
+  },
+  {
+    "nombre": "Balanceo de Líneas ProdCont — Optimizador de Balanceo de Líneas de Producción",
+    "slug": "balanceo-de-l-neas-prodcont",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "mtm",
+      "most",
+      "oee"
+    ],
+    "descripcion": "El Optimizador de Balanceo de Líneas de ProdCont es una herramienta especializada en el balanceo de líneas de producción (Line Balancing), una de las actividades fundamentales de la ingeniería industrial para maximizar la eficiencia de las líneas de ensamblaje. Esta aplicación permite distribuir las tareas de trabajo entre las diferentes estaciones de una línea de producción de manera óptima, minimizando los tiempos muertos y maximizando la utilización de los recursos.",
+    "categoria": "Software Empresarial de Ingeniería Industrial (Ecosistema ProdCont)",
+    "servicios": [],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Madrid"
+    },
+    "contacto": {
+      "email": "info@cronometras.com",
+      "telefono": "+34 619 58 82 39",
+      "web": "https://balanceo.prodcont.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": true,
+    "lang": "es",
+    "createdAt": "2026-04-22T10:00:00Z",
+    "sourceSection": "16.4"
+  }
+]

@@ -2,12 +2,50 @@
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Directorio">
+<Layout title="Directorio de Cronometraje Industrial" description="Explora el directorio de consultores, empresas y freelancers especializados en cronometraje industrial, MTM, MOST, OEE y Lean Manufacturing.">
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div id="directory-content">
-      <div class="text-center py-20">
-        <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
-        <p class="text-steel-400 mt-4">Cargando...</p>
+      <!-- Skeleton loader: simulates layout while Firestore loads -->
+      <div class="mb-10">
+        <div class="h-10 w-96 bg-steel-200 rounded animate-pulse mb-3"></div>
+        <div class="h-5 w-[32rem] bg-steel-100 rounded animate-pulse"></div>
+      </div>
+      <div class="flex border-b border-steel-200 mb-8 gap-1">
+        <div class="h-10 w-56 bg-steel-100 rounded-t animate-pulse"></div>
+        <div class="h-10 w-56 bg-steel-50 rounded-t animate-pulse"></div>
+      </div>
+      <div class="h-7 w-80 bg-steel-200 rounded animate-pulse mb-2"></div>
+      <div class="h-4 w-96 bg-steel-100 rounded animate-pulse mb-6"></div>
+      <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(() => (
+            <div>
+              <div class="h-4 w-20 bg-steel-200 rounded animate-pulse mb-2"></div>
+              <div class="h-10 w-full bg-steel-100 rounded-lg animate-pulse"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div class="h-4 w-24 bg-steel-100 rounded animate-pulse mb-4"></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1,2,3,4,5,6].map(() => (
+          <div class="bg-white rounded-xl shadow-md p-6">
+            <div class="flex items-start gap-4 mb-4">
+              <div class="w-14 h-14 bg-steel-200 rounded-lg animate-pulse"></div>
+              <div class="flex-1">
+                <div class="h-5 w-32 bg-steel-200 rounded animate-pulse mb-2"></div>
+                <div class="h-5 w-20 bg-steel-100 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            <div class="h-4 w-full bg-steel-100 rounded animate-pulse mb-2"></div>
+            <div class="h-4 w-3/4 bg-steel-100 rounded animate-pulse mb-3"></div>
+            <div class="flex gap-2 mb-3">
+              <div class="h-5 w-16 bg-steel-100 rounded animate-pulse"></div>
+              <div class="h-5 w-14 bg-steel-100 rounded animate-pulse"></div>
+            </div>
+            <div class="h-4 w-28 bg-steel-100 rounded animate-pulse"></div>
+          </div>
+        ))}
       </div>
     </div>
   </section>
@@ -17,6 +55,7 @@ import Layout from '../../layouts/Layout.astro';
     import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
     let lang: Lang = getLang();
+    let activeTab: 'consultores' | 'software' = 'consultores';
 
     async function load() {
       const tr = (k: string) => t(k, lang);
@@ -24,155 +63,225 @@ import Layout from '../../layouts/Layout.astro';
       const snapshot = await getDocs(
         query(collection(db, 'directorio_asetemyt'), orderBy('createdAt', 'desc'))
       );
-      let entries = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
-      // Filtrar por idioma
-      entries = entries.filter((e: any) => !e.lang || e.lang === lang);
+      let allEntries = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
+      allEntries = allEntries.filter((e: any) => !e.lang || e.lang === lang);
 
-      const tipos = [
+      const consultores = allEntries.filter((e: any) => !e.seccion || e.seccion === 'consultores');
+      const software = allEntries.filter((e: any) => e.seccion === 'software');
+
+      // Sort: destacado first
+      const sortByDestacado = (a: any, b: any) => (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0);
+      consultores.sort(sortByDestacado);
+      software.sort(sortByDestacado);
+
+      const tiposConsultores = [
         { value: 'empresa', label: lang === 'es' ? 'Empresas' : 'Companies' },
         { value: 'consultor', label: lang === 'es' ? 'Consultores' : 'Consultants' },
         { value: 'freelance', label: lang === 'es' ? 'Freelancers' : 'Freelancers' },
       ];
 
-      const paises = [...new Set(entries.map((e: any) => e.ubicacion?.pais).filter(Boolean))].sort();
+      const paisesConsultores = [...new Set(consultores.map((e: any) => e.ubicacion?.pais).filter(Boolean))].sort();
+      const paisesSoftware = [...new Set(software.map((e: any) => e.ubicacion?.pais).filter(Boolean))].sort();
       const especialidades = ['cronometraje', 'mtm', 'most', 'oee', 'lean'];
 
       const container = document.getElementById('directory-content')!;
-      container.innerHTML = `
-        <div class="mb-10">
-          <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">${tr('directoryTitle')}</h1>
-          <p class="text-steel-500 text-lg">${tr('directoryDesc')}</p>
-        </div>
 
-        <!-- Filters -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8" id="filters-container">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${tr('search')}</label>
-              <input type="text" id="search-input" placeholder="${lang === 'es' ? 'Nombre, especialidad...' : 'Name, specialty...'}"
-                class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${tr('type')}</label>
-              <select id="filter-tipo" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-                <option value="">${tr('all')}</option>
-                ${tipos.map((t) => `<option value="${t.value}">${t.label}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${tr('specialty')}</label>
-              <select id="filter-especialidad" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-                <option value="">${tr('allSpec')}</option>
-                ${especialidades.map((esp) => `<option value="${esp}">${esp.toUpperCase()}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${tr('country')}</label>
-              <select id="filter-ubicacion" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-                <option value="">${tr('allCountries')}</option>
-                ${paises.map((p) => `<option value="${(p as string).toLowerCase()}">${p}</option>`).join('')}
-              </select>
+      function renderTab(tab: 'consultores' | 'software') {
+        activeTab = tab;
+        const entries = tab === 'consultores' ? consultores : software;
+        const paises = tab === 'consultores' ? paisesConsultores : paisesSoftware;
+
+        const tabTitle = tab === 'consultores'
+          ? (lang === 'es' ? 'Directorio de Consultores y Profesionales' : 'Consultants & Professionals Directory')
+          : (lang === 'es' ? 'Directorio de Software Especializado' : 'Specialized Software Directory');
+
+        const tabDesc = tab === 'consultores'
+          ? (lang === 'es'
+            ? 'Consultores, empresas y freelancers especializados en ingeniería de métodos y tiempos.'
+            : 'Consultants, companies and freelancers specialized in methods and time engineering.')
+          : (lang === 'es'
+            ? 'Software profesional para cronometraje, MTM, balanceo de líneas, OEE, lean manufacturing y más.'
+            : 'Professional software for time study, MTM, line balancing, OEE, lean manufacturing and more.');
+
+        const tipos = tab === 'consultores'
+          ? tiposConsultores
+          : [
+              { value: 'empresa', label: lang === 'es' ? 'Software' : 'Software' },
+            ];
+
+        container.innerHTML = `
+          <div class="mb-10">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">${tr('directoryTitle')}</h1>
+            <p class="text-steel-500 text-lg">${tr('directoryDesc')}</p>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex border-b border-steel-200 mb-8">
+            <button id="tab-consultores"
+              class="px-6 py-3 text-sm font-semibold transition-colors ${activeTab === 'consultores'
+                ? 'border-b-2 border-accent-500 text-accent-600'
+                : 'text-steel-500 hover:text-steel-700'}">
+              ${lang === 'es' ? '👥 Consultores y Profesionales' : '👥 Consultants & Professionals'}
+              <span class="ml-2 text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded-full">${consultores.length}</span>
+            </button>
+            <button id="tab-software"
+              class="px-6 py-3 text-sm font-semibold transition-colors ${activeTab === 'software'
+                ? 'border-b-2 border-accent-500 text-accent-600'
+                : 'text-steel-500 hover:text-steel-700'}">
+              ${lang === 'es' ? '💻 Software Especializado' : '💻 Specialized Software'}
+              <span class="ml-2 text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded-full">${software.length}</span>
+            </button>
+          </div>
+
+          <!-- Section header -->
+          <div class="mb-6">
+            <h2 class="text-2xl font-bold text-primary-700 mb-2">${tabTitle}</h2>
+            <p class="text-steel-500">${tabDesc}</p>
+          </div>
+
+          <!-- Filters -->
+          <div class="bg-white rounded-xl shadow-md p-6 mb-8" id="filters-container">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-steel-600 mb-1">${tr('search')}</label>
+                <input type="text" id="search-input" placeholder="${lang === 'es' ? 'Nombre, especialidad...' : 'Name, specialty...'}"
+                  class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-steel-600 mb-1">${tr('type')}</label>
+                <select id="filter-tipo" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+                  <option value="">${tr('all')}</option>
+                  ${tipos.map((t) => `<option value="${t.value}">${t.label}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-steel-600 mb-1">${tr('specialty')}</label>
+                <select id="filter-especialidad" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+                  <option value="">${tr('allSpec')}</option>
+                  ${especialidades.map((esp) => `<option value="${esp}">${esp.toUpperCase()}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-steel-600 mb-1">${tr('country')}</label>
+                <select id="filter-ubicacion" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+                  <option value="">${tr('allCountries')}</option>
+                  ${paises.map((p) => `<option value="${(p as string).toLowerCase()}">${p}</option>`).join('')}
+                </select>
+              </div>
             </div>
           </div>
-        </div>
 
-        <p class="text-steel-500 mb-4" id="results-count">
-          ${entries.length} ${entries.length === 1 ? tr('result') : tr('results')}
-        </p>
+          <p class="text-steel-500 mb-4" id="results-count">
+            ${entries.length} ${entries.length === 1 ? tr('result') : tr('results')}
+          </p>
 
-        ${entries.length === 0 ? `
-          <div class="text-center py-20 bg-white rounded-xl shadow">
-            <svg class="w-16 h-16 mx-auto text-steel-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <p class="text-steel-400 text-lg">${tr('noEntries')}</p>
-            <a href="/anadir" class="inline-block mt-4 text-accent-600 hover:text-accent-700 font-semibold">${tr('addFirst')}</a>
-          </div>
-        ` : `
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="directory-grid">
-            ${entries.map((entry: any) => `
-              <a href="/directorio/${entry.slug}" class="directory-card bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group"
-                data-name="${(entry.nombre || '').toLowerCase()}"
-                data-tipo="${entry.tipo || ''}"
-                data-especialidades="${(entry.especialidades || []).join(',').toLowerCase()}"
-                data-ubicacion="${`${entry.ubicacion?.pais || ''} ${entry.ubicacion?.ciudad || ''}`.toLowerCase()}">
-                <div class="flex items-start gap-4 mb-4">
-                  ${entry.logo
-                    ? `<img src="${entry.logo}" alt="${entry.nombre}" class="w-14 h-14 rounded-lg object-cover shadow-sm" />`
-                    : `<div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl">${(entry.nombre || '?')[0].toUpperCase()}</div>`
-                  }
-                  <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">${entry.nombre}</h3>
-                    <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1 ${
-                      entry.tipo === 'empresa' ? 'bg-blue-100 text-blue-700' :
-                      entry.tipo === 'consultor' ? 'bg-green-100 text-green-700' :
-                      'bg-purple-100 text-purple-700'
-                    }">
-                      ${entry.tipo === 'empresa' ? tr('empresa') : entry.tipo === 'consultor' ? tr('consultor') : tr('freelancer')}
-                    </span>
-                    ${entry.lang ? `<span class="ml-1.5 text-xs bg-steel-100 text-steel-500 px-1.5 py-0.5 rounded">${entry.lang.toUpperCase()}</span>` : ''}
+          ${entries.length === 0 ? `
+            <div class="text-center py-20 bg-white rounded-xl shadow">
+              <svg class="w-16 h-16 mx-auto text-steel-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              <p class="text-steel-400 text-lg">${tr('noEntries')}</p>
+              <a href="/anadir" class="inline-block mt-4 text-accent-600 hover:text-accent-700 font-semibold">${tr('addFirst')}</a>
+            </div>
+          ` : `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="directory-grid">
+              ${entries.map((entry: any) => `
+                <a href="/directorio/${entry.slug}" class="directory-card bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group ${entry.destacado ? 'ring-2 ring-amber-400 border-amber-300' : ''}"
+                  data-name="${(entry.nombre || '').toLowerCase()}"
+                  data-tipo="${entry.tipo || ''}"
+                  data-especialidades="${(entry.especialidades || []).join(',').toLowerCase()}"
+                  data-ubicacion="${`${entry.ubicacion?.pais || ''} ${entry.ubicacion?.ciudad || ''}`.toLowerCase()}">
+                  <div class="flex items-start gap-4 mb-4">
+                    ${entry.logo
+                      ? `<img src="${entry.logo}" alt="${entry.nombre}" class="w-14 h-14 rounded-lg object-cover shadow-sm" />`
+                      : `<div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl">${(entry.nombre || '?')[0].toUpperCase()}</div>`
+                    }
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">${entry.nombre}</h3>
+                      <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1 ${
+                        entry.tipo === 'empresa' ? 'bg-blue-100 text-blue-700' :
+                        entry.tipo === 'consultor' ? 'bg-green-100 text-green-700' :
+                        'bg-purple-100 text-purple-700'
+                      }">
+                        ${entry.tipo === 'empresa' ? tr('empresa') : entry.tipo === 'consultor' ? tr('consultor') : tr('freelancer')}
+                      </span>
+                      ${entry.lang ? `<span class="ml-1.5 text-xs bg-steel-100 text-steel-500 px-1.5 py-0.5 rounded">${entry.lang.toUpperCase()}</span>` : ''}
+                    </div>
                   </div>
-                </div>
-                ${entry.descripcion ? `<p class="text-steel-500 text-sm line-clamp-2 mb-3">${entry.descripcion}</p>` : ''}
-                <div class="flex flex-wrap gap-1.5 mb-3">
-                  ${(entry.especialidades || []).slice(0, 3).map((esp: string) => `<span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded font-medium">${esp}</span>`).join('')}
-                </div>
-                <div class="flex items-center text-sm text-steel-400">
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  ${[entry.ubicacion?.ciudad, entry.ubicacion?.pais].filter(Boolean).join(', ') || tr('noLocation')}
-                </div>
-              </a>
-            `).join('')}
-          </div>
-        `}
-      `;
+                  ${entry.descripcion ? `<p class="text-steel-500 text-sm line-clamp-2 mb-3">${entry.descripcion}</p>` : ''}
+                  ${entry.destacado ? `<span class="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-full mb-3">⭐ ${lang === 'es' ? 'Nuestro proyecto' : 'Our project'}</span>` : ''}
+                  <div class="flex flex-wrap gap-1.5 mb-3">
+                    ${(entry.especialidades || []).slice(0, 3).map((esp: string) => `<span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded font-medium">${esp}</span>`).join('')}
+                  </div>
+                  <div class="flex items-center text-sm text-steel-400">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    ${[entry.ubicacion?.ciudad, entry.ubicacion?.pais].filter(Boolean).join(', ') || tr('noLocation')}
+                  </div>
+                </a>
+              `).join('')}
+            </div>
+          `}
+        `;
 
-      // Client-side filtering
-      const searchInput = document.getElementById('search-input') as HTMLInputElement;
-      const filterTipo = document.getElementById('filter-tipo') as HTMLSelectElement;
-      const filterEsp = document.getElementById('filter-especialidad') as HTMLSelectElement;
-      const filterLoc = document.getElementById('filter-ubicacion') as HTMLSelectElement;
-      const cards = document.querySelectorAll('.directory-card') as NodeListOf<HTMLElement>;
-      const countEl = document.getElementById('results-count');
+        // Tab buttons
+        document.getElementById('tab-consultores')?.addEventListener('click', () => renderTab('consultores'));
+        document.getElementById('tab-software')?.addEventListener('click', () => renderTab('software'));
 
-      function applyFilters() {
-        const search = searchInput?.value?.toLowerCase() || '';
-        const tipo = filterTipo?.value?.toLowerCase() || '';
-        const esp = filterEsp?.value?.toLowerCase() || '';
-        const loc = filterLoc?.value?.toLowerCase() || '';
+        // Client-side filtering
+        const searchInput = document.getElementById('search-input') as HTMLInputElement;
+        const filterTipo = document.getElementById('filter-tipo') as HTMLSelectElement;
+        const filterEsp = document.getElementById('filter-especialidad') as HTMLSelectElement;
+        const filterLoc = document.getElementById('filter-ubicacion') as HTMLSelectElement;
+        const cards = document.querySelectorAll('.directory-card') as NodeListOf<HTMLElement>;
+        const countEl = document.getElementById('results-count');
 
-        let visible = 0;
-        cards.forEach((card) => {
-          const name = card.dataset.name || '';
-          const cardTipo = card.dataset.tipo || '';
-          const cardEsp = card.dataset.especialidades || '';
-          const cardLoc = card.dataset.ubicacion || '';
+        function applyFilters() {
+          const search = searchInput?.value?.toLowerCase() || '';
+          const tipo = filterTipo?.value?.toLowerCase() || '';
+          const esp = filterEsp?.value?.toLowerCase() || '';
+          const loc = filterLoc?.value?.toLowerCase() || '';
 
-          const matchSearch = !search || name.includes(search) || cardEsp.includes(search);
-          const matchTipo = !tipo || cardTipo === tipo;
-          const matchEsp = !esp || cardEsp.includes(esp);
-          const matchLoc = !loc || cardLoc.includes(loc);
+          let visible = 0;
+          cards.forEach((card) => {
+            const name = card.dataset.name || '';
+            const cardTipo = card.dataset.tipo || '';
+            const cardEsp = card.dataset.especialidades || '';
+            const cardLoc = card.dataset.ubicacion || '';
 
-          const show = matchSearch && matchTipo && matchEsp && matchLoc;
-          card.style.display = show ? '' : 'none';
-          if (show) visible++;
-        });
+            const matchSearch = !search || name.includes(search) || cardEsp.includes(search);
+            const matchTipo = !tipo || cardTipo === tipo;
+            const matchEsp = !esp || cardEsp.includes(esp);
+            const matchLoc = !loc || cardLoc.includes(loc);
 
-        if (countEl) {
-          countEl.textContent = `${visible} ${visible === 1 ? tr('result') : tr('results')}`;
+            const show = matchSearch && matchTipo && matchEsp && matchLoc;
+            card.style.display = show ? '' : 'none';
+            if (show) visible++;
+          });
+
+          if (countEl) {
+            countEl.textContent = `${visible} ${visible === 1 ? tr('result') : tr('results')}`;
+          }
         }
+
+        searchInput?.addEventListener('input', applyFilters);
+        filterTipo?.addEventListener('change', applyFilters);
+        filterEsp?.addEventListener('change', applyFilters);
+        filterLoc?.addEventListener('change', applyFilters);
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('tipo') && filterTipo) filterTipo.value = params.get('tipo')!;
+        if (params.get('especialidad') && filterEsp) filterEsp.value = params.get('especialidad')!;
+        if (params.get('ubicacion') && filterLoc) filterLoc.value = params.get('ubicacion')!;
+        if (params.toString()) applyFilters();
       }
 
-      searchInput?.addEventListener('input', applyFilters);
-      filterTipo?.addEventListener('change', applyFilters);
-      filterEsp?.addEventListener('change', applyFilters);
-      filterLoc?.addEventListener('change', applyFilters);
-
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('tipo') && filterTipo) filterTipo.value = params.get('tipo')!;
-      if (params.get('especialidad') && filterEsp) filterEsp.value = params.get('especialidad')!;
-      if (params.get('ubicacion') && filterLoc) filterLoc.value = params.get('ubicacion')!;
-      if (params.toString()) applyFilters();
+      // Check URL hash for initial tab
+      const hash = window.location.hash;
+      if (hash === '#software') {
+        renderTab('software');
+      } else {
+        renderTab('consultores');
+      }
     }
 
     window.addEventListener('langChange', ((e: CustomEvent) => {

@@ -245,26 +245,28 @@ def process_entries():
 
             # Create in directorio_asetemyt
             create_url = f"{base_url}/directorio_asetemyt?documentId={slug}"
+            def to_firestore_value(v):
+                """Convert Python value back to Firestore REST format."""
+                if isinstance(v, bool):
+                    return {"booleanValue": v}
+                if isinstance(v, int):
+                    return {"integerValue": str(v)}
+                if isinstance(v, float):
+                    return {"doubleValue": v}
+                if isinstance(v, str):
+                    # Detect ISO timestamps (from convert_value reading timestampValue)
+                    if 'T' in v and ('Z' in v or '+' in v):
+                        return {"timestampValue": v}
+                    return {"stringValue": v}
+                if isinstance(v, list):
+                    return {"arrayValue": {"values": [to_firestore_value(i) for i in v]}}
+                if isinstance(v, dict):
+                    return {"mapValue": {"fields": {mk: to_firestore_value(mv) for mk, mv in v.items()}}}
+                return {"stringValue": str(v)}
+
             body = {"fields": {}}
             for k, v in entry.items():
-                if isinstance(v, str):
-                    body["fields"][k] = {"stringValue": v}
-                elif isinstance(v, bool):
-                    body["fields"][k] = {"booleanValue": v}
-                elif isinstance(v, int):
-                    body["fields"][k] = {"integerValue": str(v)}
-                elif isinstance(v, list):
-                    body["fields"][k] = {"arrayValue": {"values": [{"stringValue": str(i)} for i in v]}}
-                elif isinstance(v, dict):
-                    map_fields = {}
-                    for mk, mv in v.items():
-                        if isinstance(mv, str):
-                            map_fields[mk] = {"stringValue": mv}
-                        elif isinstance(mv, list):
-                            map_fields[mk] = {"arrayValue": {"values": [{"stringValue": str(i)} for i in mv]}}
-                    body["fields"][k] = {"mapValue": {"fields": map_fields}}
-                elif isinstance(v, str) and 'T' in v and 'Z' in v:
-                    body["fields"][k] = {"timestampValue": v}
+                body["fields"][k] = to_firestore_value(v)
 
             req = urllib.request.Request(create_url, data=json.dumps(body).encode(), headers=headers, method='POST')
             try:
@@ -274,7 +276,7 @@ def process_entries():
                 output_lines.append(f"  ⚠️ {nombre} error creando: {e}")
 
             # Delete from pending
-            del_url = f"{doc_name}"
+            del_url = f"{base_url}/pending_asetemyt/{doc_id}"
             req = urllib.request.Request(del_url, headers=headers, method='DELETE')
             try:
                 urllib.request.urlopen(req)
@@ -296,18 +298,7 @@ def process_entries():
             create_url = f"{base_url}/spam_asetemyt?documentId={slug}"
             body = {"fields": {}}
             for k, v in entry.items():
-                if isinstance(v, str):
-                    body["fields"][k] = {"stringValue": v}
-                elif isinstance(v, bool):
-                    body["fields"][k] = {"booleanValue": v}
-                elif isinstance(v, dict):
-                    map_fields = {}
-                    for mk, mv in v.items():
-                        if isinstance(mv, str):
-                            map_fields[mk] = {"stringValue": mv}
-                    body["fields"][k] = {"mapValue": {"fields": map_fields}}
-                elif isinstance(v, str) and 'T' in v:
-                    body["fields"][k] = {"timestampValue": v}
+                body["fields"][k] = to_firestore_value(v)
 
             req = urllib.request.Request(create_url, data=json.dumps(body).encode(), headers=headers, method='POST')
             try:
@@ -317,7 +308,7 @@ def process_entries():
                 output_lines.append(f"  ⚠️ {nombre} error: {e}")
 
             # Delete from pending
-            req = urllib.request.Request(f"{doc_name}", headers=headers, method='DELETE')
+            req = urllib.request.Request(f"{base_url}/pending_asetemyt/{doc_id}", headers=headers, method='DELETE')
             try:
                 urllib.request.urlopen(req)
             except:

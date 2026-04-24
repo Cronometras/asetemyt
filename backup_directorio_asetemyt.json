@@ -1,0 +1,1709 @@
+{
+  "collection": "directorio_asetemyt",
+  "project": "micaot-com",
+  "exported_at": "2026-04-13T09:47:56.691444Z",
+  "count": 57,
+  "documents": [
+    {
+      "_id": "Z2zo18RRSm4iXUhOGGmy",
+      "contacto": {
+        "web": "https://adamtec.es"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Firma de consultoría enfocada en la reducción de costes mediante técnicas de cronometraje industrial. Ayuda a mejorar la competitividad y la rentabilidad.",
+      "especialidades": [
+        "Reducción de Costes",
+        "Cronometraje Industrial",
+        "Consultoría de Productividad"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Adamtec",
+      "servicios": [
+        "Desarrollo de software industrial",
+        "Automatización de procesos",
+        "Soluciones tecnológicas para la industria",
+        "Integración de sistemas"
+      ],
+      "slug": "adamtec",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Madrid"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "Wc26COiQTyH5JpKzwVdQ",
+      "contacto": {
+        "web": "https://arram.net",
+        "email": "arramconsultores@arram.com",
+        "telefono": "+34 924 207 083"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Con más de 37 años de experiencia, referencia nacional e internacional en diseño, gestión y ejecución de proyectos industriales.",
+      "especialidades": [
+        "Ingeniería Industrial",
+        "Diseño de Proyectos",
+        "Gestión Industrial"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "ARRAM Consultores",
+      "servicios": [
+        "Consultoría en ingeniería",
+        "Estudios de tiempos",
+        "Optimización industrial",
+        "Proyectos de productividad"
+      ],
+      "slug": "arram-consultores",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Madrid"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "4RvIEK65gHiTK33Q4yCF",
+      "contacto": {
+        "telefono": "+34 646 535 025",
+        "email": "info@asocmtmesp.com",
+        "web": "https://asociacionmtm.es"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "La oficial Asociación MTM española. La única institución en España que puede emitir certificaciones oficiales del sistema MTM y acreditaciones para Técnicos e Instructores MTM.",
+      "especialidades": [
+        "Certificación MTM",
+        "Formación MTM",
+        "Estudio de Métodos y Tiempos",
+        "Normas"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Asociación Española MTM",
+      "servicios": [
+        "Certificación de analistas MTM",
+        "Formación MTM-1, MTM-2, MTM-SD",
+        "Asesoramiento en sistemas de tiempos predeterminados",
+        "Desarrollo de estándares MTM",
+        "Networking profesional de la ingeniería de métodos"
+      ],
+      "slug": "asociacion-espanola-mtm",
+      "tipo": "consultor",
+      "ubicacion": {
+        "ciudad": "Madrid",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "LrJwg0uVRLvWN3aBVCQ5",
+      "contacto": {
+        "web": "https://axsiumgroup.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Work measurement consulting firm. Offers Opus software for labor standards that supports MTM, MOST, and other predetermined motion time systems. Helps organizations increase accuracy of labor models.",
+      "especialidades": [
+        "work_measurement",
+        "opus_software",
+        "labor_standards",
+        "predetermined_motion_time_systems"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "Axsium Group",
+      "slug": "axsium-group",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Chicago, IL",
+        "pais": "USA"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "caprock-global-solutions",
+      "contacto": {
+        "telefono": "",
+        "linkedin": "",
+        "web": "https://caprockglobal.com",
+        "email": ""
+      },
+      "createdAt": "2026-04-13T08:10:11.133983Z",
+      "descripcion": "CapRock Global Solutions ofrece servicios de time and motion studies para optimización de procesos industriales. Consultora especializada en medición del trabajo y mejora continua.",
+      "especialidades": [
+        "metodos_y_tiempos",
+        "cronometraje",
+        "lean"
+      ],
+      "logo": "",
+      "nombre": "CapRock Global Solutions",
+      "servicios": [
+        "Time and motion studies",
+        "Consultoría de productividad",
+        "Análisis de procesos"
+      ],
+      "slug": "caprock-global-solutions",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "USA",
+        "direccion": "",
+        "ciudad": ""
+      },
+      "verificado": false
+    },
+    {
+      "_id": "HV8OYfFan571jrrnHGI2",
+      "contacto": {
+        "web": "http://cieps.com.mx"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Primera firma de consultoría de ingeniería en México. Trabaja en México y otros países como Corea del Sur, Filipinas, Tanzania, Argentina y Colombia. Se especializa en proyectos de ingeniería industrial.",
+      "especialidades": [
+        "Ingeniería Industrial",
+        "Consultoría en Manufactura",
+        "Ingeniería de Métodos"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "CIEPS Consultores",
+      "servicios": [
+        "Consultoría en ingeniería industrial",
+        "Estudios de tiempos y movimientos",
+        "Optimización de procesos",
+        "Formación en productividad"
+      ],
+      "slug": "cieps-consultores",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Ciudad de México",
+        "pais": "Mexico"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "JdcFNv0FKoSRfLJDJygn",
+      "contacto": {
+        "email": "cife@cifeaccion.com",
+        "web": "http://www.cifeaccion.com",
+        "telefono": "+34 93 467 65 51"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Ofrece servicios de formación y consultoría a empresas de todos los tamaños. Miembro de la Asociación Española MTM. Proporciona servicios de ingeniería de métodos y estudio de tiempos.",
+      "especialidades": [
+        "Formación MTM",
+        "Consultoría Industrial",
+        "Estudio de Métodos y Tiempos"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "CIFE ACCION, S.L.",
+      "servicios": [
+        "Consultoría en ingeniería industrial",
+        "Estudios de tiempos",
+        "Optimización de procesos productivos",
+        "Asesoramiento en productividad"
+      ],
+      "slug": "cife-accion-s-l",
+      "tipo": "consultor",
+      "ubicacion": {
+        "ciudad": "Barcelona",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "cWvv7nYrsI1mLGmBonTC",
+      "contacto": {
+        "web": "https://consultoracmi.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Firma consultora mexicana de ingeniería que proporciona servicios de ingeniería industrial y optimización de la manufactura.",
+      "especialidades": [
+        "Ingeniería Industrial",
+        "Consultoría",
+        "Manufactura"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "CMI Consultora Mexicana de Ingeniería",
+      "servicios": [
+        "Consultoría en ingeniería industrial",
+        "Estudios de tiempos",
+        "Optimización de procesos",
+        "Formación industrial"
+      ],
+      "slug": "cmi-consultora-mexicana-de-ingenieria",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Mexico",
+        "ciudad": "Ciudad de México"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "Nsg49lNprjzjTQ7gHrVv",
+      "contacto": {
+        "email": "info@cronometras.com",
+        "web": "https://cronometras.com",
+        "linkedin": "https://www.linkedin.com/company/cronometras",
+        "telefono": "+34 619 58 82 39"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Software PWA de cronometraje industrial para ingeniería de métodos y estudios de tiempos. Permite realizar análisis en tiempo real de operaciones industriales, generar informes automatizados y aplicar sistemas de tiempos predeterminados como MTM y MOST. Integración con Firebase para sincronización de datos y gestión de proyectos productivos.",
+      "especialidades": [
+        "estudio_de_tiempos_y_movimientos",
+        "mtm",
+        "cronometraje_industrial",
+        "most",
+        "software_industrial"
+      ],
+      "lang": "es",
+      "logo": "https://cronometras.com/favicon.ico",
+      "nombre": "Cronometras",
+      "servicios": [
+        "Cronometraje industrial y estudio de tiempos",
+        "Análisis de métodos y movimientos",
+        "Aplicación de sistemas MTM y MOST",
+        "Generación de informes automatizados",
+        "Gestión de proyectos productivos",
+        "Sincronización de datos en tiempo real"
+      ],
+      "slug": "cronometras",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Barcelona",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "Rp0Ho7FQpUGbSWgkH4xX",
+      "contacto": {
+        "web": "https://www.dimensia.es"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Firma de ingeniería logística especializada en diseño de almacenes y fábricas. Con más de 25 años de experiencia y más de 150 proyectos con software propio de cálculo y diseño.",
+      "especialidades": [
+        "Diseño de Almacenes",
+        "Diseño de Fábricas",
+        "Ingeniería Logística",
+        "Optimización de Procesos"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Dimensia Ingeniería Logística",
+      "servicios": [
+        "Consultoría en ingeniería logística",
+        "Optimización de cadenas de suministro",
+        "Diseño de almacenes",
+        "Estudios de tiempos logísticos"
+      ],
+      "slug": "dimensia-ingenieria-logistica",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Madrid",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "020JuNz0q2MxK2QKqpcV",
+      "contacto": {
+        "web": "https://directoingenieria.com",
+        "email": "directo@directoingenieria.com",
+        "telefono": "981534266"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Firma de consultoría de ingeniería que proporciona asesoramiento y soluciones técnicas para ayudar a los clientes a mejorar y optimizar sus proyectos.",
+      "especialidades": [
+        "Consultoría en Ingeniería",
+        "Optimización de Procesos",
+        "Ingeniería Industrial"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Directo Ingeniería",
+      "servicios": [
+        "Estudios de tiempos y movimientos",
+        "Medición del trabajo",
+        "Análisis de métodos",
+        "Consultoría Lean Manufacturing"
+      ],
+      "slug": "directo-ingenieria",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Lima",
+        "pais": "Peru"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "KuXG4fhYJxskSGaW1Kt9",
+      "contacto": {
+        "telefono": "+34 630 485 050",
+        "email": "diego.rojas@drconsultoria.es",
+        "web": "https://www.drconsultoria.es"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Se especializa en cronometraje industrial que detecta actividades que aportan valor frente al despilfarro, optimiza métodos de trabajo y reduce tiempos de operación de forma realista.",
+      "especialidades": [
+        "cronometraje_industrial",
+        "lean",
+        "estudio_de_métodos_y_tiempos"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "DR Consultoría",
+      "servicios": [
+        "Estudios de tiempos y movimientos",
+        "Análisis de métodos",
+        "Consultoría en productividad industrial",
+        "Formación en ingeniería de métodos"
+      ],
+      "slug": "dr-consultoria",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Barcelona",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "empresa-test-hermes",
+      "contacto": {
+        "web": "",
+        "email": "test@test.com",
+        "linkedin": "",
+        "telefono": ""
+      },
+      "createdAt": "2026-04-13T09:26:34.346Z",
+      "descripcion": "Empresa de prueba para verificar el formulario de alta en el directorio ASETEMYT.",
+      "especialidades": [
+        "cronometraje"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Empresa Test Hermes",
+      "reviewedAt": "2026-04-13T09:30:28.015310Z",
+      "servicios": [],
+      "slug": "empresa-test-hermes",
+      "status": "approved",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "España",
+        "direccion": "",
+        "ciudad": "Barcelona"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "7mFZWzisinaNQu929f6V",
+      "contacto": {
+        "web": "https://ergotime.com",
+        "telefono": "+33 2 30 31 01 20"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Ofrece experiencia en diseño de puestos de trabajo, optimización de líneas de producción y metodologías Lean Manufacturing. Servicios incluyen formación, consultoría y auditorías.",
+      "especialidades": [
+        "diseño_de_puestos_de_trabajo",
+        "kanban",
+        "smed",
+        "lean",
+        "optimización_de_líneas_de_producción"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Ergotime",
+      "servicios": [
+        "Software de medición de tiempos",
+        "Análisis ergonómico de puestos",
+        "Estudios de productividad",
+        "Consultoría en ingeniería de métodos industriales"
+      ],
+      "slug": "ergotime",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": ""
+      },
+      "verificado": true
+    },
+    {
+      "_id": "faber-infinite",
+      "contacto": {
+        "web": "https://faberinfinite.com",
+        "email": "Consulting@faberinfinite.com",
+        "linkedin": "https://www.linkedin.com/company/faber-infinite-creative-solutions-pvt-ltd/",
+        "telefono": "+91-9909929830"
+      },
+      "createdAt": "2026-04-13T08:23:29.166031Z",
+      "descripcion": "Faber Infinite Creative Solutions Pvt. Ltd. es una firma de consultoría empresarial con sede en Vadodara (Gujarat, India). Especialistas en lean management, estudios de tiempo y movimiento, mejora continua y optimización de productividad industrial.",
+      "especialidades": [
+        "lean",
+        "metodos_y_tiempos",
+        "cronometraje",
+        "kaizen"
+      ],
+      "logo": "",
+      "nombre": "Faber Infinite",
+      "servicios": [
+        "Lean management consulting",
+        "Time and motion study",
+        "Consultoría empresarial",
+        "Mejora continua y Kaizen",
+        "Formación en productividad"
+      ],
+      "slug": "faber-infinite",
+      "tipo": "empresa",
+      "ubicacion": {
+        "direccion": "",
+        "pais": "India",
+        "ciudad": "Vadodara, Gujarat"
+      },
+      "verificado": false
+    },
+    {
+      "_id": "Pjen3KvnNX5Qp3BREnVI",
+      "contacto": {
+        "web": "https://faberinfinite.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Time and motion study experts providing manpower productivity consulting. Operates in Egypt and other international markets. Offers factory optimization services.",
+      "especialidades": [
+        "manpower_productivity",
+        "lean",
+        "industrial_engineering",
+        "time_&_motion_study"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "Faber Infinite Consulting",
+      "slug": "faber-infinite-consulting",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "El Cairo",
+        "pais": "Egypt"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "dqn5qXwoI0S7T71anTVa",
+      "contacto": {
+        "web": "https://www.gmtms.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Associate Partner of the MTM ASSOCIATION providing MTM Training, Software, and Solutions to increase productivity within manufacturing.",
+      "especialidades": [
+        "MTM Training",
+        "MTM Software",
+        "MTM Solutions",
+        "Manufacturing Productivity"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "Global MTM Services (GMTMS)",
+      "slug": "global-mtm-services-gmtms",
+      "tipo": "consultor",
+      "ubicacion": {
+        "pais": "USA",
+        "ciudad": ""
+      },
+      "verificado": true
+    },
+    {
+      "_id": "grupo-itemsa",
+      "contacto": {
+        "email": "info@grupoitemsa.com",
+        "web": "https://www.grupoitemsa.com",
+        "linkedin": "",
+        "telefono": "+34 93 363 6300"
+      },
+      "createdAt": "2026-04-13T08:23:29.166023Z",
+      "descripcion": "Grupo ITEMSA es una consultora industrial con sede en Barcelona especializada en estudio del trabajo, cronometraje industrial y productividad. Ofrecen servicios de consultoría, formación y certificación. Consultores acreditados por ACCIÓ. Desarrollan la herramienta Approductivity4.0.",
+      "especialidades": [
+        "cronometraje",
+        "formacion",
+        "mtm",
+        "lean",
+        "metodos_y_tiempos"
+      ],
+      "logo": "",
+      "nombre": "Grupo Itemsa",
+      "servicios": [
+        "Estudio de tiempos mediante cronometraje",
+        "Estudio del trabajo y cronometraje industrial",
+        "Técnicas de productividad",
+        "Formación en productividad industrial",
+        "Consultoría de producción y procesos",
+        "AppProductivity 4.0 (software de productividad)"
+      ],
+      "slug": "grupo-itemsa",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "direccion": "Rambla Catalunya",
+        "ciudad": "Barcelona"
+      },
+      "verificado": false
+    },
+    {
+      "_id": "f7hvL2M4vtJOI4FyLIlA",
+      "contacto": {
+        "email": "info@cronometras.com",
+        "web": "https://induly.com",
+        "linkedin": "https://www.linkedin.com/company/induly",
+        "telefono": "+34 619 58 82 39"
+      },
+      "createdAt": "2026-04-12T23:37:46.485Z",
+      "descripcion": "Plataforma de control de producción y seguimiento de fichadas industriales. Ofrece herramientas para monitorizar la actividad productiva en tiempo real, gestionar turnos y obtener métricas de rendimiento por línea de producción.",
+      "especialidades": [
+        "Control de Producción",
+        "Gestión de Fichadas Industriales",
+        "Monitorización en Tiempo Real",
+        "Métricas de Rendimiento",
+        "Software Industrial"
+      ],
+      "lang": "es",
+      "logo": "https://induly.com/favicon.ico",
+      "nombre": "Induly",
+      "servicios": [
+        "Control de producción en tiempo real",
+        "Gestión de fichadas y turnos",
+        "Métricas y KPIs productivos",
+        "Integración con sistemas ERP",
+        "Dashboard de producción"
+      ],
+      "slug": "induly",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Barcelona",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "sGTtd621Ve9P1mLGnXJ5",
+      "contacto": {
+        "web": "https://industrialtimestudy.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Full-service management consulting and training firm specializing in work measurement. Committed to improving productivity, reducing costs, and providing practical solutions.",
+      "especialidades": [
+        "productivity_improvement",
+        "work_measurement",
+        "management_consulting",
+        "time_study"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "Industrial Timestudy Institute (ITI)",
+      "slug": "industrial-timestudy-institute-iti",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "USA",
+        "ciudad": ""
+      },
+      "verificado": true
+    },
+    {
+      "_id": "rD763SpOeat4aoMEgpNq",
+      "contacto": {
+        "telefono": "+34 656 992 405",
+        "web": "https://infinitia.es"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Consultoría industrial 360 grados con la metodología SOLUCIONA-MEJORA-CREA. Ayuda a alcanzar objetivos de producción mediante ingeniería industrial.",
+      "especialidades": [
+        "Consultoría Industrial",
+        "Mejora de Procesos",
+        "Servicios de Ingeniería"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Infinitia Industrial Consulting",
+      "servicios": [
+        "Consultoría en ingeniería industrial",
+        "Estudios de tiempos y métodos",
+        "Optimización de procesos productivos",
+        "Formación en productividad"
+      ],
+      "slug": "infinitia-industrial-consulting",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Zaragoza"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "ipyc-consultoria",
+      "contacto": {
+        "web": "https://ipyc.es",
+        "email": "info@ipyc.es",
+        "linkedin": "https://www.linkedin.com/company/ipyc-ingenieros/",
+        "telefono": "+34 96 555 52 45"
+      },
+      "createdAt": "2026-04-13T08:10:11.133981Z",
+      "descripcion": "IPYC Ingenieros de Calidad y Producción es una consultora multidisciplinar con más de 25 años de experiencia desde 1998. Equipo de profesionales, ingenieros, biólogos y técnicos especializados en organización industrial, mejora de procesos, estudio de métodos y tiempos, calidad, medio ambiente y seguridad alimentaria.",
+      "especialidades": [
+        "metodos_y_tiempos",
+        "cronometraje",
+        "lean",
+        "calidad"
+      ],
+      "logo": "",
+      "nombre": "IPYC Consultoría",
+      "servicios": [
+        "Estudio de métodos y tiempos",
+        "Organización, mejora de procesos y gestión de costes",
+        "Calidad y normalización",
+        "Consultoría ambiental",
+        "Seguridad alimentaria y cosmética",
+        "Formación industrial"
+      ],
+      "slug": "ipyc-consultoria",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "direccion": "",
+        "ciudad": "Alicante"
+      },
+      "verificado": false
+    },
+    {
+      "_id": "npeI15v9mndDLafRBell",
+      "contacto": {
+        "telefono": "+34 976 20 34 62",
+        "email": "itemsa@grupoitemsa.com",
+        "web": "https://www.grupoitemsa.com",
+        "linkedin": "https://www.linkedin.com/company/itemsa"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Fundada en 1988. Miembro de la red internacional One-MTM. Ofrece formación MTM, consultoría industrial y servicios de mejora de la productividad. Una de las principales firmas consultoras MTM en Europa con más de 35 años de experiencia.",
+      "especialidades": [
+        "consultoría_de_productividad",
+        "mtm",
+        "estudio_de_métodos_y_tiempos",
+        "lean",
+        "ingeniería_industrial"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "ITEMSA (MTM Specialist Technical Institute)",
+      "servicios": [
+        "Formación MTM certificada",
+        "Consultoría en tiempos predeterminados",
+        "Implementación de sistemas MTM",
+        "Asesoramiento en ingeniería de métodos"
+      ],
+      "slug": "itemsa-mtm-specialist-technical-institute",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Zaragoza"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "kFWpKb4h9uYCFi1mE2QM",
+      "contacto": {
+        "telefono": "+34 91 366 34 22",
+        "web": "http://www.kanban.es"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Firma de consultoría que ofrece sistemas MTM 1 y 2 (Medición de Tiempos y Métodos) y MOST para la determinación de tiempos estándar. Se especializa en la optimización de procesos de producción.",
+      "especialidades": [
+        "estudio_de_métodos_y_tiempos",
+        "mtm-2",
+        "mejora_de_procesos",
+        "most",
+        "mtm-1"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Kanban Asesores",
+      "servicios": [
+        "Consultoría Kanban",
+        "Implementación de Lean Manufacturing",
+        "Gestión visual de la producción",
+        "Optimización de flujo de trabajo"
+      ],
+      "slug": "kanban-asesores",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Madrid",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "Is13LC5dUrmj9pp25nx7",
+      "contacto": {
+        "web": "https://knowindustrialengineering.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Provides time study and motion study consulting services. Understands the pivotal role of efficient time and motion management in organizational success.",
+      "especialidades": [
+        "industrial_consulting",
+        "lean",
+        "motion_study",
+        "time_study"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "Know Industrial Engineering (Factovare LLP)",
+      "slug": "know-industrial-engineering-factovare-llp",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "India",
+        "ciudad": "Vadodara"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "kp-asociados-metodos-y-tiempos",
+      "contacto": {
+        "telefono": "+34 649277721",
+        "web": "https://www.kpasociados.es",
+        "email": "kpasociados@gmail.com",
+        "linkedin": ""
+      },
+      "createdAt": "2026-04-13T08:10:11.133982Z",
+      "descripcion": "Consultoría especializada en procesos, tiempos, productividad y cronometraje industrial. Servicios de análisis y medición de tiempos para optimización de procesos productivos.",
+      "especialidades": [
+        "cronometraje",
+        "metodos_y_tiempos",
+        "productividad"
+      ],
+      "logo": "",
+      "nombre": "KP Asociados Métodos y Tiempos",
+      "servicios": [
+        "Cronometraje industrial",
+        "Estudio de procesos y tiempos",
+        "Consultoría de productividad"
+      ],
+      "slug": "kp-asociados-metodos-y-tiempos",
+      "tipo": "freelance",
+      "ubicacion": {
+        "ciudad": "",
+        "pais": "Spain",
+        "direccion": ""
+      },
+      "verificado": false
+    },
+    {
+      "_id": "q5egYGXirpqFJTfc4FQb",
+      "contacto": {
+        "linkedin": "https://www.linkedin.com/company/mtm-association",
+        "email": "info@mtm.org",
+        "web": "https://mtm.org"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "The global copyright owner of MTM systems (MTM-1, MTM-2, MTM-HWD, MTM-SD, MTM-UAS, MTM-Logistics, MTM-MEK, EAWS). Develops MTM products and services in training, consulting, software, and research.",
+      "especialidades": [
+        "MTM Systems",
+        "MTM Training",
+        "Standards Development",
+        "Ergonomics"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "MTM Association e.V.",
+      "slug": "mtm-association-e-v",
+      "tipo": "consultor",
+      "ubicacion": {
+        "pais": "Germany",
+        "ciudad": "Hamburg"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "4j2mLBxayBsbkDopx6wC",
+      "contacto": {
+        "linkedin": "https://www.linkedin.com/company/mtm-ingenieros",
+        "email": "info@mtmingenieros.com",
+        "web": "https://mtmingenieros.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Especialistas en organización industrial con técnicas MTM. Ofrece servicios de ingeniería, formación y consultoría en ingeniería de producción. Centro oficial de formación MTM. Miembro de la Asociación Española MTM.",
+      "especialidades": [
+        "logística",
+        "cronometraje",
+        "mtm",
+        "lean",
+        "organización_industrial"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "MTM Ingenieros",
+      "servicios": [
+        "Aplicación industrial de sistemas MTM",
+        "Análisis de procesos con tiempos predeterminados",
+        "Optimización de líneas de montaje",
+        "Consultoría en ingeniería de métodos"
+      ],
+      "slug": "mtm-ingenieros",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Bilbao"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "gEMf1KyqKHWkakghpQWb",
+      "contacto": {
+        "telefono": "+1 847 299 0179",
+        "linkedin": "https://in.linkedin.com/company/mtmproductivity",
+        "web": "https://mtmproductivity.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "USA-based company offering MTM systems training, productivity consulting, and software sales/support. Subsidiary of German MTM-Gesellschaft mbH. Offers certified training in e-learning, classroom, and webinar formats.",
+      "especialidades": [
+        "MTM Systems",
+        "MTM Training",
+        "Productivity Consulting",
+        "MTM Software"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "MTM Productivity Services Corporation",
+      "slug": "mtm-productivity-services-corporation",
+      "tipo": "consultor",
+      "ubicacion": {
+        "ciudad": "Charlotte, NC",
+        "pais": "USA"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "mtm-productivity-services",
+      "contacto": {
+        "telefono": "+1 (214)-717-3052",
+        "linkedin": "",
+        "web": "https://mtmproductivity.com",
+        "email": "info@mtmproductivity.com"
+      },
+      "createdAt": "2026-04-13T08:23:29.166028Z",
+      "descripcion": "MTM Productivity Services Corporation es una consultora con sede en Dallas (Texas, USA) especializada en sistemas MTM (Methods-Time Measurement). Ofrecen consultoría de productividad basada en tiempos predeterminados MTM, implementación de sistemas MTM y formación en esta metodología.",
+      "especialidades": [
+        "productividad",
+        "metodos_y_tiempos",
+        "mtm"
+      ],
+      "logo": "",
+      "nombre": "MTM Productivity Services Corporation",
+      "servicios": [
+        "Consultoría MTM (Methods-Time Measurement)",
+        "Implementación de sistemas MTM",
+        "Productividad consulting",
+        "Formación en MTM"
+      ],
+      "slug": "mtm-productivity-services",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Dallas, Texas",
+        "direccion": "",
+        "pais": "USA"
+      },
+      "verificado": false
+    },
+    {
+      "_id": "nexus-industrial",
+      "contacto": {
+        "telefono": "",
+        "linkedin": "",
+        "web": "https://nexusindustrial.es",
+        "email": "nexus@nexusindustrial.es"
+      },
+      "createdAt": "2026-04-13T08:10:11.133979Z",
+      "descripcion": "Consultora industrial en Zaragoza especializada en estudios de métodos y tiempos con instructores homologados. Amplia experiencia en cronometraje y tiempos predeterminados (MTM-1, MTM-2, MOST, UAS). Ofrecen servicios de consultoría en productividad, diseño de líneas de montaje y sistemas de incentivos. Homologados por el Instituto Aragonés de Fomento (IAF).",
+      "especialidades": [
+        "cronometraje",
+        "mtm",
+        "lean",
+        "most",
+        "metodos_y_tiempos",
+        "uas"
+      ],
+      "logo": "",
+      "nombre": "Nexus Industrial",
+      "servicios": [
+        "Estudios de métodos y tiempos (cronometraje)",
+        "Tiempos predeterminados: MTM-1, MTM-2, MOST, UAS",
+        "Auditorías de productividad y rendimiento de mano de obra directa",
+        "Diseño y equilibrado de líneas de montaje",
+        "Implantación de sistemas de retribución por incentivos",
+        "Peritación en conflictos de asignación de tiempos",
+        "Consultoría de mejora continua y gestión de producción"
+      ],
+      "slug": "nexus-industrial",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Zaragoza",
+        "pais": "Spain",
+        "direccion": ""
+      },
+      "verificado": false
+    },
+    {
+      "_id": "MfOtlEXFLsOW8Ko6lhF5",
+      "contacto": {
+        "web": "https://one-mtm.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "International MTM partner network supporting industrial and logistics companies in the standardized application and implementation of MTM methodology. Provides e-learning and consulting.",
+      "especialidades": [
+        "MTM Methodology",
+        "Standardized Application",
+        "International MTM Partners"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "One-MTM",
+      "slug": "one-mtm",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Hamburg",
+        "pais": "Germany"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "7ayTfQVa6MnmpVmm6Pyc",
+      "contacto": {
+        "web": "https://pmcorp.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Over 30 years offering reliable and accurate work measurement services. Started in automotive manufacturing, now expanded to multiple service industries. Offers work sampling and time study consulting.",
+      "especialidades": [
+        "productivity_improvement",
+        "work_measurement",
+        "modapts",
+        "time_&_motion_study",
+        "industrial_engineering"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "PMC (Productivity Management Consultants)",
+      "slug": "pmc-productivity-management-consultants",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Detroit, Michigan",
+        "pais": "USA"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "pmc",
+      "contacto": {
+        "telefono": "+1 313-441-4460",
+        "linkedin": "",
+        "email": "",
+        "web": "https://pmcorp.com"
+      },
+      "createdAt": "2026-04-13T08:23:29.166027Z",
+      "descripcion": "Productivity Management Corporation - Consultora de ingeniería industrial con sede en Detroit (Michigan, USA). Ofrece servicios de medición del trabajo (work measurement), ingeniería industrial y consultoría de operaciones para optimizar procesos productivos.",
+      "especialidades": [
+        "metodos_y_tiempos",
+        "cronometraje",
+        "productividad"
+      ],
+      "logo": "",
+      "nombre": "PMC (Productivity Management Corporation)",
+      "servicios": [
+        "Work measurement",
+        "Ingeniería industrial y consultoría de operaciones",
+        "Estudio de métodos y tiempos",
+        "Optimización de procesos"
+      ],
+      "slug": "pmc",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Detroit, Michigan",
+        "pais": "USA",
+        "direccion": ""
+      },
+      "verificado": false
+    },
+    {
+      "_id": "dTnQ2Vrpx9mwmJlC3Ci7",
+      "contacto": {
+        "web": "https://pmicorp.in"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Provides time and motion study consulting including MOST and MODAPTS time study consulting. Offers work sampling, lean manufacturing consulting, and operational excellence services.",
+      "especialidades": [
+        "lean",
+        "work_sampling",
+        "modapts",
+        "time_&_motion_study",
+        "most_time_study"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "PMI Corp (India)",
+      "slug": "pmi-corp-india",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Gujarat",
+        "pais": "India"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "LOw4Y1X3L3JS1Tg6nNTZ",
+      "contacto": {
+        "telefono": "+34 619 58 82 39",
+        "web": "https://prodcont.com",
+        "email": "info@cronometras.com",
+        "linkedin": "https://www.linkedin.com/company/prodcont"
+      },
+      "createdAt": "2026-04-12T23:37:46.413Z",
+      "descripcion": "Empresa española especializada en soluciones de productividad y control de producción industrial. Desarrolla herramientas digitales para la ingeniería de métodos, medición del trabajo y optimización de procesos productivos.",
+      "especialidades": [
+        "Ingeniería de Métodos",
+        "Control de Producción",
+        "Productividad Industrial",
+        "Desarrollo de Software Industrial",
+        "Consultoría Lean Manufacturing"
+      ],
+      "lang": "es",
+      "logo": "https://prodcont.com/favicon.ico",
+      "nombre": "ProdCont",
+      "servicios": [
+        "Consultoría en ingeniería de métodos",
+        "Desarrollo de software industrial a medida",
+        "Implementación de sistemas de control de producción",
+        "Formación en métodos y tiempos",
+        "Optimización de procesos productivos"
+      ],
+      "slug": "prodcont",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Barcelona"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "8DfneDnPQDMQ0yJ9H7hk",
+      "contacto": {
+        "web": "https://productivityteam.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Provides comprehensive information and services on predetermined time studies (MOST, MTM, MODAPTS). Essential tools in engineering for establishing standard times and improving productivity.",
+      "especialidades": [
+        "mtm",
+        "modapts",
+        "most",
+        "predetermined_time_studies",
+        "industrial_engineering"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "ProductionTeam (TPT)",
+      "slug": "productionteam-tpt",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "",
+        "pais": "USA"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "productividad-industrial",
+      "contacto": {
+        "telefono": "",
+        "linkedin": "",
+        "web": "https://www.productividadindustrial.com",
+        "email": "administracion@productividadindustrial.com"
+      },
+      "createdAt": "2026-04-13T08:23:29.166024Z",
+      "descripcion": "Joaquín Sáenz Múgica - Consultor de productividad industrial con 30 años de experiencia asesorando empresas. Especialista en estudio y medida del trabajo, análisis y mejora de productividad, y motivación de equipos. Orientado a pymes industriales.",
+      "especialidades": [
+        "metodos_y_tiempos",
+        "cronometraje",
+        "productividad",
+        "motivacion"
+      ],
+      "logo": "",
+      "nombre": "Productividad Industrial",
+      "servicios": [
+        "Consultoría para pymes industriales",
+        "Análisis y mejora de productividad",
+        "Estudio y medida del trabajo",
+        "Motivación y gestión de equipos"
+      ],
+      "slug": "productividad-industrial",
+      "tipo": "freelance",
+      "ubicacion": {
+        "pais": "Spain",
+        "direccion": "",
+        "ciudad": ""
+      },
+      "verificado": false
+    },
+    {
+      "_id": "prosimtec",
+      "contacto": {
+        "linkedin": "https://www.linkedin.com/company/prosimtec/",
+        "web": "https://www.prosimtec.com",
+        "email": "info@prosimtec.com",
+        "telefono": "+34 961 678 954"
+      },
+      "createdAt": "2026-04-13T08:10:11.133971Z",
+      "descripcion": "Consultoría especializada en métodos y tiempos con sede en Valencia. Ofrecen estudios tradicionales con cronómetro, análisis digital con vídeo y soluciones con inteligencia artificial para optimización de procesos. Combinan tradición con innovación para mejorar la productividad.",
+      "especialidades": [
+        "cronometraje",
+        "metodos_y_tiempos",
+        "lean",
+        "ia_vision_artificial"
+      ],
+      "logo": "",
+      "nombre": "Prosimtec",
+      "servicios": [
+        "Estudios de métodos y tiempos con cronómetro",
+        "Análisis digital con vídeo",
+        "Soluciones con inteligencia artificial y visión artificial",
+        "Consultoría de operaciones",
+        "Metodologías avanzadas de gestión"
+      ],
+      "slug": "prosimtec",
+      "tipo": "empresa",
+      "ubicacion": {
+        "direccion": "Gran Via del Marqués del Túria, 49, 1º-1ª, Ensanche, 46005 Valencia",
+        "pais": "Spain",
+        "ciudad": "Valencia"
+      },
+      "verificado": false
+    },
+    {
+      "_id": "IpLBRtdO4fUZDoAtds9E",
+      "contacto": {
+        "web": "https://ipic-consulting.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "German standard organization for work measurement. Provides consulting and training in predetermined time systems, work study, and industrial engineering methods.",
+      "especialidades": [
+        "methods_engineering",
+        "refa_standards",
+        "work_measurement",
+        "time_study"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "REFA International",
+      "slug": "refa-international",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "",
+        "pais": "Germany"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "resultae",
+      "contacto": {
+        "telefono": "+34 963 219 210",
+        "web": "https://resultae.com",
+        "email": "mejora@resultae.com",
+        "linkedin": ""
+      },
+      "createdAt": "2026-04-13T08:23:29.166025Z",
+      "descripcion": "Consultoría de productividad industrial para pymes industriales, con sede en Valencia. Especialistas en lean manufacturing, mejora de procesos productivos y optimización de la productividad en entornos industriales.",
+      "especialidades": [
+        "metodos_y_tiempos",
+        "lean",
+        "productividad"
+      ],
+      "logo": "",
+      "nombre": "Resultae",
+      "servicios": [
+        "Consultoría de productividad industrial",
+        "Lean manufacturing",
+        "Mejora de procesos productivos",
+        "Optimización de recursos industriales"
+      ],
+      "slug": "resultae",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Valencia",
+        "direccion": "",
+        "pais": "Spain"
+      },
+      "verificado": false
+    },
+    {
+      "_id": "1fXNlxe0a5vvLHI0IHR5",
+      "contacto": {
+        "web": "https://rethinkproductivity.co.uk"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Conducts time and motion studies for tasks such as interactions, stock management, and production to accurately calculate workforce requirements and time needs.",
+      "especialidades": [
+        "Time & Motion Study",
+        "Workforce Planning",
+        "Retail Productivity"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "ReThink Productivity",
+      "slug": "rethink-productivity",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "United Kingdom",
+        "ciudad": "Londres"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "rethink-productivity",
+      "contacto": {
+        "web": "https://rethinkproductivity.co.uk",
+        "email": "",
+        "linkedin": "https://www.linkedin.com/company/re-think-productivity-consulting-ltd/",
+        "telefono": ""
+      },
+      "createdAt": "2026-04-13T08:23:29.166034Z",
+      "descripcion": "ReThink Productivity Consulting Ltd. es una consultora con sede en el Reino Unido especializada en time and motion study, análisis de eficiencia, modelos de carga de trabajo, MTM y benchmarking de productividad. Trabajan en retail, hostelería, sector servicios, almacén/logística y centros de contacto. Ofrecen formación y tienen un Productivity Forum anual.",
+      "especialidades": [
+        "productividad",
+        "cronometraje",
+        "metodos_y_tiempos",
+        "mtm"
+      ],
+      "logo": "",
+      "nombre": "ReThink Productivity",
+      "servicios": [
+        "Time and motion study",
+        "Efficiency analysis",
+        "Workload labour model",
+        "Role study",
+        "Productivity benchmarking",
+        "MTM (Methods-Time Measurement)",
+        "Movement analysis",
+        "Process mapping",
+        "Formación (ReThink Academy)"
+      ],
+      "slug": "rethink-productivity",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "",
+        "direccion": "",
+        "pais": "United Kingdom"
+      },
+      "verificado": false
+    },
+    {
+      "_id": "scott-grant-limited",
+      "contacto": {
+        "web": "https://scott-grant.co.uk",
+        "email": "productivity@scott-grant.co.uk",
+        "linkedin": "https://www.linkedin.com/company/scott-grant-limited",
+        "telefono": "+44 (0) 161 234 2121"
+      },
+      "createdAt": "2026-04-13T08:10:11.133978Z",
+      "descripcion": "Especialistas en productividad con más de 35 años de experiencia. Ofrecen consultoría en time and motion studies, técnicas MOST, análisis de productividad y formación. Operan en el Reino Unido y más de 40 países. Proporcionan analistas de productividad, ingenieros industriales y especialistas Lean para proyectos a corto y largo plazo.",
+      "especialidades": [
+        "cronometraje",
+        "productividad",
+        "lean",
+        "most",
+        "metodos_y_tiempos"
+      ],
+      "logo": "",
+      "nombre": "Scott-Grant Limited",
+      "servicios": [
+        "Time and motion studies",
+        "Consultoría MOST (Maynard Operation Sequence Technique)",
+        "Formación en productividad (open e in-company)",
+        "Suplementación de equipos con especialistas en productividad",
+        "Mejora continua y Lean",
+        "Programa IMS de cualificación profesional"
+      ],
+      "slug": "scott-grant-limited",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Manchester",
+        "direccion": "",
+        "pais": "United Kingdom"
+      },
+      "verificado": false
+    },
+    {
+      "_id": "qdt4L33lv8TmgzeD34Tz",
+      "contacto": {
+        "web": "https://www.6sigma.us"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Training and consulting in Six Sigma, Lean Manufacturing, and Predetermined Motion Time Systems (PMTS). Covers MTM and MOST methodologies for operational excellence.",
+      "especialidades": [
+        "six_sigma",
+        "training",
+        "pmts",
+        "operational_excellence",
+        "lean"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "SixSigma.us",
+      "slug": "sixsigma-us",
+      "tipo": "consultor",
+      "ubicacion": {
+        "ciudad": "",
+        "pais": "USA"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "wSfOf8IRTCzVU1NysXty",
+      "contacto": {
+        "web": "https://www.sugoyaindia.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Provides Methods Time Measurement (MTM) consulting and training. Specializes in MTM-1 and MTM-2 systems for optimizing manufacturing processes.",
+      "especialidades": [
+        "time_&_motion_study",
+        "predetermined_time_systems",
+        "productivity_improvement",
+        "mtm"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "Sugoya India",
+      "slug": "sugoya-india",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "India",
+        "ciudad": "Gujarat"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "4JnTBWSvyDn9vpv6ktQa",
+      "contacto": {
+        "web": "https://sustant.es",
+        "email": "sustant@sustant.es",
+        "telefono": "+34 911 57 18 42"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Experiencia con empresas de todos los tamaños y tipos, así como con administraciones públicas. Ha prestado servicios en Perú, Argentina, Colombia, España, Reino Unido y otros países.",
+      "especialidades": [
+        "Ingeniería Industrial",
+        "Consultoría",
+        "Optimización de Procesos"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Sustant Consultoría e Ingeniería",
+      "servicios": [
+        "Consultoría en ingeniería industrial",
+        "Estudios de métodos y tiempos",
+        "Optimización de procesos productivos",
+        "Formación en productividad industrial"
+      ],
+      "slug": "sustant-consultoria-e-ingenieria",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Bilbao"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "GRjxqjgZJjliHT5yHGgb",
+      "contacto": {
+        "web": "http://www.technicalchange.com"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Business improvement consulting services including lean manufacturing, work measurement, human resource development, leadership training, and ERP/lean integration.",
+      "especialidades": [
+        "lean",
+        "work_measurement",
+        "six_sigma",
+        "time_study"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "Technical Change Associates",
+      "slug": "technical-change-associates",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "USA",
+        "ciudad": ""
+      },
+      "verificado": true
+    },
+    {
+      "_id": "test2",
+      "contacto": {
+        "email": "",
+        "web": "",
+        "linkedin": "",
+        "telefono": ""
+      },
+      "createdAt": "2026-04-13T09:28:13.030Z",
+      "descripcion": "Test2 desc",
+      "especialidades": [
+        "cronometraje"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "Test2",
+      "reviewedAt": "2026-04-13T09:31:22.856627Z",
+      "servicios": [],
+      "slug": "test2",
+      "status": "approved",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "",
+        "direccion": "",
+        "pais": ""
+      },
+      "verificado": true
+    },
+    {
+      "_id": "uPrgT1n8VNa0obyDcslm",
+      "contacto": {
+        "web": "https://www.the-manufacturing-industrial-engineer.co.uk"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Industrial engineering services and consultancy specializing in time and motion study. Focused on improving manufacturing processes, productivity, and efficiency with continuous improvement strategy.",
+      "especialidades": [
+        "Time & Motion Study",
+        "Industrial Engineering",
+        "Manufacturing Process Improvement"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "The Manufacturing & Industrial Engineer",
+      "slug": "the-manufacturing-industrial-engineer",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "United Kingdom",
+        "ciudad": "United Kingdom"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "LCENeYVk0vS4rUhEKCeM",
+      "contacto": {
+        "email": "clientes@timingsense.com",
+        "web": "https://timingsense.com",
+        "telefono": "+34 665 690 281"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Ofrece tecnología de cronometraje fiable e intuitiva. Sus cronómetros se utilizan en España, Francia, Portugal, Rusia, Irlanda, Túnez, México, Chile, Kenia, Colombia, Panamá, Reino Unido, Argentina y Costa Rica.",
+      "especialidades": [
+        "Software de Cronometraje",
+        "Tecnología de Estudio de Tiempos",
+        "Medición Industrial"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "timingsense",
+      "servicios": [
+        "Software de cronometraje industrial",
+        "Medición digital de tiempos",
+        "Análisis de productividad",
+        "Integración con sistemas de gestión"
+      ],
+      "slug": "timingsense",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Madrid"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "ZSAah5pf0nFnLLWf3ECR",
+      "contacto": {
+        "web": "https://tlsi.es"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Ingeniería de procesos y consultoría logística. Proporciona estudios de diseño, análisis y mejora de procesos logísticos para optimizar la eficiencia, calidad y productividad.",
+      "especialidades": [
+        "Gestión de Almacenes",
+        "Ingeniería de Procesos",
+        "Consultoría Logística",
+        "Estudio de Tiempos"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "TLSI - Tecnologías Logísticas de Sistemas Inteligentes",
+      "servicios": [
+        "Tecnología logística inteligente",
+        "Sistemas de gestión de almacenes",
+        "Automatización logística",
+        "Optimización de operaciones"
+      ],
+      "slug": "tlsi-tecnologias-logisticas-de-sistemas-inteligent",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Barcelona"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "T71A5mpBj3HxuUN48Rcv",
+      "contacto": {
+        "email": "ug21@ug21.com",
+        "web": "https://ug21.com",
+        "telefono": "+34 955 602 134"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Consultores de ingeniería que ofrecen servicios de ingeniería industrial. Beneficiarios del Fondo Europeo de Desarrollo Regional para la mejora tecnológica.",
+      "especialidades": [
+        "Ingeniería Industrial",
+        "Estudio de Métodos y Tiempos",
+        "Optimización de Procesos"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "UG21 Consultores de Ingeniería",
+      "servicios": [
+        "Consultoría en ingeniería industrial",
+        "Estudios de tiempos y métodos",
+        "Optimización de procesos",
+        "Ingeniería de producción"
+      ],
+      "slug": "ug21-consultores-de-ingenieria",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Zaragoza",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "kDHiFUrfU9t5FDM34P8S",
+      "contacto": {
+        "web": "https://www.ukmtm.co.uk"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Provides MTM training courses and consultancy services. Methods-Time Measurement (MTM) is the most established of all predetermined motion time systems.",
+      "especialidades": [
+        "MTM Training",
+        "MTM Consultancy",
+        "Methods Engineering"
+      ],
+      "lang": "en",
+      "logo": "",
+      "nombre": "UK MTM (Methods-Time Measurement)",
+      "slug": "uk-mtm-methods-time-measurement",
+      "tipo": "consultor",
+      "ubicacion": {
+        "pais": "United Kingdom",
+        "ciudad": "United Kingdom"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "6edIkgNajFSsUmxgGEQZ",
+      "contacto": {
+        "email": "info@worksamp.com",
+        "web": "https://worksamp.com",
+        "linkedin": "https://www.linkedin.com/company/worksamp",
+        "telefono": "+34 619 58 82 39"
+      },
+      "createdAt": "2026-04-12T23:37:46.587Z",
+      "descripcion": "Herramienta digital de muestreo de trabajo (work sampling) para ingeniería de métodos y productividad. Permite realizar estudios estadísticos de actividad con validación en tiempo real, análisis de dispersión y generación de informes detallados de utilización de recursos.",
+      "especialidades": [
+        "Muestreo de Trabajo",
+        "Work Sampling",
+        "Estudios de Actividad",
+        "Análisis Estadístico de Producción",
+        "Medición del Trabajo"
+      ],
+      "lang": "es",
+      "logo": "https://worksamp.com/logo.png",
+      "nombre": "Worksamp",
+      "servicios": [
+        "Estudios de muestreo de trabajo",
+        "Análisis de actividad y productividad",
+        "Generación de informes estadísticos",
+        "Medición de utilización de recursos",
+        "Consultoría en ingeniería de métodos"
+      ],
+      "slug": "worksamp",
+      "tipo": "empresa",
+      "ubicacion": {
+        "pais": "Spain",
+        "ciudad": "Barcelona"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "XAeXzUVZlyHBzavuQpaq",
+      "contacto": {
+        "web": "https://zadecon.es",
+        "email": "info@zadecon.es",
+        "telefono": "+34 925 775 190"
+      },
+      "createdAt": "2026-04-12T22:02:40.283Z",
+      "descripcion": "Proporciona servicios de estudio de métodos y tiempos incluyendo sistemas Bedaux y MTM. Calcula tiempos estándar y reduce costes de producción mediante cronometraje industrial.",
+      "especialidades": [
+        "estudio_de_métodos_y_tiempos",
+        "costes_industriales",
+        "mtm",
+        "bedaux"
+      ],
+      "lang": "es",
+      "logo": "",
+      "nombre": "ZADECON",
+      "servicios": [
+        "Consultoría en ingeniería industrial",
+        "Estudios de tiempos y movimientos",
+        "Optimización de procesos productivos",
+        "Formación en productividad"
+      ],
+      "slug": "zadecon",
+      "tipo": "empresa",
+      "ubicacion": {
+        "ciudad": "Barcelona",
+        "pais": "Spain"
+      },
+      "verificado": true
+    },
+    {
+      "_id": "zadecon",
+      "contacto": {
+        "web": "https://zadecon.es",
+        "email": "zonacentro@zadecon.com",
+        "linkedin": "",
+        "telefono": "+34 944 07 42 18"
+      },
+      "createdAt": "2026-04-13T08:23:29.166020Z",
+      "descripcion": "Consultora de productividad con oficinas en toda España que realiza estudios de métodos y tiempos mediante cronometraje industrial, sistema Bedaux y MTM. Calculan tiempos estándar para reducir costes de producción. Zona Centro, Norte, Cataluña, Andalucía y fuera de España.",
+      "especialidades": [
+        "cronometraje",
+        "mtm",
+        "lean",
+        "metodos_y_tiempos",
+        "bedaux"
+      ],
+      "logo": "",
+      "nombre": "Zadecon",
+      "servicios": [
+        "Estudios de métodos y tiempos (cronometraje)",
+        "Análisis por sistema Bedaux",
+        "Análisis MTM (Methods-Time Measurement)",
+        "Auditorías de productividad",
+        "Líneas de montaje y equilibrado",
+        "Estándares de rendimiento"
+      ],
+      "slug": "zadecon",
+      "tipo": "empresa",
+      "ubicacion": {
+        "direccion": "",
+        "pais": "Spain",
+        "ciudad": "España (varias oficinas)"
+      },
+      "verificado": false
+    }
+  ]
+}

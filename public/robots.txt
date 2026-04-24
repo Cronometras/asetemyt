@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://asetemyt.com/sitemap.xml
+
+# Block admin/form submission endpoints
+Disallow: /anadir?*
