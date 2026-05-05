@@ -14,15 +14,15 @@ import {
 } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || 'AIzaSyCWrnHpOz_2-BSL8vPQDxmYRD_sAlZuiDs',
-  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || 'micaot-com.firebaseapp.com',
-  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'micaot-com',
-  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || 'micaot-com.firebasestorage.app',
-  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '948469680704',
-  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || '1:948469680704:web:a9161fb82acd6766ee6da5',
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || 'AIzaSyCVYS2LxwErdPuotup7fC5_qM8p2mXkcK0',
+  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || 'asetemyt-ec205.firebaseapp.com',
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'asetemyt-ec205',
+  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || 'asetemyt-ec205.firebasestorage.app',
+  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '267270254597',
+  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || '1:267270254597:web:aa61aef2c4c9ee77d26c6c',
 };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
 // --- i18n ---

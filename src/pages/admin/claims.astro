@@ -1,0 +1,109 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Solicitudes de Verificación" description="Gestiona las solicitudes de verificación de fichas.">
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div id="loading" class="text-center py-20">
+      <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-steel-500 mt-4">Cargando solicitudes...</p>
+    </div>
+
+    <div id="notAuth" class="hidden text-center py-20">
+      <h2 class="text-2xl font-bold text-primary-900 mb-2">Acceso denegado</h2>
+      <p class="text-steel-500">No tienes permisos para ver esta página.</p>
+      <a href="/login" class="inline-block mt-4 text-accent-600 font-semibold">Iniciar sesión →</a>
+    </div>
+
+    <div id="adminPanel" class="hidden">
+      <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-extrabold text-primary-900">Solicitudes de Verificación</h1>
+        <a href="/mi-cuenta" class="text-sm text-accent-600 font-medium">← Mi cuenta</a>
+      </div>
+
+      <div id="claimsList" class="space-y-4">
+        <p class="text-steel-500 text-sm">No hay solicitudes pendientes.</p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  import { onAuthStateChanged, auth } from '../../lib/auth';
+
+  const loading = document.getElementById('loading')!;
+  const notAuth = document.getElementById('notAuth')!;
+  const adminPanel = document.getElementById('adminPanel')!;
+  const claimsList = document.getElementById('claimsList')!;
+
+  onAuthStateChanged(auth, async (user) => {
+    loading.classList.add('hidden');
+    if (!user) {
+      notAuth.classList.remove('hidden');
+      return;
+    }
+
+    adminPanel.classList.remove('hidden');
+
+    try {
+      const resp = await fetch('/api/admin/claims');
+      if (resp.status === 403) {
+        notAuth.classList.remove('hidden');
+        adminPanel.classList.add('hidden');
+        return;
+      }
+      const data = await resp.json();
+      const claims = data.claims || [];
+
+      if (claims.length === 0) {
+        claimsList.innerHTML = '<p class="text-steel-500 text-sm">No hay solicitudes pendientes.</p>';
+        return;
+      }
+
+      claimsList.innerHTML = claims.map((c: any) => `
+        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-amber-400">
+          <div class="flex items-start justify-between">
+            <div>
+              <h3 class="font-bold text-primary-900">${c.slug}</h3>
+              <p class="text-sm text-steel-500 mt-1">Solicitado por: <strong>${c.nombre}</strong> (${c.email})</p>
+              <p class="text-sm text-steel-500">Relación: ${c.relacion || 'No especificada'}</p>
+              ${c.telefono ? `<p class="text-sm text-steel-500">Tel: ${c.telefono}</p>` : ''}
+              ${c.mensaje ? `<p class="text-sm text-steel-600 mt-2 italic">"${c.mensaje}"</p>` : ''}
+              <p class="text-xs text-steel-400 mt-2">${new Date(c.createdAt).toLocaleString('es-ES')}</p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="handleClaim('${c.id}', 'approve')"
+                class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-lg transition-colors">
+                Aprobar
+              </button>
+              <button onclick="handleClaim('${c.id}', 'reject')"
+                class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors">
+                Rechazar
+              </button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      claimsList.innerHTML = '<p class="text-red-500 text-sm">Error cargando solicitudes.</p>';
+    }
+  });
+
+  (window as any).handleClaim = async (claimId: string, action: string) => {
+    try {
+      const resp = await fetch('/api/admin/claim-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claimId, action }),
+      });
+      if (resp.ok) {
+        // Reload
+        window.location.reload();
+      } else {
+        alert('Error procesando la solicitud');
+      }
+    } catch {
+      alert('Error de conexión');
+    }
+  };
+</script>

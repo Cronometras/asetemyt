@@ -1,4 +1,5 @@
 ---
+export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
 import { getDirectoryEntries, getDirectoryEntryBySlug } from '../../lib/firebase';
 
@@ -196,5 +197,26 @@ const tipoColors: Record<string, string> = {
         )}
       </div>
     </div>
+
+    <!-- Reclamar ficha CTA -->
+    {!entry.verificado && (
+      <div class="mt-8 p-6 bg-gradient-to-r from-accent-50 to-accent-100 rounded-xl border border-accent-200">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-primary-900">¿Eres el propietario de esta ficha?</h3>
+            <p class="text-sm text-steel-600 mt-1 mb-3">Verifícala para editar los datos y mostrar el badge de confianza. 50€/año.</p>
+            <a href={`/reclamar/${entry.slug}`}
+              class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">
+              Reclamar esta ficha →
+            </a>
+          </div>
+        </div>
+      </div>
+    )}
   </section>
 </Layout>

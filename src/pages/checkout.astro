@@ -1,0 +1,42 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Verificar Ficha" description="Completa el pago para verificar tu ficha en ASETEMYT.">
+  <section class="max-w-md mx-auto px-4 py-16">
+    <div class="bg-white rounded-2xl shadow-lg p-8 text-center">
+      <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <h1 class="text-xl font-bold text-primary-900 mb-2">Preparando el pago...</h1>
+      <p class="text-steel-500 text-sm">Serás redirigido a Stripe para completar el pago seguro.</p>
+      <div id="error" class="hidden mt-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm"></div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  const slug = new URLSearchParams(window.location.search).get('slug');
+  const errorEl = document.getElementById('error')!;
+
+  if (!slug) {
+    errorEl.textContent = 'Falta el parámetro de ficha.';
+    errorEl.classList.remove('hidden');
+  } else {
+    try {
+      const resp = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      });
+      const data = await resp.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        errorEl.textContent = data.error || 'Error creando sesión de pago.';
+        errorEl.classList.remove('hidden');
+      }
+    } catch (err) {
+      errorEl.textContent = 'Error de conexión.';
+      errorEl.classList.remove('hidden');
+    }
+  }
+</script>

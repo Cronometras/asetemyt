@@ -1580,5 +1580,624 @@
     "logo": "",
     "verificado": false,
     "createdAt": "2026-04-12T18:00:00Z"
+  },
+  {
+    "nombre": "EFESO Consulting",
+    "slug": "efeso-consulting",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "industria-4.0",
+      "kaizen"
+    ],
+    "descripcion": "Consultora internacional de operaciones y rendimiento industrial con presencia en más de 30 países. Especializada en transformación operacional y excelencia en manufactura.",
+    "servicios": [
+      "Lean Manufacturing",
+      "Mejora de OEE",
+      "Transformación Digital Industrial",
+      "Gestión del Cambio"
+    ],
+    "ubicacion": {
+      "pais": "Francia",
+      "ciudad": "París"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.efeso-consulting.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "TBM Consulting Group",
+    "slug": "tbm-consulting-group",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "kaizen",
+      "mantenimiento"
+    ],
+    "descripcion": "Consultora global especializada en Lean Manufacturing y mantenimiento productivo total (TPM). Presencia en América, Europa y Asia.",
+    "servicios": [
+      "Implementación Lean",
+      "TPM (Mantenimiento Productivo Total)",
+      "Kaizen Events",
+      "Mejora de OEE"
+    ],
+    "ubicacion": {
+      "pais": "EE.UU.",
+      "ciudad": "Durham, NC"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.tbmcg.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Daniel Penn Associates",
+    "slug": "daniel-penn-associates",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean",
+      "mtm",
+      "oee"
+    ],
+    "descripcion": "Consultora estadounidense con más de 40 años en ingeniería de métodos, estudios de tiempos y mejora de productividad industrial.",
+    "servicios": [
+      "Estudios de Tiempos",
+      "Ingeniería de Métodos",
+      "Lean Manufacturing",
+      "Optimización de Mano de Obra"
+    ],
+    "ubicacion": {
+      "pais": "EE.UU.",
+      "ciudad": "Hartford, CT"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.danielpenn.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Shinka Management",
+    "slug": "shinka-management",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "kaizen",
+      "5s",
+      "value-stream-mapping"
+    ],
+    "descripcion": "Consultora internacional especializada en Lean Manufacturing con formación directa de expertos japoneses en Toyota Production System.",
+    "servicios": [
+      "Lean Manufacturing",
+      "Kaizen Events",
+      "5S Implementation",
+      "Value Stream Mapping"
+    ],
+    "ubicacion": {
+      "pais": "Australia",
+      "ciudad": "Adelaide"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.shinkamanagement.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "TMG Consulting",
+    "slug": "tmg-consulting",
+    "tipo": "empresa",
+    "especialidades": [
+      "mtm",
+      "cronometraje",
+      "lean",
+      "balanceo-lineas"
+    ],
+    "descripcion": "Consultora alemana especializada en MTM y estudios de tiempos predefinidos con certificación MTMAssociation e.V.",
+    "servicios": [
+      "Implementación MTM",
+      "Estudios de Tiempos",
+      "Diseño de Puestos de Trabajo",
+      "Balanceo de Líneas"
+    ],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Hamburgo"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.tmg-consulting.de",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Horváth & Partners",
+    "slug": "horvath-partners",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "industria-4.0",
+      "oee",
+      "calidad"
+    ],
+    "descripcion": "Consultora internacional de gestión con sede en Alemania, especializada en transformación operacional y digitalización industrial.",
+    "servicios": [
+      "Transformación Operacional",
+      "Digitalización Industrial",
+      "Gestión del Rendimiento",
+      "Lean Management"
+    ],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Stuttgart"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.horvath-partners.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "OEEsystems International",
+    "slug": "oeesystems-international",
+    "tipo": "empresa",
+    "especialidades": [
+      "oee",
+      "industria-4.0",
+      "lean"
+    ],
+    "descripcion": "Consultora irlandesa especializada exclusivamente en OEE con software propio de medición y análisis.",
+    "servicios": [
+      "Implementación OEE",
+      "Software OEE PerformOEE",
+      "Formación OEE",
+      "Mejora de Productividad"
+    ],
+    "ubicacion": {
+      "pais": "Irlanda",
+      "ciudad": "Limerick"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.oeesystems.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "S A Partners",
+    "slug": "sa-partners",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "kaizen",
+      "value-stream-mapping",
+      "calidad"
+    ],
+    "descripcion": "Consultora del Reino Unido especializada en Enterprise Excellence y transformación Lean con certificación Shingo.",
+    "servicios": [
+      "Enterprise Excellence",
+      "Lean Transformation",
+      "Shingo Model",
+      "Kaizen Facilitation"
+    ],
+    "ubicacion": {
+      "pais": "Reino Unido",
+      "ciudad": "Cardiff"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.sapartners.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "WAGNER Consulting Group",
+    "slug": "wagner-consulting-group",
+    "tipo": "empresa",
+    "especialidades": [
+      "ergonomia",
+      "lean",
+      "industria-4.0",
+      "automatizacion"
+    ],
+    "descripcion": "Consultora alemana especializada en ergonomía industrial, diseño de puestos de trabajo y eficiencia operacional.",
+    "servicios": [
+      "Ergonomía Industrial",
+      "Diseño de Puestos",
+      "Automatización",
+      "Lean Factory Design"
+    ],
+    "ubicacion": {
+      "pais": "Alemania",
+      "ciudad": "Weingarten"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.wagner-consulting.de",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Lean Enterprise Institute (LEI)",
+    "slug": "lean-enterprise-institute",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "value-stream-mapping",
+      "kaizen",
+      "calidad"
+    ],
+    "descripcion": "Organización fundada por James Womack, referente mundial en pensamiento Lean y transformación empresarial.",
+    "servicios": [
+      "Formación Lean",
+      "Value Stream Mapping",
+      "Lean Leadership",
+      "Publicaciones Técnicas"
+    ],
+    "ubicacion": {
+      "pais": "EE.UU.",
+      "ciudad": "Cambridge, MA"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.lean.org",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "RK Consulting Industrial",
+    "slug": "rk-consulting-industrial",
+    "tipo": "empresa",
+    "especialidades": [
+      "cronometraje",
+      "lean",
+      "balanceo-lineas",
+      "ergonomia"
+    ],
+    "descripcion": "Consultora colombiana de ingeniería industrial especializada en estudios de tiempos, métodos y ergonomía para manufactura.",
+    "servicios": [
+      "Estudios de Tiempos",
+      "Análisis Ergonómico",
+      "Balanceo de Líneas",
+      "Diseño de Layouts"
+    ],
+    "ubicacion": {
+      "pais": "Colombia",
+      "ciudad": "Medellín"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.rkconsulting.co",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Consulthor",
+    "slug": "consulthor",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "six-sigma",
+      "calidad",
+      "oee"
+    ],
+    "descripcion": "Consultora chilena de gestión de operaciones y mejora continua con proyectos en minería, manufactura y servicios.",
+    "servicios": [
+      "Lean Six Sigma",
+      "Gestión de Operaciones",
+      "Mejora Continua",
+      "OEE Mining"
+    ],
+    "ubicacion": {
+      "pais": "Chile",
+      "ciudad": "Santiago"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.consulthor.cl",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Ingenia Consultores",
+    "slug": "ingenia-consultores",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "industria-4.0",
+      "calidad"
+    ],
+    "descripcion": "Consultora mexicana de ingeniería y operaciones industriales con proyectos en manufactura, alimentos y automotriz.",
+    "servicios": [
+      "Lean Manufacturing",
+      "Industria 4.0",
+      "Gestión de Calidad",
+      "Optimización de Procesos"
+    ],
+    "ubicacion": {
+      "pais": "México",
+      "ciudad": "Querétaro"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.ingeniaconsultores.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Excelencia Operativa Consultores (EOC)",
+    "slug": "excelencia-operativa-consultores",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "six-sigma",
+      "kaizen"
+    ],
+    "descripcion": "Consultora argentina especializada en excelencia operacional, Lean Manufacturing y mejora de OEE para la industria.",
+    "servicios": [
+      "Excelencia Operacional",
+      "Lean Six Sigma",
+      "Mejora de OEE",
+      "Kaizen Events"
+    ],
+    "ubicacion": {
+      "pais": "Argentina",
+      "ciudad": "Buenos Aires"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.eocconsultores.com.ar",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "CTI Consultoría",
+    "slug": "cti-consultoria",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "automatizacion",
+      "industria-4.0"
+    ],
+    "descripcion": "Consultora brasileña de ingeniería industrial con proyectos en lean manufacturing, automatización y transformación digital.",
+    "servicios": [
+      "Lean Manufacturing",
+      "Automatización Industrial",
+      "Transformación Digital",
+      "Mejora de Productividad"
+    ],
+    "ubicacion": {
+      "pais": "Brasil",
+      "ciudad": "São Paulo"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.cticonsultoria.com.br",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Manex",
+    "slug": "manex-consulting",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "industria-4.0",
+      "automatizacion",
+      "oee"
+    ],
+    "descripcion": "Consultora vasca de manufactura avanzada y excelencia operacional, vinculada al cluster de industria avanzada del País Vasco.",
+    "servicios": [
+      "Manufactura Avanzada",
+      "Industria 4.0",
+      "Lean Manufacturing",
+      "Automatización"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "San Sebastián"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.manex.es",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Grupo EPM Consultoría",
+    "slug": "grupo-epm-consultoria",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "calidad",
+      "mantenimiento"
+    ],
+    "descripcion": "Consultora peruana especializada en gestión de mantenimiento, confiabilidad de activos y mejora de OEE industrial.",
+    "servicios": [
+      "Gestión de Mantenimiento",
+      "Confiabilidad de Activos",
+      "OEE",
+      "Lean Maintenance"
+    ],
+    "ubicacion": {
+      "pais": "Perú",
+      "ciudad": "Arequipa"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.grupoepm.com.pe",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Pórtico Consulting",
+    "slug": "portico-consulting",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "industria-4.0",
+      "calidad"
+    ],
+    "descripcion": "Consultora española de ingeniería y operaciones industriales con proyectos en España, Portugal y Latinoamérica.",
+    "servicios": [
+      "Lean Manufacturing",
+      "Industria 4.0",
+      "Mejora de OEE",
+      "Consultoría de Calidad"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Bilbao"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.porticoconsulting.es",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Productividad Total",
+    "slug": "productividad-total-peru",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "kaizen",
+      "5s"
+    ],
+    "descripcion": "Consultora peruana enfocada en mejora de productividad industrial mediante Lean Manufacturing y herramientas TPM.",
+    "servicios": [
+      "Lean Manufacturing",
+      "TPM",
+      "Implementación 5S",
+      "Kaizen Events"
+    ],
+    "ubicacion": {
+      "pais": "Perú",
+      "ciudad": "Lima"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.productividadtotal.com.pe",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
+  },
+  {
+    "nombre": "Haldan Consulting",
+    "slug": "haldan-consulting",
+    "tipo": "empresa",
+    "especialidades": [
+      "lean",
+      "oee",
+      "industria-4.0",
+      "calidad"
+    ],
+    "descripcion": "Consultora de Singapur especializada en transformación Lean y digital para manufactura en Asia-Pacífico.",
+    "servicios": [
+      "Lean Transformation",
+      "Industria 4.0",
+      "Gestión de Calidad",
+      "OEE Improvement"
+    ],
+    "ubicacion": {
+      "pais": "Singapur",
+      "ciudad": "Singapur"
+    },
+    "contacto": {
+      "email": "",
+      "telefono": "",
+      "web": "https://www.haldanconsulting.com",
+      "linkedin": ""
+    },
+    "logo": "",
+    "verificado": false,
+    "createdAt": "2026-04-28T21:00:00Z"
   }
 ]

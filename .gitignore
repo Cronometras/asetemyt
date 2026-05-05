@@ -8,3 +8,4 @@ dist/
 check-*.js
 check-*.mjs
 compare.mjs
+__pycache__/

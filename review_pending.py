@@ -167,6 +167,41 @@ def classify_entry(data):
             return ('spam', ', '.join(spam_reasons))
         return ('review', 'no_signals')
 
+def subscribe_to_mailrelay(email, name=""):
+    """Suscribe un email al grupo Asetemyt (id=5) en MailRelay IMYT."""
+    import urllib.request
+    MAILRELAY_URL = "https://imyt.ipzmarketing.com/api/v1/subscribers"
+    MAILRELAY_TOKEN = "xE_wne1LVbfX9Yj_JwGKXBuWdWyS_M_y4czQjc4G"
+
+    if not email or "@" not in email:
+        return None
+
+    body = json.dumps({
+        "email": email,
+        "name": name,
+        "group_ids": [5]  # Grupo Asetemyt
+    }).encode()
+
+    req = urllib.request.Request(
+        MAILRELAY_URL,
+        data=body,
+        headers={
+            "X-AUTH-TOKEN": MAILRELAY_TOKEN,
+            "Content-Type": "application/json"
+        },
+        method="POST"
+    )
+    try:
+        resp = urllib.request.urlopen(req)
+        result = json.loads(resp.read())
+        return result.get("id")
+    except Exception as e:
+        # Si ya existe (409), no es error
+        if "409" in str(e) or "already" in str(e).lower():
+            return "exists"
+        return None
+
+
 def process_entries():
     import subprocess
 
@@ -274,6 +309,16 @@ def process_entries():
                 output_lines.append(f"  📋 {nombre} → directorio_asetemyt/{slug}")
             except Exception as e:
                 output_lines.append(f"  ⚠️ {nombre} error creando: {e}")
+
+            # Suscribir a MailRelay (grupo Asetemyt)
+            contacto = entry.get('contacto', {})
+            email_addr = contacto.get('email', '') if isinstance(contacto, dict) else ''
+            if email_addr:
+                sub_id = subscribe_to_mailrelay(email_addr, nombre)
+                if sub_id:
+                    output_lines.append(f"  📧 MailRelay: {email_addr} → grupo Asetemyt (id={sub_id})")
+                else:
+                    output_lines.append(f"  ⚠️ MailRelay: error suscribiendo {email_addr}")
 
             # Delete from pending
             del_url = f"{base_url}/pending_asetemyt/{doc_id}"
