@@ -81,21 +81,28 @@ export async function getAuthUser(request: Request, projectId: string): Promise<
   // Try Authorization header first (Bearer token)
   const authHeader = request.headers.get('authorization') || '';
   const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+
   if (bearerMatch) {
     try {
-      return await verifyFirebaseToken(bearerMatch[1], projectId);
-    } catch {
-      return null;
+      const result = await verifyFirebaseToken(bearerMatch[1], projectId);
+      return result;
+    } catch (err: any) {
+      console.error('[AUTH] Bearer token verification failed:', err.message);
+      // Fall through to cookie
     }
   }
 
   // Fall back to cookie
   const cookie = request.headers.get('cookie') || '';
   const match = cookie.match(/asetemyt_token=([^;]+)/);
-  if (!match) return null;
+  if (!match) {
+    console.error('[AUTH] No Bearer token and no cookie found');
+    return null;
+  }
   try {
     return await verifyFirebaseToken(match[1], projectId);
-  } catch {
+  } catch (err: any) {
+    console.error('[AUTH] Cookie token verification failed:', err.message);
     return null;
   }
 }
