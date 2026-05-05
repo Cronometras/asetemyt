@@ -173,6 +173,20 @@ export function toFirestoreValue(val: any): any {
   return { stringValue: String(val) };
 }
 
+// Delete a document by path
+export async function firestoreDelete(env: any, collection: string, docId: string): Promise<boolean> {
+  const token = await getAccessToken(env);
+  const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
+  const resp = await fetch(
+    `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/${collection}/${docId}`,
+    {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return resp.ok;
+}
+
 // --- Split collection helpers ---
 const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
 const COLLECTION_SOFTWARE = 'directorio_software_asetemyt';

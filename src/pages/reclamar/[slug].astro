@@ -5,13 +5,8 @@ import { getDirectoryEntries } from '../../lib/firebase';
 export const prerender = true;
 
 export async function getStaticPaths() {
-  let entries: any[] = [];
-  try {
-    entries = await getDirectoryEntries();
-  } catch (e) {
-    console.error('Error fetching entries:', e);
-  }
-  return entries.map((entry) => ({
+  const entries = await getDirectoryEntries();
+  return entries.map((entry: any) => ({
     params: { slug: entry.slug },
     props: { entry },
   }));
@@ -21,237 +16,236 @@ const { entry } = Astro.props;
 if (!entry) return Astro.redirect('/directorio');
 ---
 
-<Layout title={`Reclamar: ${entry.nombre}`} description={`Reclama la ficha de ${entry.nombre} en ASETEMYT para verificarla y editarla.`}>
-  <section class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <!-- Breadcrumb -->
-    <nav class="mb-8">
-      <a href={`/directorio/${entry.slug}`} class="text-accent-600 hover:text-accent-700 text-sm font-medium flex items-center gap-1">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-        Volver a la ficha
-      </a>
-    </nav>
+<Layout title={`Reclamar ${entry.nombre}`} description={`Verifica y reclama la ficha de ${entry.nombre} en ASETEMYT.`}>
+  <section class="max-w-xl mx-auto px-4 py-12">
+    <a href={`/directorio/${entry.slug}`} class="text-accent-600 hover:text-accent-700 text-sm font-medium mb-6 inline-block">← Volver a la ficha</a>
 
     <!-- Header -->
-    <div class="bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 mb-8 text-white">
+    <div class="bg-white rounded-2xl shadow-lg p-8 mb-6">
       <div class="flex items-center gap-4 mb-4">
-        {entry.logo ? (
-          <img src={entry.logo} alt={entry.nombre} class="w-16 h-16 rounded-xl object-cover shadow-lg" />
-        ) : (
-          <div class="w-16 h-16 rounded-xl bg-accent-500 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
-            {entry.nombre?.[0]?.toUpperCase() || '?'}
-          </div>
-        )}
+        {entry.logo && <img src={entry.logo} alt={entry.nombre} class="w-14 h-14 rounded-lg object-contain bg-steel-50 p-1" />}
         <div>
-          <h1 class="text-2xl font-extrabold">{entry.nombre}</h1>
-          <p class="text-steel-300 text-sm">{entry.ubicacion?.ciudad || ''} {entry.ubicacion?.pais ? `, ${entry.ubicacion.pais}` : ''}</p>
+          <h1 class="text-2xl font-bold text-primary-900">Reclamar ficha</h1>
+          <p class="text-steel-500">{entry.nombre}</p>
         </div>
       </div>
-      <div class="bg-white/10 rounded-xl p-4 mt-4">
-        <h2 class="font-bold text-lg mb-2">¿Eres el propietario de esta ficha?</h2>
-        <p class="text-steel-200 text-sm">
-          Reclámala para verificarla, editar los datos y aparecer con el badge de verificado.
-          <strong>50€/año</strong> renovable automáticamente.
-        </p>
-      </div>
+      <p class="text-steel-600 text-sm">Verifica que eres el propietario de esta empresa usando tu email corporativo. Se te enviará un código de 6 dígitos.</p>
     </div>
 
-    <!-- Not logged in warning -->
-    <div id="notAuthWarning" class="hidden mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-      <p class="text-amber-800 text-sm font-medium">
-        ⚠️ Necesitas <a href="/login" class="text-accent-600 underline font-bold">iniciar sesión</a> o
-        <a href="/registro" class="text-accent-600 underline font-bold">registrarte</a> para reclamar una ficha.
-      </p>
+    <!-- Already verified -->
+    <div id="alreadyVerified" class="hidden bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
+      <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+      </div>
+      <h2 class="text-xl font-bold text-green-800 mb-2">Ficha ya verificada</h2>
+      <p class="text-green-700">Esta ficha ya está verificada por su propietario.</p>
     </div>
 
-    <!-- Claim form -->
-    <div id="claimSection" class="hidden">
-      <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h2 class="text-xl font-bold text-primary-900 mb-6">Solicitar Verificación</h2>
-
-        <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
-
-        <form id="claimForm" class="space-y-4">
-          <div>
-            <label for="claimNombre" class="block text-sm font-semibold text-steel-700 mb-1">Tu nombre / Razón social</label>
-            <input type="text" id="claimNombre" required
-              class="w-full px-4 py-3 rounded-lg border border-steel-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none transition-colors" />
-          </div>
-          <div>
-            <label for="claimEmail" class="block text-sm font-semibold text-steel-700 mb-1">Email de contacto</label>
-            <input type="email" id="claimEmail" required
-              class="w-full px-4 py-3 rounded-lg border border-steel-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none transition-colors" />
-          </div>
-          <div>
-            <label for="claimTelefono" class="block text-sm font-semibold text-steel-700 mb-1">Teléfono (opcional)</label>
-            <input type="tel" id="claimTelefono"
-              class="w-full px-4 py-3 rounded-lg border border-steel-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none transition-colors" />
-          </div>
-          <div>
-            <label for="claimRelacion" class="block text-sm font-semibold text-steel-700 mb-1">Relación con la empresa</label>
-            <select id="claimRelacion" required
-              class="w-full px-4 py-3 rounded-lg border border-steel-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none transition-colors">
-              <option value="">Seleccionar...</option>
-              <option value="propietario">Propietario / Fundador</option>
-              <option value="director">Director / Gerente</option>
-              <option value="responsable">Responsable de marketing</option>
-              <option value="empleado">Empleado autorizado</option>
-            </select>
-          </div>
-          <div>
-            <label for="claimMensaje" class="block text-sm font-semibold text-steel-700 mb-1">Mensaje (opcional)</label>
-            <textarea id="claimMensaje" rows="3"
-              class="w-full px-4 py-3 rounded-lg border border-steel-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none transition-colors"
-              placeholder="Información adicional que quieras compartir..."></textarea>
-          </div>
-          <button type="submit" id="submitBtn"
-            class="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-3 rounded-lg transition-colors">
-            Enviar Solicitud de Verificación
-          </button>
-        </form>
-      </div>
+    <!-- Login required -->
+    <div id="loginRequired" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
+      <h2 class="text-xl font-bold text-amber-800 mb-2">Inicia sesión</h2>
+      <p class="text-amber-700 mb-4">Necesitas iniciar sesión para reclamar una ficha.</p>
+      <a href="/login" class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-6 py-3 rounded-lg transition-colors">Iniciar Sesión</a>
     </div>
 
-    <!-- Already claimed message -->
-    <div id="alreadyClaimed" class="hidden">
-      <div class="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
-        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+    <!-- STEP 1: Form -->
+    <div id="step1" class="hidden bg-white rounded-2xl shadow-lg p-8">
+      <h2 class="text-lg font-bold text-primary-900 mb-4">Paso 1 — Datos de contacto</h2>
+      <form id="claimForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Nombre completo *</label>
+          <input type="text" id="nombre" required class="w-full px-4 py-3 rounded-lg border border-steel-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none" placeholder="Tu nombre" />
         </div>
-        <h2 class="text-xl font-bold text-green-800 mb-2">Ficha ya verificada</h2>
-        <p class="text-green-600">Esta ficha ya ha sido reclamada y verificada por su propietario.</p>
-        <a href={`/directorio/${entry.slug}`} class="inline-block mt-4 text-accent-600 hover:text-accent-700 font-semibold">
-          Ver ficha →
-        </a>
-      </div>
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Email corporativo *</label>
+          <input type="email" id="email" required class="w-full px-4 py-3 rounded-lg border border-steel-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none" placeholder="tu@empresa.com" />
+          <p class="text-xs text-steel-400 mt-1">Debe ser un email con dominio propio (no Gmail, Outlook, etc.)</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Mensaje (opcional)</label>
+          <textarea id="mensaje" rows="3" class="w-full px-4 py-3 rounded-lg border border-steel-200 focus:border-accent-500 focus:ring-2 focus:ring-accent-200 outline-none resize-none" placeholder="¿Por qué quieres verificar esta ficha?"></textarea>
+        </div>
+        <div id="error1" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
+        <button type="submit" id="btnSend" class="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+          Enviar código de verificación
+        </button>
+      </form>
     </div>
 
-    <!-- Benefits section -->
-    <div class="mt-8 bg-white rounded-2xl shadow-lg p-8">
-      <h2 class="text-xl font-bold text-primary-900 mb-6">Beneficios de la ficha verificada</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="flex items-start gap-3">
-          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <p class="font-semibold text-steel-800">Badge verificado</p>
-            <p class="text-sm text-steel-500">Icono de verificación visible para todos</p>
-          </div>
+    <!-- STEP 2: Code entry -->
+    <div id="step2" class="hidden bg-white rounded-2xl shadow-lg p-8">
+      <h2 class="text-lg font-bold text-primary-900 mb-2">Paso 2 — Introduce el código</h2>
+      <p class="text-steel-500 text-sm mb-6">Hemos enviado un código de 6 dígitos a <strong id="emailDisplay" class="text-primary-900"></strong></p>
+      <form id="codeForm" class="space-y-4">
+        <div class="flex justify-center gap-2">
+          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
         </div>
-        <div class="flex items-start gap-3">
-          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <p class="font-semibold text-steel-800">Editar tu ficha</p>
-            <p class="text-sm text-steel-500">Actualiza servicios, contacto y descripción</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-3">
-          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <p class="font-semibold text-steel-800">Mayor confianza</p>
-            <p class="text-sm text-steel-500">Los visitantes saben que es tu ficha oficial</p>
-          </div>
-        </div>
-        <div class="flex items-start gap-3">
-          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <p class="font-semibold text-steel-800">50€/año</p>
-            <p class="text-sm text-steel-500">Renovación automática, cancela cuando quieras</p>
-          </div>
-        </div>
-      </div>
+        <div id="error2" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
+        <button type="submit" id="btnVerify" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+          Verificar y pagar
+        </button>
+        <button type="button" id="btnResend" class="w-full text-accent-600 hover:text-accent-700 font-medium py-2 text-sm underline">
+          Reenviar código
+        </button>
+      </form>
+    </div>
+
+    <!-- STEP 3: Redirecting to payment -->
+    <div id="step3" class="hidden bg-white rounded-2xl shadow-lg p-8 text-center">
+      <div class="inline-block w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <h2 class="text-lg font-bold text-primary-900 mb-2">¡Código verificado!</h2>
+      <p class="text-steel-500">Redirigiendo al pago...</p>
     </div>
   </section>
 </Layout>
 
+<div id="claim-data" data-slug={entry.slug} data-verificado={entry.verificado ? '1' : ''} class="hidden"></div>
+
 <script>
-  import { onAuthStateChanged, auth, authFetch } from '../../lib/auth';
+  import { auth } from '../../lib/auth';
+  import { onAuthStateChanged } from 'firebase/auth';
 
-  const slug = window.location.pathname.split('/').filter(Boolean).pop();
-  const notAuthWarning = document.getElementById('notAuthWarning')!;
-  const claimSection = document.getElementById('claimSection')!;
-  const claimForm = document.getElementById('claimForm') as HTMLFormElement;
-  const alertEl = document.getElementById('alert')!;
-  const submitBtn = document.getElementById('submitBtn')!;
-  const alreadyClaimed = document.getElementById('alreadyClaimed')!;
+  const dataEl = document.getElementById('claim-data')!;
+  const slug = dataEl.dataset.slug!;
+  const verificado = dataEl.dataset.verificado === '1';
 
-  function showAlert(msg: string, type: 'error' | 'success' = 'error') {
-    alertEl.textContent = msg;
-    alertEl.className = `mb-4 p-3 rounded-lg text-sm ${type === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`;
-    alertEl.classList.remove('hidden');
-  }
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => document.querySelectorAll(s);
 
-  // Check if already claimed
-  async function checkClaimed() {
-    try {
-      // Check the listing's ownerUid via a lightweight check
-      // For prerendered pages, we'll check client-side
-    } catch {}
-  }
-
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      notAuthWarning.classList.remove('hidden');
+  // Check state
+  const unsub = onAuthStateChanged(auth, async (user) => {
+    unsub();
+    if (verificado) {
+      $('#alreadyVerified').classList.remove('hidden');
       return;
     }
-    claimSection.classList.remove('hidden');
-    // Pre-fill email
-    const emailInput = document.getElementById('claimEmail') as HTMLInputElement;
-    if (user.email && emailInput) emailInput.value = user.email;
-    const nombreInput = document.getElementById('claimNombre') as HTMLInputElement;
-    if (user.displayName && nombreInput) nombreInput.value = user.displayName;
+    if (!user) {
+      $('#loginRequired').classList.remove('hidden');
+      return;
+    }
+    $('#step1').classList.remove('hidden');
   });
 
-  claimForm.addEventListener('submit', async (e) => {
+  // STEP 1 — Send code
+  $('#claimForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    submitBtn.textContent = 'Enviando...';
-    submitBtn.setAttribute('disabled', 'true');
+    const nombre = $('#nombre').value.trim();
+    const email = $('#email').value.trim();
+    const mensaje = $('#mensaje').value.trim();
+    const errEl = $('#error1');
+    errEl.classList.add('hidden');
+    $('#btnSend').disabled = true;
+    $('#btnSend').textContent = 'Enviando...';
 
     try {
-      const resp = await authFetch('/api/ficha/claim', {
+      const resp = await fetch('/api/ficha/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          slug,
-          nombre: (document.getElementById('claimNombre') as HTMLInputElement).value,
-          email: (document.getElementById('claimEmail') as HTMLInputElement).value,
-          telefono: (document.getElementById('claimTelefono') as HTMLInputElement).value,
-          relacion: (document.getElementById('claimRelacion') as HTMLSelectElement).value,
-          mensaje: (document.getElementById('claimMensaje') as HTMLTextAreaElement).value,
-        }),
+        body: JSON.stringify({ slug, nombre, email, mensaje }),
       });
-
       const data = await resp.json();
-      if (resp.ok) {
-        showAlert(data.message || 'Solicitud enviada correctamente', 'success');
-        claimForm.reset();
-      } else {
-        const debugInfo = data.debug ? ` (${data.debug})` : '';
-        showAlert((data.error || 'Error enviando solicitud') + debugInfo);
+      if (!resp.ok) {
+        errEl.textContent = data.error || 'Error enviando el código.';
+        errEl.classList.remove('hidden');
+        return;
       }
-    } catch (err: any) {
-      showAlert('Error de conexión: ' + (err.message || 'Inténtalo de nuevo.'));
+      // Move to step 2
+      $('#emailDisplay').textContent = email;
+      $('#step1').classList.add('hidden');
+      $('#step2').classList.remove('hidden');
+      $$('.code-input')[0].focus();
+    } catch {
+      errEl.textContent = 'Error de conexión.';
+      errEl.classList.remove('hidden');
+    } finally {
+      $('#btnSend').disabled = false;
+      $('#btnSend').textContent = 'Enviar código de verificación';
     }
+  });
 
-    submitBtn.textContent = 'Enviar Solicitud de Verificación';
-    submitBtn.removeAttribute('disabled');
+  // Code inputs — auto-advance
+  const codeInputs = $$('.code-input');
+  codeInputs.forEach((input, i) => {
+    input.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/[^0-9]/g, '');
+      e.target.value = val;
+      if (val && i < 5) codeInputs[i + 1].focus();
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && !e.target.value && i > 0) codeInputs[i - 1].focus();
+    });
+    input.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData.getData('text') || '').replace(/[^0-9]/g, '').slice(0, 6);
+      pasted.split('').forEach((ch, j) => { if (codeInputs[j]) codeInputs[j].value = ch; });
+      if (pasted.length > 0) codeInputs[Math.min(pasted.length, 5)].focus();
+    });
+  });
+
+  // STEP 2 — Verify code
+  $('#codeForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = Array.from(codeInputs).map(i => i.value).join('');
+    if (code.length !== 6) return;
+    const email = $('#emailDisplay').textContent;
+    const errEl = $('#error2');
+    errEl.classList.add('hidden');
+    $('#btnVerify').disabled = true;
+    $('#btnVerify').textContent = 'Verificando...';
+
+    try {
+      const resp = await fetch('/api/ficha/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, email, code }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        errEl.textContent = data.error || 'Código incorrecto.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+      // Redirect to Stripe Checkout
+      if (data.checkoutUrl) {
+        $('#step2').classList.add('hidden');
+        $('#step3').classList.remove('hidden');
+        window.location.href = data.checkoutUrl;
+      }
+    } catch {
+      errEl.textContent = 'Error de conexión.';
+      errEl.classList.remove('hidden');
+    } finally {
+      $('#btnVerify').disabled = false;
+      $('#btnVerify').textContent = 'Verificar y pagar';
+    }
+  });
+
+  // Resend code
+  $('#btnResend').addEventListener('click', async () => {
+    const email = $('#emailDisplay').textContent;
+    const nombre = $('#nombre')?.value || '';
+    const mensaje = $('#mensaje')?.value || '';
+    $('#btnResend').textContent = 'Reenviando...';
+    try {
+      await fetch('/api/ficha/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, nombre, email, mensaje }),
+      });
+      $('#btnResend').textContent = '✓ Código reenviado';
+      setTimeout(() => { $('#btnResend').textContent = 'Reenviar código'; }, 3000);
+    } catch {
+      $('#btnResend').textContent = 'Error, inténtalo de nuevo';
+    }
   });
 </script>
+
+<style>
+  .code-input { font-family: 'Courier New', monospace; }
+  .code-input:focus { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+</style>
