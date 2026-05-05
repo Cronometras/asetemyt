@@ -1,6 +1,6 @@
 // POST /api/ficha/send-code — Send email verification code for claim flow
 import type { APIRoute } from 'astro';
-import { firestoreCreate, firestoreDelete, findListingBySlug } from '../../../lib/firestore-rest';
+import { firestoreCreate, firestoreDelete, firestoreQuery, findListingBySlug } from '../../../lib/firestore-rest';
 import { toFirestoreValue } from '../../../lib/firestore-rest';
 
 const FREE_DOMAINS = new Set([
@@ -53,10 +53,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
 
-  // Store in Firestore (document ID = email, sanitized)
+  // Store in Firestore — delete any previous code for this email first
   const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
-  // Delete any previous verification code for this email
-  await firestoreDelete(env, 'verification_codes_asetemyt', docId).catch(() => {});
+  try {
+    const existing = await firestoreQuery(env, 'verification_codes_asetemyt', 'email', 'EQUAL', email);
+    for (const d of existing) {
+      if (d.name) {
+        const id = d.name.split('/').pop();
+        await firestoreDelete(env, 'verification_codes_asetemyt', id);
+      }
+    }
+  } catch (_) { /* ignore cleanup errors */ }
+
   let ok: boolean;
   try {
     ok = await firestoreCreate(env, 'verification_codes_asetemyt', docId, {
