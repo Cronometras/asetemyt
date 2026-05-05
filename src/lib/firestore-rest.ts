@@ -101,6 +101,10 @@ export async function firestoreCreate(env: any, collection: string, docId: strin
       body: JSON.stringify({ fields }),
     }
   );
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => 'unknown');
+    console.error(`firestoreCreate failed (${collection}/${docId}): ${resp.status} ${errText}`);
+  }
   return resp.ok;
 }
 
