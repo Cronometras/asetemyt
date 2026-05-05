@@ -1,0 +1,12 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "articulos_asetemyt",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "publishedAt", "order": "DESCENDING" }
+      ]
+    }
+  ]
+}

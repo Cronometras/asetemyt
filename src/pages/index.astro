@@ -134,27 +134,34 @@ import Layout from '../layouts/Layout.astro';
 
   <script>
     import { db, t, getLang, type Lang, translations } from '../lib/firebase';
-    import { collection, getDocs, query, orderBy, where, limit } from 'firebase/firestore';
+    import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
     let lang: Lang = getLang();
 
     async function load() {
-      const snapshot = await getDocs(
-        query(collection(db, 'directorio_asetemyt'), orderBy('createdAt', 'desc'))
-      );
-      let entries = snapshot.docs.map((d) => d.data());
-      // Filtrar por idioma: mostrar entradas sin lang o con el lang actual
-      entries = entries.filter((e: any) => !e.lang || e.lang === lang);
+      let entries: any[] = [];
+      let articles: any[] = [];
 
-      const artSnap = await getDocs(
-        query(
-          collection(db, 'articulos_asetemyt'),
-          where('status', '==', 'published'),
-          orderBy('publishedAt', 'desc'),
-          limit(6)
-        )
-      );
-      const articles = artSnap.docs.map((d) => d.data());
+      try {
+        const snapshot = await getDocs(
+          query(collection(db, 'directorio_asetemyt'), orderBy('createdAt', 'desc'))
+        );
+        entries = snapshot.docs.map((d) => d.data());
+        // Filtrar por idioma: mostrar entradas sin lang o con el lang actual
+        entries = entries.filter((e: any) => !e.lang || e.lang === lang);
+      } catch (e) {
+        console.error('Error loading directory:', e);
+      }
+
+      try {
+        const res = await fetch('/data/articles.json');
+        if (res.ok) {
+          const all = await res.json();
+          articles = all.filter((a: any) => a.status === 'published').slice(0, 6);
+        }
+      } catch (e) {
+        console.error('Error loading articles:', e);
+      }
 
       render(entries, articles);
     }
