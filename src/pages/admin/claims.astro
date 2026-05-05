@@ -29,7 +29,7 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { onAuthStateChanged, auth } from '../../lib/auth';
+  import { onAuthStateChanged, auth, authFetch } from '../../lib/auth';
 
   const loading = document.getElementById('loading')!;
   const notAuth = document.getElementById('notAuth')!;
@@ -46,7 +46,7 @@ import Layout from '../../layouts/Layout.astro';
     adminPanel.classList.remove('hidden');
 
     try {
-      const resp = await fetch('/api/admin/claims');
+      const resp = await authFetch('/api/admin/claims');
       if (resp.status === 403) {
         notAuth.classList.remove('hidden');
         adminPanel.classList.add('hidden');
@@ -91,7 +91,7 @@ import Layout from '../../layouts/Layout.astro';
 
   (window as any).handleClaim = async (claimId: string, action: string) => {
     try {
-      const resp = await fetch('/api/admin/claim-action', {
+      const resp = await authFetch('/api/admin/claim-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ claimId, action }),

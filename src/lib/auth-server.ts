@@ -76,8 +76,20 @@ export async function verifyFirebaseToken(token: string, projectId: string): Pro
   return payload;
 }
 
-// Extract and verify token from cookie
+// Extract and verify token from Authorization header or cookie
 export async function getAuthUser(request: Request, projectId: string): Promise<any | null> {
+  // Try Authorization header first (Bearer token)
+  const authHeader = request.headers.get('authorization') || '';
+  const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+  if (bearerMatch) {
+    try {
+      return await verifyFirebaseToken(bearerMatch[1], projectId);
+    } catch {
+      return null;
+    }
+  }
+
+  // Fall back to cookie
   const cookie = request.headers.get('cookie') || '';
   const match = cookie.match(/asetemyt_token=([^;]+)/);
   if (!match) return null;

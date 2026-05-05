@@ -183,7 +183,7 @@ if (!entry) return Astro.redirect('/directorio');
 </Layout>
 
 <script>
-  import { onAuthStateChanged, auth } from '../../lib/auth';
+  import { onAuthStateChanged, auth, authFetch } from '../../lib/auth';
 
   const slug = window.location.pathname.split('/').filter(Boolean).pop();
   const notAuthWarning = document.getElementById('notAuthWarning')!;
@@ -226,7 +226,7 @@ if (!entry) return Astro.redirect('/directorio');
     submitBtn.setAttribute('disabled', 'true');
 
     try {
-      const resp = await fetch('/api/ficha/claim', {
+      const resp = await authFetch('/api/ficha/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

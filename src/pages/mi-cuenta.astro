@@ -78,7 +78,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { onAuthStateChanged, logOut, auth } from '../lib/auth';
+  import { onAuthStateChanged, logOut, auth, authFetch } from '../lib/auth';
 
   const loading = document.getElementById('loading')!;
   const notAuth = document.getElementById('notAuth')!;
@@ -139,7 +139,7 @@ import Layout from '../layouts/Layout.astro';
 
   portalBtn.addEventListener('click', async () => {
     try {
-      const resp = await fetch('/api/stripe/portal', { method: 'POST' });
+      const resp = await authFetch('/api/stripe/portal', { method: 'POST' });
       const data = await resp.json();
       if (data.url) window.location.href = data.url;
     } catch (err) {

@@ -142,7 +142,7 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { onAuthStateChanged, auth } from '../../lib/auth';
+  import { onAuthStateChanged, auth, authFetch } from '../../lib/auth';
 
   const slug = window.location.pathname.split('/').filter(Boolean).pop();
   const loading = document.getElementById('loading')!;
@@ -213,7 +213,7 @@ import Layout from '../../layouts/Layout.astro';
     if (servicios) updates.servicios = servicios.split('\n').map((s) => s.trim()).filter(Boolean);
 
     try {
-      const resp = await fetch('/api/ficha/update', {
+      const resp = await authFetch('/api/ficha/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug, updates }),

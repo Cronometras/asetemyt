@@ -14,6 +14,8 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+  import { authFetch } from '../lib/auth';
+
   const slug = new URLSearchParams(window.location.search).get('slug');
   const errorEl = document.getElementById('error')!;
 
@@ -22,7 +24,7 @@ import Layout from '../layouts/Layout.astro';
     errorEl.classList.remove('hidden');
   } else {
     try {
-      const resp = await fetch('/api/stripe/checkout', {
+      const resp = await authFetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug }),

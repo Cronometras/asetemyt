@@ -53,5 +53,15 @@ export async function logOut() {
   document.cookie = 'asetemyt_token=; path=/; max-age=0';
 }
 
+// Authenticated fetch helper — adds Bearer token automatically
+export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const user = auth.currentUser;
+  if (!user) throw new Error('No authenticated user');
+  const token = await user.getIdToken();
+  const headers = new Headers(options.headers);
+  headers.set('Authorization', `Bearer ${token}`);
+  return fetch(url, { ...options, headers });
+}
+
 export { onAuthStateChanged };
 export type { User };
