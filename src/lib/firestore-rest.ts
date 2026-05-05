@@ -69,7 +69,8 @@ export async function firestoreGet(env: any, collection: string, docId: string):
     { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!resp.ok) return null;
-  return resp.json();
+  const doc = await resp.json();
+  return { id: doc.name.split('/').pop(), ...parseFirestoreDoc(doc) };
 }
 
 // Update specific fields of a document (PATCH)
