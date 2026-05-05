@@ -10,7 +10,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
 
-  const user = await getAuthUser(request, projectId);
+  const { user } = await getAuthUser(request, projectId);
   if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
 
   if (!ADMIN_UIDS.includes(user.user_id)) {
@@ -42,7 +42,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
 
-  const user = await getAuthUser(request, projectId);
+  const { user } = await getAuthUser(request, projectId);
   if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
   if (!ADMIN_UIDS.includes(user.user_id)) {
     return new Response(JSON.stringify({ error: 'Acceso denegado' }), { status: 403 });

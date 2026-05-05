@@ -7,17 +7,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
 
-  console.log('[CLAIM] Request received, method:', request.method);
-  console.log('[CLAIM] Authorization header present:', !!request.headers.get('authorization'));
-  console.log('[CLAIM] Cookie header present:', !!request.headers.get('cookie'));
-
-  const user = await getAuthUser(request, projectId);
+  const { user, error } = await getAuthUser(request, projectId);
   if (!user) {
-    console.log('[CLAIM] Auth failed — returning 401');
-    return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
+    return new Response(JSON.stringify({ error: 'No autorizado', debug: error }), { status: 401 });
   }
-
-  console.log('[CLAIM] Auth success, user:', user.email || user.user_id);
 
   const { slug, nombre, email, telefono, relacion, mensaje } = await request.json();
 
