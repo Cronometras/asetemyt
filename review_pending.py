@@ -13,8 +13,8 @@ from datetime import datetime
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
 
-SA_FILE = "/home/ubuntu/projects/articulos-IA---a-Firestore/backup/firebase-service-account.json"
-PROJECT_ID = "micaot-com"
+SA_FILE = "/home/ubuntu/projects/articulos-IA---a-Firestore/backup/firebase-service-account-asetemyt.json"
+PROJECT_ID = "asetemyt-ec205"
 
 def get_token():
     creds = service_account.Credentials.from_service_account_file(
@@ -289,8 +289,9 @@ def process_entries():
                 if isinstance(v, float):
                     return {"doubleValue": v}
                 if isinstance(v, str):
-                    # Detect ISO timestamps (from convert_value reading timestampValue)
-                    if 'T' in v and ('Z' in v or '+' in v):
+                    # Detect ISO timestamps strictly (YYYY-MM-DDTHH:MM:SS)
+                    import re
+                    if re.match(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}', v):
                         return {"timestampValue": v}
                     return {"stringValue": v}
                 if isinstance(v, list):
