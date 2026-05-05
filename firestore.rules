@@ -4,10 +4,24 @@ service cloud.firestore {
     match /directorio_asetemyt/{docId} {
       allow read: if true;
     }
+    match /directorio_consultores_asetemyt/{docId} {
+      allow read: if true;
+    }
+    match /directorio_software_asetemyt/{docId} {
+      allow read: if true;
+    }
     match /articulos_asetemyt/{docId} {
       allow read: if resource.data.status == 'published';
     }
     match /pending_asetemyt/{docId} {
+      allow create: if true;
+      allow read: if false;
+    }
+    match /pending_consultores_asetemyt/{docId} {
+      allow create: if true;
+      allow read: if false;
+    }
+    match /pending_software_asetemyt/{docId} {
       allow create: if true;
       allow read: if false;
     }

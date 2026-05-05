@@ -133,7 +133,7 @@ import Layout from '../layouts/Layout.astro';
   </div>
 
   <script>
-    import { db, t, getLang, type Lang, translations } from '../lib/firebase';
+    import { db, t, getLang, type Lang, translations, COLLECTION_CONSULTORES, COLLECTION_SOFTWARE } from '../lib/firebase';
     import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
     let lang: Lang = getLang();
@@ -143,12 +143,17 @@ import Layout from '../layouts/Layout.astro';
       let articles: any[] = [];
 
       try {
-        const snapshot = await getDocs(
-          query(collection(db, 'directorio_asetemyt'), orderBy('createdAt', 'desc'))
-        );
-        entries = snapshot.docs.map((d) => d.data());
+        // Load from both split collections in parallel
+        const [consultoresSnap, softwareSnap] = await Promise.all([
+          getDocs(query(collection(db, COLLECTION_CONSULTORES), orderBy('createdAt', 'desc'))),
+          getDocs(query(collection(db, COLLECTION_SOFTWARE), orderBy('createdAt', 'desc'))),
+        ]);
+        entries = [
+          ...consultoresSnap.docs.map((d) => d.data()),
+          ...softwareSnap.docs.map((d) => d.data()),
+        ];
         // Filtrar por idioma: mostrar entradas sin lang o con el lang actual
-        entries = entries.filter((e: any) => !e.lang || e.lang === lang);
+        // Show all entries regardless of language — UI toggle handles switching
       } catch (e) {
         console.error('Error loading directory:', e);
       }

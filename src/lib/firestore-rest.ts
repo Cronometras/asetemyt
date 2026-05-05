@@ -171,3 +171,19 @@ export function toFirestoreValue(val: any): any {
   }
   return { stringValue: String(val) };
 }
+
+// --- Split collection helpers ---
+const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
+const COLLECTION_SOFTWARE = 'directorio_software_asetemyt';
+
+/** Search both directory collections by slug. Returns { listing, collection } or null. */
+export async function findListingBySlug(env: any, slug: string): Promise<{ listing: any; collection: string } | null> {
+  // Try both collections in parallel
+  const [consultResults, softwareResults] = await Promise.all([
+    firestoreQuery(env, COLLECTION_CONSULTORES, 'slug', 'EQUAL', { stringValue: slug }),
+    firestoreQuery(env, COLLECTION_SOFTWARE, 'slug', 'EQUAL', { stringValue: slug }),
+  ]);
+  if (consultResults.length > 0) return { listing: consultResults[0], collection: COLLECTION_CONSULTORES };
+  if (softwareResults.length > 0) return { listing: softwareResults[0], collection: COLLECTION_SOFTWARE };
+  return null;
+}

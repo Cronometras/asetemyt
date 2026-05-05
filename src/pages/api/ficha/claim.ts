@@ -1,7 +1,7 @@
 // POST /api/ficha/claim — Submit a claim request for a listing
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
-import { firestoreGet, firestoreCreate } from '../../../lib/firestore-rest';
+import { firestoreCreate, findListingBySlug } from '../../../lib/firestore-rest';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -14,15 +14,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   if (!slug) return new Response(JSON.stringify({ error: 'Slug requerido' }), { status: 400 });
 
-  // Check the listing exists
-  const listing = await firestoreGet(env, 'directorio_asetemyt', slug);
-  if (!listing) {
-    // Try querying by slug field
-    const { firestoreQuery } = await import('../../../lib/firestore-rest');
-    const results = await firestoreQuery(env, 'directorio_asetemyt', 'slug', 'EQUAL', { stringValue: slug });
-    if (results.length === 0) {
-      return new Response(JSON.stringify({ error: 'Ficha no encontrada' }), { status: 404 });
-    }
+  // Check the listing exists in either collection
+  const found = await findListingBySlug(env, slug);
+  if (!found) {
+    return new Response(JSON.stringify({ error: 'Ficha no encontrada' }), { status: 404 });
   }
 
   // Check if already claimed or pending

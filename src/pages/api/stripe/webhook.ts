@@ -1,7 +1,7 @@
 // POST /api/stripe/webhook — Handle Stripe webhook events
 import type { APIRoute } from 'astro';
 import { getStripe } from '../../../lib/stripe-server';
-import { firestoreQuery, firestoreUpdate, firestoreCreate, firestoreGet, toFirestoreValue } from '../../../lib/firestore-rest';
+import { firestoreQuery, firestoreUpdate, firestoreCreate, firestoreGet, findListingBySlug } from '../../../lib/firestore-rest';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -26,10 +26,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       if (!slug || !uid) break;
 
-      // Update listing: mark as verified and set owner
-      const results = await firestoreQuery(env, 'directorio_asetemyt', 'slug', 'EQUAL', { stringValue: slug });
-      if (results.length > 0) {
-        await firestoreUpdate(env, 'directorio_asetemyt', results[0].id, {
+      // Update listing: mark as verified and set owner (search both collections)
+      const found = await findListingBySlug(env, slug);
+      if (found) {
+        await firestoreUpdate(env, found.collection, found.listing.id, {
           verificado: { booleanValue: true },
           ownerUid: { stringValue: uid },
           claimedAt: { timestampValue: new Date().toISOString() },
@@ -92,10 +92,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
         await firestoreUpdate(env, 'subscriptions_asetemyt', sub.id, {
           status: { stringValue: 'canceled' },
         });
-        // Remove verified status from listing
-        const results = await firestoreQuery(env, 'directorio_asetemyt', 'slug', 'EQUAL', { stringValue: sub.slug });
-        if (results.length > 0) {
-          await firestoreUpdate(env, 'directorio_asetemyt', results[0].id, {
+        // Remove verified status from listing (search both collections)
+        const found = await findListingBySlug(env, sub.slug);
+        if (found) {
+          await firestoreUpdate(env, found.collection, found.listing.id, {
             verificado: { booleanValue: false },
           });
         }

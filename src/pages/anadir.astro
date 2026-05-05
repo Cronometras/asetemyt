@@ -148,7 +148,7 @@ import Layout from '../layouts/Layout.astro';
   <script>
     import { initializeApp } from 'firebase/app';
     import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-    import { t, getLang, type Lang } from '../lib/firebase';
+    import { t, getLang, type Lang, PENDING_CONSULTORES } from '../lib/firebase';
 
     const firebaseConfig = {
       apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || 'AIzaSyCWrnHpOz_2-BSL8vPQDxmYRD_sAlZuiDs',
@@ -235,7 +235,7 @@ import Layout from '../layouts/Layout.astro';
       };
 
       try {
-        await addDoc(collection(db, 'pending_asetemyt'), data);
+        await addDoc(collection(db, PENDING_CONSULTORES), data);
         successEl?.classList.remove('hidden');
         form.reset();
       } catch (err: any) {

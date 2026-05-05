@@ -212,19 +212,29 @@ def process_entries():
     }
     base_url = f"https://firestore.googleapis.com/v1/projects/{PROJECT_ID}/databases/(default)/documents"
 
-    # Get pending entries
+    # Get pending entries from BOTH collections
     import urllib.request
-    url = f"{base_url}/pending_asetemyt?orderBy=createdAt+asc"
-    req = urllib.request.Request(url, headers=headers)
-    try:
-        resp = urllib.request.urlopen(req)
-        data = json.loads(resp.read())
-    except Exception as e:
-        print(f"No pending entries or error: {e}")
-        return
 
-    documents = data.get("documents", [])
-    if not documents:
+    PENDING_COLLECTIONS = [
+        ("pending_consultores_asetemyt", "directorio_consultores_asetemyt"),
+        ("pending_software_asetemyt", "directorio_software_asetemyt"),
+    ]
+
+    all_documents = []  # (pending_col, directorio_col, doc_name, doc_id, fields)
+    for pending_col, dir_col in PENDING_COLLECTIONS:
+        url = f"{base_url}/{pending_col}?orderBy=createdAt+asc"
+        req = urllib.request.Request(url, headers=headers)
+        try:
+            resp = urllib.request.urlopen(req)
+            data = json.loads(resp.read())
+            for doc in data.get("documents", []):
+                doc_name = doc["name"]
+                doc_id = doc_name.split("/")[-1]
+                all_documents.append((pending_col, dir_col, doc_name, doc_id, doc["fields"]))
+        except Exception as e:
+            print(f"No pending entries in {pending_col} or error: {e}")
+
+    if not all_documents:
         print("No pending entries.")
         return
 
@@ -232,10 +242,7 @@ def process_entries():
     spam_entries = []
     manual_review = []
 
-    for doc in documents:
-        doc_name = doc["name"]  # Full path
-        doc_id = doc_name.split("/")[-1]
-        fields = doc["fields"]
+    for pending_col, dir_col, doc_name, doc_id, fields in all_documents:
 
         # Convert Firestore fields to plain dict
         def convert_value(v):
@@ -258,28 +265,28 @@ def process_entries():
         status, reason = classify_entry(entry)
 
         if status == 'approved':
-            approved.append((doc_name, doc_id, entry, reason))
+            approved.append((pending_col, dir_col, doc_name, doc_id, entry, reason))
         elif status == 'spam':
-            spam_entries.append((doc_name, doc_id, entry, reason))
+            spam_entries.append((pending_col, dir_col, doc_name, doc_id, entry, reason))
         else:
-            manual_review.append((doc_name, doc_id, entry, reason))
+            manual_review.append((pending_col, dir_col, doc_name, doc_id, entry, reason))
 
     # Process results
     output_lines = []
 
     if approved:
         output_lines.append(f"✅ APROBADAS ({len(approved)}):")
-        for doc_name, doc_id, entry, reason in approved:
+        for pending_col, dir_col, doc_name, doc_id, entry, reason in approved:
             nombre = entry.get('nombre', 'Sin nombre')
             slug = entry.get('slug', doc_id)
 
-            # Move to directorio_asetemyt
+            # Move to correct directorio collection
             entry['verificado'] = True
             entry['status'] = 'approved'
             entry['reviewedAt'] = datetime.utcnow().isoformat() + 'Z'
 
-            # Create in directorio_asetemyt
-            create_url = f"{base_url}/directorio_asetemyt?documentId={slug}"
+            # Create in the correct directorio collection
+            create_url = f"{base_url}/{dir_col}?documentId={slug}"
             def to_firestore_value(v):
                 """Convert Python value back to Firestore REST format."""
                 if isinstance(v, bool):
@@ -307,7 +314,7 @@ def process_entries():
             req = urllib.request.Request(create_url, data=json.dumps(body).encode(), headers=headers, method='POST')
             try:
                 urllib.request.urlopen(req)
-                output_lines.append(f"  📋 {nombre} → directorio_asetemyt/{slug}")
+                output_lines.append(f"  📋 {nombre} → {dir_col}/{slug}")
             except Exception as e:
                 output_lines.append(f"  ⚠️ {nombre} error creando: {e}")
 
@@ -322,7 +329,7 @@ def process_entries():
                     output_lines.append(f"  ⚠️ MailRelay: error suscribiendo {email_addr}")
 
             # Delete from pending
-            del_url = f"{base_url}/pending_asetemyt/{doc_id}"
+            del_url = f"{base_url}/{pending_col}/{doc_id}"
             req = urllib.request.Request(del_url, headers=headers, method='DELETE')
             try:
                 urllib.request.urlopen(req)
@@ -332,7 +339,7 @@ def process_entries():
 
     if spam_entries:
         output_lines.append(f"\n🚫 SPAM ({len(spam_entries)}):")
-        for doc_name, doc_id, entry, reason in spam_entries:
+        for pending_col, dir_col, doc_name, doc_id, entry, reason in spam_entries:
             nombre = entry.get('nombre', 'Sin nombre')
 
             # Move to spam_asetemyt
@@ -354,7 +361,7 @@ def process_entries():
                 output_lines.append(f"  ⚠️ {nombre} error: {e}")
 
             # Delete from pending
-            req = urllib.request.Request(f"{base_url}/pending_asetemyt/{doc_id}", headers=headers, method='DELETE')
+            req = urllib.request.Request(f"{base_url}/{pending_col}/{doc_id}", headers=headers, method='DELETE')
             try:
                 urllib.request.urlopen(req)
             except:
@@ -362,7 +369,7 @@ def process_entries():
 
     if manual_review:
         output_lines.append(f"\n⚠️ REVISIÓN MANUAL ({len(manual_review)}):")
-        for doc_name, doc_id, entry, reason in manual_review:
+        for pending_col, dir_col, doc_name, doc_id, entry, reason in manual_review:
             nombre = entry.get('nombre', 'Sin nombre')
             output_lines.append(f"  ❓ {nombre} - Motivo: {reason}")
 

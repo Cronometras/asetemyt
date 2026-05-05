@@ -25,6 +25,12 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 
+// Directory collection names (split by type)
+export const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
+export const COLLECTION_SOFTWARE = 'directorio_software_asetemyt';
+export const PENDING_CONSULTORES = 'pending_consultores_asetemyt';
+export const PENDING_SOFTWARE = 'pending_software_asetemyt';
+
 // --- i18n ---
 
 export const translations = {
@@ -215,24 +221,20 @@ export async function getArticleBySlug(slug: string) {
   return { id: d.id, ...d.data() } as any;
 }
 
-// --- Directory ---
+// --- Directory (split: consultores + software) ---
 
-export async function getDirectoryEntries(filters?: {
+function applyFilters(entries: any[], filters?: {
   tipo?: string;
   especialidad?: string;
   ubicacion?: string;
   lang?: string;
 }) {
-  const snapshot = await getDocs(
-    query(collection(db, 'directorio_asetemyt'), orderBy('createdAt', 'desc'))
-  );
-  let entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
-
+  let result = entries;
   if (filters?.tipo) {
-    entries = entries.filter((e) => e.tipo === filters.tipo);
+    result = result.filter((e) => e.tipo === filters.tipo);
   }
   if (filters?.especialidad) {
-    entries = entries.filter((e) =>
+    result = result.filter((e) =>
       e.especialidades?.some(
         (es: string) => es.toLowerCase() === filters.especialidad!.toLowerCase()
       )
@@ -240,43 +242,109 @@ export async function getDirectoryEntries(filters?: {
   }
   if (filters?.ubicacion) {
     const loc = filters.ubicacion.toLowerCase();
-    entries = entries.filter(
+    result = result.filter(
       (e) =>
         e.ubicacion?.pais?.toLowerCase().includes(loc) ||
         e.ubicacion?.ciudad?.toLowerCase().includes(loc)
     );
   }
   if (filters?.lang) {
-    entries = entries.filter((e) => !e.lang || e.lang === filters.lang);
+    result = result.filter((e) => !e.lang || e.lang === filters.lang);
   }
-  return entries;
+  return result;
+}
+
+/** Get consultores entries only */
+export async function getConsultoresEntries(filters?: {
+  tipo?: string;
+  especialidad?: string;
+  ubicacion?: string;
+  lang?: string;
+}) {
+  const snapshot = await getDocs(
+    query(collection(db, COLLECTION_CONSULTORES), orderBy('createdAt', 'desc'))
+  );
+  const entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
+  return applyFilters(entries, filters);
+}
+
+/** Get software entries only */
+export async function getSoftwareEntries(filters?: {
+  tipo?: string;
+  especialidad?: string;
+  ubicacion?: string;
+  lang?: string;
+}) {
+  const snapshot = await getDocs(
+    query(collection(db, COLLECTION_SOFTWARE), orderBy('createdAt', 'desc'))
+  );
+  const entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
+  return applyFilters(entries, filters);
+}
+
+/** Get all directory entries from both collections (for getStaticPaths and slug lookup) */
+export async function getDirectoryEntries(filters?: {
+  tipo?: string;
+  especialidad?: string;
+  ubicacion?: string;
+  lang?: string;
+}) {
+  const [consultores, software] = await Promise.all([
+    getConsultoresEntries(filters),
+    getSoftwareEntries(filters),
+  ]);
+  return [...consultores, ...software];
 }
 
 export async function getDirectoryStats() {
-  const snapshot = await getDocs(collection(db, 'directorio_asetemyt'));
-  const entries = snapshot.docs.map((d) => d.data());
+  const [consultoresSnap, softwareSnap] = await Promise.all([
+    getDocs(collection(db, COLLECTION_CONSULTORES)),
+    getDocs(collection(db, COLLECTION_SOFTWARE)),
+  ]);
+  const allEntries = [
+    ...consultoresSnap.docs.map((d) => d.data()),
+    ...softwareSnap.docs.map((d) => d.data()),
+  ];
   return {
-    total: entries.length,
-    empresas: entries.filter((e) => e.tipo === 'empresa').length,
-    consultores: entries.filter((e) => e.tipo === 'consultor').length,
-    freelancers: entries.filter((e) => e.tipo === 'freelance').length,
+    total: allEntries.length,
+    empresas: allEntries.filter((e) => e.tipo === 'empresa').length,
+    consultores: allEntries.filter((e) => e.tipo === 'consultor').length,
+    freelancers: allEntries.filter((e) => e.tipo === 'freelance').length,
+    software: allEntries.filter((e) => e.seccion === 'software').length,
   };
 }
 
 export async function getDirectoryEntryBySlug(slug: string) {
-  const qRef = query(
-    collection(db, 'directorio_asetemyt'),
-    where('slug', '==', slug),
-    limit(1)
-  );
-  const snapshot = await getDocs(qRef);
-  if (snapshot.empty) return null;
-  const d = snapshot.docs[0];
-  return { id: d.id, ...d.data() } as any;
+  // Search both collections in parallel
+  const [consultoresSnap, softwareSnap] = await Promise.all([
+    getDocs(query(collection(db, COLLECTION_CONSULTORES), where('slug', '==', slug), limit(1))),
+    getDocs(query(collection(db, COLLECTION_SOFTWARE), where('slug', '==', slug), limit(1))),
+  ]);
+  if (!consultoresSnap.empty) {
+    const d = consultoresSnap.docs[0];
+    return { id: d.id, ...d.data(), _collection: COLLECTION_CONSULTORES } as any;
+  }
+  if (!softwareSnap.empty) {
+    const d = softwareSnap.docs[0];
+    return { id: d.id, ...d.data(), _collection: COLLECTION_SOFTWARE } as any;
+  }
+  return null;
 }
 
-export async function addDirectoryEntry(data: any) {
-  return addDoc(collection(db, 'directorio_asetemyt'), {
+/** Returns the correct directory collection for a seccion value */
+export function getCollectionForSeccion(seccion?: string): string {
+  return seccion === 'software' ? COLLECTION_SOFTWARE : COLLECTION_CONSULTORES;
+}
+
+/** Returns the correct pending collection for a seccion value */
+export function getPendingCollectionForSeccion(seccion?: string): string {
+  return seccion === 'software' ? PENDING_SOFTWARE : PENDING_CONSULTORES;
+}
+
+/** Add a pending entry to the correct pending collection */
+export async function addPendingEntry(data: any) {
+  const pendingCol = getPendingCollectionForSeccion(data.seccion);
+  return addDoc(collection(db, pendingCol), {
     ...data,
     createdAt: new Date(),
     verificado: false,

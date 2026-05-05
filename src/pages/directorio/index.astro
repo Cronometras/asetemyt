@@ -52,7 +52,7 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
-    import { db, t, getLang, type Lang } from '../../lib/firebase';
+    import { db, t, getLang, type Lang, COLLECTION_CONSULTORES, COLLECTION_SOFTWARE } from '../../lib/firebase';
     import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
     let lang: Lang = getLang();
@@ -61,14 +61,15 @@ import Layout from '../../layouts/Layout.astro';
     async function load() {
       const tr = (k: string) => t(k, lang);
 
-      const snapshot = await getDocs(
-        query(collection(db, 'directorio_asetemyt'), orderBy('createdAt', 'desc'))
-      );
-      let allEntries = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
-      allEntries = allEntries.filter((e: any) => !e.lang || e.lang === lang);
+      // Load from separate collections in parallel
+      const [consultoresSnap, softwareSnap] = await Promise.all([
+        getDocs(query(collection(db, COLLECTION_CONSULTORES), orderBy('createdAt', 'desc'))),
+        getDocs(query(collection(db, COLLECTION_SOFTWARE), orderBy('createdAt', 'desc'))),
+      ]);
+      let consultores = consultoresSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
+      let software = softwareSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
 
-      const consultores = allEntries.filter((e: any) => !e.seccion || e.seccion === 'consultores');
-      const software = allEntries.filter((e: any) => e.seccion === 'software');
+      // No language filter — show all entries. Language switching is handled by the UI toggle.
 
       // Sort: destacado first
       const sortByDestacado = (a: any, b: any) => (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0);

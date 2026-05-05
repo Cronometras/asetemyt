@@ -77,8 +77,8 @@ export function getStaticPaths() {
 
   marked.setOptions({ breaks: true, gfm: true });
 
-  // Get slug from URL path
-  const pathParts = window.location.pathname.split('/');
+  // Get slug from URL path (handle trailing slash)
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
   const slug = pathParts[pathParts.length - 1];
 
   function formatDate(dateStr: string | null) {
