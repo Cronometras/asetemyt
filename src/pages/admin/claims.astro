@@ -21,8 +21,28 @@ import Layout from '../../layouts/Layout.astro';
         <a href="/mi-cuenta" class="text-sm text-accent-600 font-medium">← Mi cuenta</a>
       </div>
 
-      <div id="claimsList" class="space-y-4">
-        <p class="text-steel-500 text-sm">No hay solicitudes pendientes.</p>
+      <!-- Pending claims -->
+      <div class="mb-10">
+        <h2 class="text-xl font-bold text-primary-800 mb-4 flex items-center gap-2">
+          <span class="inline-block w-3 h-3 bg-amber-400 rounded-full"></span>
+          Pendientes
+          <span id="pendingCount" class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium"></span>
+        </h2>
+        <div id="pendingList" class="space-y-4">
+          <p class="text-steel-500 text-sm">No hay solicitudes pendientes.</p>
+        </div>
+      </div>
+
+      <!-- Approved claims -->
+      <div>
+        <h2 class="text-xl font-bold text-primary-800 mb-4 flex items-center gap-2">
+          <span class="inline-block w-3 h-3 bg-green-500 rounded-full"></span>
+          Aprobadas
+          <span id="approvedCount" class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium"></span>
+        </h2>
+        <div id="approvedList" class="space-y-4">
+          <p class="text-steel-500 text-sm">No hay solicitudes aprobadas.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -34,7 +54,59 @@ import Layout from '../../layouts/Layout.astro';
   const loading = document.getElementById('loading')!;
   const notAuth = document.getElementById('notAuth')!;
   const adminPanel = document.getElementById('adminPanel')!;
-  const claimsList = document.getElementById('claimsList')!;
+  const pendingList = document.getElementById('pendingList')!;
+  const approvedList = document.getElementById('approvedList')!;
+  const pendingCount = document.getElementById('pendingCount')!;
+  const approvedCount = document.getElementById('approvedCount')!;
+
+  function renderPendingClaim(c: any): string {
+    return `
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-amber-400">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-bold text-primary-900">${c.slug}</h3>
+            <p class="text-sm text-steel-500 mt-1">Solicitado por: <strong>${c.nombre}</strong> (${c.email})</p>
+            <p class="text-sm text-steel-500">Relación: ${c.relacion || 'No especificada'}</p>
+            ${c.telefono ? `<p class="text-sm text-steel-500">Tel: ${c.telefono}</p>` : ''}
+            ${c.mensaje ? `<p class="text-sm text-steel-600 mt-2 italic">"${c.mensaje}"</p>` : ''}
+            <p class="text-xs text-steel-400 mt-2">${new Date(c.createdAt).toLocaleString('es-ES')}</p>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="handleClaim('${c.id}', 'approve')"
+              class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-lg transition-colors">
+              Aprobar
+            </button>
+            <button onclick="handleClaim('${c.id}', 'reject')"
+              class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors">
+              Rechazar
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderApprovedClaim(c: any): string {
+    const paymentLink = `/checkout?slug=${encodeURIComponent(c.slug)}`;
+    return `
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-400">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-primary-900">${c.slug}</h3>
+            <p class="text-sm text-steel-500 mt-1">Solicitado por: <strong>${c.nombre}</strong> (${c.email})</p>
+            <p class="text-xs text-steel-400 mt-1">UID: ${c.uid || 'N/A'}</p>
+            ${c.reviewedAt ? `<p class="text-xs text-steel-400 mt-1">Aprobado: ${new Date(c.reviewedAt).toLocaleString('es-ES')}</p>` : ''}
+          </div>
+          <div class="flex gap-2 flex-shrink-0">
+            <button onclick="copyPaymentLink('${paymentLink}')"
+              class="px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white text-sm font-bold rounded-lg transition-colors">
+              Copiar enlace de pago
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
   onAuthStateChanged(auth, async (user) => {
     loading.classList.add('hidden');
@@ -46,46 +118,32 @@ import Layout from '../../layouts/Layout.astro';
     adminPanel.classList.remove('hidden');
 
     try {
-      const resp = await authFetch('/api/admin/claims');
+      const resp = await authFetch('/api/admin/claim-action');
       if (resp.status === 403) {
         notAuth.classList.remove('hidden');
         adminPanel.classList.add('hidden');
         return;
       }
       const data = await resp.json();
-      const claims = data.claims || [];
+      const pending = data.pending || [];
+      const approved = data.approved || [];
 
-      if (claims.length === 0) {
-        claimsList.innerHTML = '<p class="text-steel-500 text-sm">No hay solicitudes pendientes.</p>';
-        return;
+      pendingCount.textContent = pending.length.toString();
+      approvedCount.textContent = approved.length.toString();
+
+      if (pending.length === 0) {
+        pendingList.innerHTML = '<p class="text-steel-500 text-sm">No hay solicitudes pendientes.</p>';
+      } else {
+        pendingList.innerHTML = pending.map(renderPendingClaim).join('');
       }
 
-      claimsList.innerHTML = claims.map((c: any) => `
-        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-amber-400">
-          <div class="flex items-start justify-between">
-            <div>
-              <h3 class="font-bold text-primary-900">${c.slug}</h3>
-              <p class="text-sm text-steel-500 mt-1">Solicitado por: <strong>${c.nombre}</strong> (${c.email})</p>
-              <p class="text-sm text-steel-500">Relación: ${c.relacion || 'No especificada'}</p>
-              ${c.telefono ? `<p class="text-sm text-steel-500">Tel: ${c.telefono}</p>` : ''}
-              ${c.mensaje ? `<p class="text-sm text-steel-600 mt-2 italic">"${c.mensaje}"</p>` : ''}
-              <p class="text-xs text-steel-400 mt-2">${new Date(c.createdAt).toLocaleString('es-ES')}</p>
-            </div>
-            <div class="flex gap-2">
-              <button onclick="handleClaim('${c.id}', 'approve')"
-                class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-lg transition-colors">
-                Aprobar
-              </button>
-              <button onclick="handleClaim('${c.id}', 'reject')"
-                class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors">
-                Rechazar
-              </button>
-            </div>
-          </div>
-        </div>
-      `).join('');
+      if (approved.length === 0) {
+        approvedList.innerHTML = '<p class="text-steel-500 text-sm">No hay solicitudes aprobadas.</p>';
+      } else {
+        approvedList.innerHTML = approved.map(renderApprovedClaim).join('');
+      }
     } catch (err) {
-      claimsList.innerHTML = '<p class="text-red-500 text-sm">Error cargando solicitudes.</p>';
+      pendingList.innerHTML = '<p class="text-red-500 text-sm">Error cargando solicitudes.</p>';
     }
   });
 
@@ -104,6 +162,23 @@ import Layout from '../../layouts/Layout.astro';
       }
     } catch {
       alert('Error de conexión');
+    }
+  };
+
+  (window as any).copyPaymentLink = async (link: string) => {
+    const fullUrl = `${window.location.origin}${link}`;
+    try {
+      await navigator.clipboard.writeText(fullUrl);
+      alert('Enlace copiado al portapapeles:\n' + fullUrl);
+    } catch {
+      // Fallback
+      const input = document.createElement('input');
+      input.value = fullUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      alert('Enlace copiado:\n' + fullUrl);
     }
   };
 </script>

@@ -69,15 +69,47 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     case 'invoice.payment_succeeded': {
-      // Renewal — extend the period
+      // Renewal or first invoice — extend the period
       const invoice = event.data.object;
       const subscriptionId = invoice.subscription as string;
       const subs = await firestoreQuery(env, 'subscriptions_asetemyt', 'stripeSubscriptionId', 'EQUAL', { stringValue: subscriptionId });
       if (subs.length > 0) {
+        const currentEnd = new Date(subs[0].currentPeriodEnd || Date.now());
+        // If current end is in the future, keep it; otherwise set from now
+        const newEnd = currentEnd > new Date() ? currentEnd : new Date();
         await firestoreUpdate(env, 'subscriptions_asetemyt', subs[0].id, {
           status: { stringValue: 'active' },
-          currentPeriodEnd: { timestampValue: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() },
+          currentPeriodEnd: { timestampValue: new Date(newEnd.getTime() + 365 * 24 * 60 * 60 * 1000).toISOString() },
         });
+      }
+      break;
+    }
+
+    case 'customer.subscription.updated': {
+      const subscription = event.data.object;
+      const subscriptionId = subscription.id;
+      const status = subscription.status; // active, past_due, canceled, unpaid, trialing
+      const subs = await firestoreQuery(env, 'subscriptions_asetemyt', 'stripeSubscriptionId', 'EQUAL', { stringValue: subscriptionId });
+      if (subs.length > 0) {
+        const updates: Record<string, any> = {
+          status: { stringValue: status },
+        };
+        // Update period end from Stripe's current_period_end
+        if (subscription.current_period_end) {
+          updates.currentPeriodEnd = { timestampValue: new Date(subscription.current_period_end * 1000).toISOString() };
+        }
+        await firestoreUpdate(env, 'subscriptions_asetemyt', subs[0].id, updates);
+
+        // If subscription becomes inactive, remove verified status
+        if (['canceled', 'unpaid'].includes(status)) {
+          const sub = subs[0];
+          const found = await findListingBySlug(env, sub.slug);
+          if (found) {
+            await firestoreUpdate(env, found.collection, found.listing.id, {
+              verificado: { booleanValue: false },
+            });
+          }
+        }
       }
       break;
     }

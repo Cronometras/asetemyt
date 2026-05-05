@@ -49,10 +49,10 @@ import Layout from '../layouts/Layout.astro';
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 class="text-xl font-bold text-primary-900">Mis Fichas Verificadas</h2>
+          <h2 class="text-xl font-bold text-primary-900">Mis Fichas</h2>
         </div>
         <div id="fichasList" class="space-y-3">
-          <p class="text-steel-500 text-sm">No tienes fichas verificadas todavía.</p>
+          <p class="text-steel-500 text-sm">Cargando fichas...</p>
         </div>
       </div>
 
@@ -67,7 +67,7 @@ import Layout from '../layouts/Layout.astro';
           <h2 class="text-xl font-bold text-primary-900">Suscripción</h2>
         </div>
         <div id="subInfo">
-          <p class="text-steel-500 text-sm">No tienes suscripción activa.</p>
+          <p class="text-steel-500 text-sm">Cargando...</p>
         </div>
         <button id="portalBtn" class="hidden mt-4 text-sm text-accent-600 hover:text-accent-700 font-semibold">
           Gestionar suscripción →
@@ -91,10 +91,19 @@ import Layout from '../layouts/Layout.astro';
   const successAlert = document.getElementById('successAlert')!;
 
   // Check for success param from Stripe
-  if (new URLSearchParams(window.location.search).get('success') === '1') {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('success') === 'true' || params.get('success') === '1') {
     successAlert.classList.remove('hidden');
     window.history.replaceState({}, '', '/mi-cuenta');
   }
+
+  const statusLabels: Record<string, { label: string; color: string }> = {
+    active: { label: 'Activa', color: 'bg-green-100 text-green-700' },
+    past_due: { label: 'Pago pendiente', color: 'bg-amber-100 text-amber-700' },
+    canceled: { label: 'Cancelada', color: 'bg-red-100 text-red-700' },
+    unpaid: { label: 'Impagada', color: 'bg-red-100 text-red-700' },
+    trialing: { label: 'Periodo de prueba', color: 'bg-blue-100 text-blue-700' },
+  };
 
   onAuthStateChanged(auth, async (user) => {
     loading.classList.add('hidden');
@@ -106,29 +115,78 @@ import Layout from '../layouts/Layout.astro';
     dashboard.classList.remove('hidden');
     userName.textContent = user.displayName || user.email || 'Usuario';
 
-    // Load user's claimed fichas from Firestore via API
+    // Load user data from API
     try {
-      const token = await user.getIdToken();
-      // Fetch user data (we'll use a simple approach — check subscriptions)
-      // For now, show basic info
-      fichasList.innerHTML = '<p class="text-steel-500 text-sm">Cargando fichas...</p>';
+      const resp = await authFetch('/api/user/data');
+      if (!resp.ok) {
+        fichasList.innerHTML = '<p class="text-steel-500 text-sm">No tienes fichas verificadas todavía.</p>';
+        subInfo.innerHTML = '<p class="text-steel-500 text-sm">No tienes suscripción activa.</p>';
+        return;
+      }
 
-      // The fichas data will come from the API in future iterations
-      // For now, show placeholder
-      fichasList.innerHTML = `
-        <div class="flex items-center gap-3 p-4 bg-steel-50 rounded-xl">
-          <div class="w-10 h-10 bg-steel-200 rounded-lg flex items-center justify-center text-steel-500 font-bold">?</div>
-          <div>
-            <p class="font-semibold text-steel-700">Tus fichas aparecerán aquí</p>
-            <p class="text-sm text-steel-500">Reclama una ficha del directorio para empezar</p>
+      const data = await resp.json();
+
+      // Render fichas
+      if (data.fichas && data.fichas.length > 0) {
+        fichasList.innerHTML = data.fichas.map((f: any) => `
+          <div class="flex items-center justify-between p-4 bg-steel-50 rounded-xl">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                ${f.verificado
+                  ? '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                  : '<span class="text-steel-500 font-bold text-sm">?</span>'}
+              </div>
+              <div>
+                <p class="font-semibold text-steel-700">${f.nombre || f.slug}</p>
+                <p class="text-xs text-steel-500">${f.verificado ? '✓ Verificada' : 'Pendiente de verificación'}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <a href="/directorio/${f.slug}" class="text-xs text-accent-600 hover:text-accent-700 font-medium">Ver</a>
+              ${f.verificado ? `<a href="/editar/${f.slug}" class="text-xs text-accent-600 hover:text-accent-700 font-medium">Editar</a>` : ''}
+            </div>
           </div>
-        </div>
-        <a href="/directorio" class="inline-block mt-3 text-sm text-accent-600 hover:text-accent-700 font-semibold">
-          Explorar directorio →
-        </a>
-      `;
+        `).join('');
+      } else {
+        fichasList.innerHTML = `
+          <div class="flex items-center gap-3 p-4 bg-steel-50 rounded-xl">
+            <div class="w-10 h-10 bg-steel-200 rounded-lg flex items-center justify-center text-steel-500 font-bold">?</div>
+            <div>
+              <p class="font-semibold text-steel-700">Tus fichas aparecerán aquí</p>
+              <p class="text-sm text-steel-500">Reclama una ficha del directorio para empezar</p>
+            </div>
+          </div>
+          <a href="/directorio" class="inline-block mt-3 text-sm text-accent-600 hover:text-accent-700 font-semibold">
+            Explorar directorio →
+          </a>
+        `;
+      }
+
+      // Render subscription
+      if (data.subscriptions && data.subscriptions.length > 0) {
+        const sub = data.subscriptions[0]; // Show most recent
+        const statusInfo = statusLabels[sub.status] || { label: sub.status, color: 'bg-steel-100 text-steel-700' };
+        const periodEnd = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
+
+        subInfo.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="inline-block text-xs font-bold px-3 py-1 rounded-full ${statusInfo.color}">
+              ${statusInfo.label}
+            </span>
+            <span class="text-sm text-steel-500">Ficha: <strong>${sub.slug}</strong></span>
+          </div>
+          <p class="text-sm text-steel-500 mt-2">
+            ${sub.status === 'active' ? `Próxima renovación: ${periodEnd}` : `Válido hasta: ${periodEnd}`}
+          </p>
+        `;
+        portalBtn.classList.remove('hidden');
+      } else {
+        subInfo.innerHTML = '<p class="text-steel-500 text-sm">No tienes suscripción activa.</p>';
+      }
+
     } catch (err) {
       fichasList.innerHTML = '<p class="text-red-500 text-sm">Error cargando datos.</p>';
+      subInfo.innerHTML = '<p class="text-red-500 text-sm">Error cargando datos.</p>';
     }
   });
 

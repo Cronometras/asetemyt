@@ -1,4 +1,5 @@
 // POST /api/admin/claim-action — Approve or reject a claim (admin only)
+// GET /api/admin/claims — List pending and approved claims (admin only)
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { firestoreGet, firestoreUpdate, firestoreQuery } from '../../../lib/firestore-rest';
@@ -8,9 +9,9 @@ const ADMIN_UIDS = ['NCCrZqW3xuhK6E2wkBGDpylStFH3'];
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
-  const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
+  const apiKey = env.FIREBASE_API_KEY || '';
 
-  const { user } = await getAuthUser(request, projectId);
+  const { user } = await getAuthUser(request, apiKey);
   if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
 
   if (!ADMIN_UIDS.includes(user.user_id)) {
@@ -37,17 +38,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
   return new Response(JSON.stringify({ success: true, status: newStatus }), { status: 200 });
 };
 
-// GET /api/admin/claims — List pending claims (admin only)
+// GET /api/admin/claims — List pending and approved claims (admin only)
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
-  const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
+  const apiKey = env.FIREBASE_API_KEY || '';
 
-  const { user } = await getAuthUser(request, projectId);
+  const { user } = await getAuthUser(request, apiKey);
   if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
   if (!ADMIN_UIDS.includes(user.user_id)) {
     return new Response(JSON.stringify({ error: 'Acceso denegado' }), { status: 403 });
   }
 
-  const pendingClaims = await firestoreQuery(env, 'claims_asetemyt', 'estado', 'EQUAL', { stringValue: 'pending' });
-  return new Response(JSON.stringify({ claims: pendingClaims }), { status: 200 });
+  // Fetch pending AND approved claims
+  const [pendingClaims, approvedClaims] = await Promise.all([
+    firestoreQuery(env, 'claims_asetemyt', 'estado', 'EQUAL', { stringValue: 'pending' }),
+    firestoreQuery(env, 'claims_asetemyt', 'estado', 'EQUAL', { stringValue: 'approved' }),
+  ]);
+
+  return new Response(JSON.stringify({ pending: pendingClaims, approved: approvedClaims }), { status: 200 });
 };

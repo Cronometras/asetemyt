@@ -244,10 +244,11 @@ if (!entry) return Astro.redirect('/directorio');
         showAlert(data.message || 'Solicitud enviada correctamente', 'success');
         claimForm.reset();
       } else {
-        showAlert(data.error || 'Error enviando solicitud');
+        const debugInfo = data.debug ? ` (${data.debug})` : '';
+        showAlert((data.error || 'Error enviando solicitud') + debugInfo);
       }
     } catch (err: any) {
-      showAlert('Error de conexión. Inténtalo de nuevo.');
+      showAlert('Error de conexión: ' + (err.message || 'Inténtalo de nuevo.'));
     }
 
     submitBtn.textContent = 'Enviar Solicitud de Verificación';

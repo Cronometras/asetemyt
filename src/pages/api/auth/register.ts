@@ -5,9 +5,9 @@ import { firestoreGet, firestoreCreate } from '../../../lib/firestore-rest';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
-  const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
+  const apiKey = env.FIREBASE_API_KEY || '';
 
-  const { user, error: authError } = await getAuthUser(request, projectId);
+  const { user, error: authError } = await getAuthUser(request, apiKey);
   if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
 
   const { nombre, email } = await request.json();

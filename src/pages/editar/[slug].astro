@@ -153,7 +153,6 @@ import Layout from '../../layouts/Layout.astro';
   const editForm = document.getElementById('editForm') as HTMLFormElement;
   const alertEl = document.getElementById('alert')!;
   const submitBtn = document.getElementById('submitBtn')!;
-  const backLink = document.getElementById('backLink') as HTMLAnchorElement;
 
   function showAlert(msg: string, type: 'error' | 'success' = 'error') {
     alertEl.textContent = msg;
@@ -161,8 +160,24 @@ import Layout from '../../layouts/Layout.astro';
     alertEl.classList.remove('hidden');
   }
 
-  // We need to check ownership client-side by checking if the user's claimed fichas include this slug
-  // For now, we'll attempt the update and handle 403
+  function fillForm(data: any) {
+    const set = (id: string, value: string) => {
+      const el = document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | null;
+      if (el && value) el.value = value;
+    };
+
+    set('descripcion', data.descripcion || '');
+    set('ciudad', data.ubicacion?.ciudad || '');
+    set('pais', data.ubicacion?.pais || '');
+    set('direccion', data.ubicacion?.direccion || '');
+    set('email', data.contacto?.email || '');
+    set('telefono', data.contacto?.telefono || '');
+    set('web', data.contacto?.web || '');
+    set('linkedin', data.contacto?.linkedin || '');
+    set('logo', data.logo || '');
+    set('especialidades', (data.especialidades || []).join(', '));
+    set('servicios', (data.servicios || []).join('\n'));
+  }
 
   onAuthStateChanged(auth, async (user) => {
     loading.classList.add('hidden');
@@ -171,11 +186,29 @@ import Layout from '../../layouts/Layout.astro';
       return;
     }
 
-    editPanel.classList.remove('hidden');
     fichaName.textContent = `Editando: ${slug}`;
 
-    // Try to load current data from the listing page (we'll fetch it)
-    // For now, the form is empty — user fills what they want to change
+    // Load current listing data
+    try {
+      const resp = await authFetch(`/api/ficha/get?slug=${encodeURIComponent(slug || '')}`);
+      if (resp.status === 403) {
+        notOwner.classList.remove('hidden');
+        return;
+      }
+      if (!resp.ok) {
+        editPanel.classList.remove('hidden');
+        showAlert('Error cargando datos de la ficha');
+        return;
+      }
+
+      const data = await resp.json();
+      fillForm(data);
+      fichaName.textContent = `Editando: ${data.nombre || slug}`;
+      editPanel.classList.remove('hidden');
+    } catch (err) {
+      editPanel.classList.remove('hidden');
+      showAlert('Error de conexión cargando la ficha');
+    }
   });
 
   editForm.addEventListener('submit', async (e) => {
