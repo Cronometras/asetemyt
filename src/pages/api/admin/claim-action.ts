@@ -4,7 +4,7 @@ import { getAuthUser } from '../../../lib/auth-server';
 import { firestoreGet, firestoreUpdate, firestoreQuery } from '../../../lib/firestore-rest';
 
 // Admin UIDs — add yours here
-const ADMIN_UIDS = ['REPLACE_WITH_YOUR_FIREBASE_UID'];
+const ADMIN_UIDS = ['NCCrZqW3xuhK6E2wkBGDpylStFH3'];
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
