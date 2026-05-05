@@ -91,7 +91,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     </div>
   `;
 
-  async function sendEmail(from: string): Promise<boolean> {
+  async function sendEmail(from: string): Promise<{ ok: boolean; error?: string }> {
     const resp = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -105,18 +105,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
         html: emailHtml,
       }),
     });
-    return resp.ok;
+    if (resp.ok) return { ok: true };
+    try {
+      const err = await resp.json();
+      return { ok: false, error: err.message || `HTTP ${resp.status}` };
+    } catch {
+      return { ok: false, error: `HTTP ${resp.status}` };
+    }
   }
 
   // Try with custom domain first, fallback to resend.dev
-  let sent = await sendEmail(fromAddress);
-  if (!sent) {
+  let result = await sendEmail(fromAddress);
+  if (!result.ok) {
     fromAddress = 'ASETEMYT <onboarding@resend.dev>';
-    sent = await sendEmail(fromAddress);
+    result = await sendEmail(fromAddress);
   }
 
-  if (!sent) {
-    return new Response(JSON.stringify({ error: 'Error enviando el email de verificación' }), { status: 500 });
+  if (!result.ok) {
+    console.error('Resend error:', result.error);
+    return new Response(JSON.stringify({ error: 'Error enviando el email de verificación. Inténtalo de nuevo en unos minutos.' }), { status: 500 });
   }
 
   return new Response(JSON.stringify({ success: true, message: 'Código enviado' }), { status: 200 });
