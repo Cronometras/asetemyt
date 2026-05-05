@@ -104,6 +104,7 @@ export async function firestoreCreate(env: any, collection: string, docId: strin
   if (!resp.ok) {
     const errText = await resp.text().catch(() => 'unknown');
     console.error(`firestoreCreate failed (${collection}/${docId}): ${resp.status} ${errText}`);
+    throw new Error(`Firestore create failed: ${resp.status} ${errText.slice(0, 200)}`);
   }
   return resp.ok;
 }

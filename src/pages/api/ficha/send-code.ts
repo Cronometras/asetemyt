@@ -55,20 +55,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // Store in Firestore (document ID = email, sanitized)
   const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
-  const ok = await firestoreCreate(env, 'verification_codes_asetemyt', docId, {
-    code: { stringValue: code },
-    slug: { stringValue: slug },
-    nombre: { stringValue: nombre },
-    email: { stringValue: email },
-    mensaje: { stringValue: mensaje || '' },
-    uid: { stringValue: uid || '' },
-    createdAt: { timestampValue: now.toISOString() },
-    expiresAt: { timestampValue: expiresAt.toISOString() },
-    attempts: { integerValue: '0' },
-  });
+  let ok: boolean;
+  try {
+    ok = await firestoreCreate(env, 'verification_codes_asetemyt', docId, {
+      code: { stringValue: code },
+      slug: { stringValue: slug },
+      nombre: { stringValue: nombre },
+      email: { stringValue: email },
+      mensaje: { stringValue: mensaje || '' },
+      uid: { stringValue: uid || '' },
+      createdAt: { timestampValue: now.toISOString() },
+      expiresAt: { timestampValue: expiresAt.toISOString() },
+      attempts: { integerValue: '0' },
+    });
+  } catch (e: any) {
+    console.error('firestoreCreate threw:', e?.message || e);
+    return new Response(JSON.stringify({ error: 'Error guardando el código', detail: e?.message || 'unknown' }), { status: 500 });
+  }
 
   if (!ok) {
-    return new Response(JSON.stringify({ error: 'Error guardando el código' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error guardando el código', detail: 'firestoreCreate returned false' }), { status: 500 });
   }
 
   // Send email via Resend
