@@ -63,6 +63,10 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
               <button id="lang-es" class="px-2.5 py-1 bg-accent-500 text-white font-semibold transition-colors">ES</button>
               <button id="lang-en" class="px-2.5 py-1 hover:bg-steel-700 transition-colors">EN</button>
             </div>
+            <!-- Auth links -->
+            <div id="nav-auth" class="flex items-center gap-3 ml-2">
+              <a href="/login" class="hover:text-accent-400 transition-colors font-medium" data-nav="login">Iniciar Sesión</a>
+            </div>
           </div>
           <button id="mobile-menu-btn" class="md:hidden p-2">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,6 +79,9 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
           <a href="/directorio" class="block py-2 hover:text-accent-400" data-nav="dir">Directorio</a>
           <a href="/blog" class="block py-2 hover:text-accent-400" data-nav="blog">Blog</a>
           <a href="/anadir" class="block py-2 text-accent-400 font-semibold" data-nav="add">Añadir Empresa</a>
+          <div id="mob-auth-link" class="border-t border-steel-700 mt-2 pt-2">
+            <a href="/login" class="block py-2 hover:text-accent-400" data-nav="login">Iniciar Sesión</a>
+          </div>
           <div class="flex items-center gap-2 mt-3 border-t border-steel-700 pt-3">
             <button id="mob-lang-es" class="px-3 py-1 bg-accent-500 text-white text-sm font-semibold rounded">ES</button>
             <button id="mob-lang-en" class="px-3 py-1 text-steel-400 text-sm rounded hover:bg-steel-700">EN</button>
@@ -126,8 +133,8 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
       import { getLang, type Lang } from '../lib/firebase';
 
       const navLabels: Record<Lang, Record<string, string>> = {
-        es: { home: 'Inicio', dir: 'Directorio', blog: 'Blog', add: 'Añadir Empresa' },
-        en: { home: 'Home', dir: 'Directory', blog: 'Blog', add: 'Add Company' },
+        es: { home: 'Inicio', dir: 'Directorio', blog: 'Blog', add: 'Añadir Empresa', login: 'Iniciar Sesión', account: 'Mi Cuenta' },
+        en: { home: 'Home', dir: 'Directory', blog: 'Blog', add: 'Add Company', login: 'Log In', account: 'My Account' },
       };
 
       const footerLabels: Record<Lang, Record<string, string>> = {
@@ -192,6 +199,24 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
 
       // Init on load
       setLang(getLang());
+
+      // Auth state — update nav links
+      import { onAuthStateChanged, auth } from '../lib/auth';
+      const lang = () => (localStorage.getItem('asetemyt-lang') as Lang) || 'es';
+
+      onAuthStateChanged(auth, (user) => {
+        const navAuth = document.getElementById('nav-auth');
+        const mobAuth = document.getElementById('mob-auth-link');
+        if (!navAuth || !mobAuth) return;
+
+        if (user) {
+          navAuth.innerHTML = `<a href="/mi-cuenta" class="hover:text-accent-400 transition-colors font-medium" data-nav="account">${navLabels[lang()]['account']}</a>`;
+          mobAuth.innerHTML = `<a href="/mi-cuenta" class="block py-2 hover:text-accent-400" data-nav="account">${navLabels[lang()]['account']}</a>`;
+        } else {
+          navAuth.innerHTML = `<a href="/login" class="hover:text-accent-400 transition-colors font-medium" data-nav="login">${navLabels[lang()]['login']}</a>`;
+          mobAuth.innerHTML = `<a href="/login" class="block py-2 hover:text-accent-400" data-nav="login">${navLabels[lang()]['login']}</a>`;
+        }
+      });
     </script>
   </body>
 </html>
