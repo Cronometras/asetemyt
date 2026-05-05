@@ -59,7 +59,7 @@ export async function verifyFirebaseToken(token: string, projectId: string): Pro
 
   // Basic checks
   if (header.alg !== 'RS256') throw new Error('Invalid algorithm');
-  if (payload.aud !== projectId) throw new Error('Invalid audience');
+  if (payload.aud !== projectId) throw new Error(`Invalid audience: expected ${projectId}, got ${payload.aud}`);
   if (payload.iss !== `https://securetoken.google.com/${projectId}`) throw new Error('Invalid issuer');
   if (payload.exp * 1000 < Date.now()) throw new Error('Token expired');
 
@@ -77,39 +77,37 @@ export async function verifyFirebaseToken(token: string, projectId: string): Pro
 }
 
 // Extract and verify token from Authorization header or cookie
-export async function getAuthUser(request: Request, projectId: string): Promise<any | null> {
+export async function getAuthUser(request: Request, projectId: string): Promise<{ user: any; error?: string }> {
   // Try Authorization header first (Bearer token)
   const authHeader = request.headers.get('authorization') || '';
   const bearerMatch = authHeader.match(/^Bearer\s+(.+)$/i);
 
   if (bearerMatch) {
     try {
-      const result = await verifyFirebaseToken(bearerMatch[1], projectId);
-      return result;
+      const user = await verifyFirebaseToken(bearerMatch[1], projectId);
+      return { user };
     } catch (err: any) {
-      console.error('[AUTH] Bearer token verification failed:', err.message);
-      // Fall through to cookie
+      return { user: null, error: 'bearer_failed: ' + (err.message || err) };
     }
   }
 
   // Fall back to cookie
   const cookie = request.headers.get('cookie') || '';
   const match = cookie.match(/asetemyt_token=([^;]+)/);
-  if (!match) {
-    console.error('[AUTH] No Bearer token and no cookie found');
-    return null;
-  }
+  if (!match) return { user: null, error: 'no_token_found' };
   try {
-    return await verifyFirebaseToken(match[1], projectId);
+    const user = await verifyFirebaseToken(match[1], projectId);
+    return { user };
   } catch (err: any) {
-    console.error('[AUTH] Cookie token verification failed:', err.message);
-    return null;
+    return { user: null, error: 'cookie_failed: ' + (err.message || err) };
   }
 }
 
 // Get auth user or throw 401
 export async function requireAuth(request: Request, projectId: string): Promise<any> {
-  const user = await getAuthUser(request, projectId);
-  if (!user) throw new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
+  const { user, error } = await getAuthUser(request, projectId);
+  if (!user) {
+    throw new Response(JSON.stringify({ error: 'No autorizado', debug: error }), { status: 401 });
+  }
   return user;
 }
