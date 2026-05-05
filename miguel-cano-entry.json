@@ -1,0 +1,41 @@
+[
+  {
+    "nombre": "Miguel Cano",
+    "slug": "miguel-cano",
+    "tipo": "freelance",
+    "especialidades": [
+      "Cronometraje Industrial",
+      "Ingeniería de Métodos y Tiempos",
+      "Muestreo del Trabajo (Work Sampling)",
+      "Desarrollo de Software Industrial",
+      "Optimización de Procesos Productivos",
+      "Lean Manufacturing"
+    ],
+    "descripcion": "Experto independiente en cronometraje industrial e ingeniería de métodos y tiempos. Fundador de ProdCont, empresa dedicada al desarrollo de herramientas digitales para la medición del trabajo y la optimización de procesos productivos. Desarrollador de las aplicaciones Cronometras.com (PWA de cronometraje industrial con grabación de video, multi-cronómetro y cálculo de fiabilidad estadística) y WorkSamp.com (aplicación profesional de muestreo del trabajo con planes de observación aleatorios y notificaciones push). Con amplia experiencia en la implantación de sistemas de medición de tiempos en entornos industriales y de servicios, ofreciendo soluciones tecnológicas que combinan rigor metodológico con facilidad de uso.",
+    "servicios": [
+      "Estudios de tiempos y cronometraje industrial",
+      "Estudios de muestreo del trabajo (Work Sampling)",
+      "Análisis y mejora de métodos de trabajo",
+      "Implementación de software de medición de tiempos",
+      "Formación en ingeniería de métodos y tiempos",
+      "Consultoría en optimización de procesos productivos",
+      "Auditorías de productividad y eficiencia",
+      "Desarrollo de herramientas digitales a medida para producción"
+    ],
+    "ubicacion": {
+      "pais": "España",
+      "ciudad": "Valencia"
+    },
+    "contacto": {
+      "email": "info@cronometras.com",
+      "telefono": "+34 619 58 82 39",
+      "web": "https://prodcont.com",
+      "linkedin": "https://www.linkedin.com/in/miguel-cano-otero/"
+    },
+    "logo": "",
+    "verificado": true,
+    "createdAt": "2026-05-05T14:00:00Z",
+    "lang": "es",
+    "empresa_vinculada": "prodcont"
+  }
+]
