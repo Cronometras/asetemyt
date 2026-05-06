@@ -4,14 +4,9 @@
 
 import { firestoreGet } from './firestore-rest';
 
-const HARDCODED_ADMIN_UIDS = ['NCCrZqW3xuhK6E2wkBGDpylStFH3'];
-
 export async function isAdmin(env: any, user: any): Promise<boolean> {
   if (!user) return false;
-  
-  // Check hardcoded UIDs first (instant)
-  if (HARDCODED_ADMIN_UIDS.includes(user.user_id || user.uid)) return true;
-  
+
   // Check Firestore admins collection
   try {
     const email = user.email?.toLowerCase();

@@ -138,6 +138,28 @@ export async function firestoreQuery(env: any, collection: string, field: string
     .map((r: any) => ({ id: r.document.name.split('/').pop(), ...parseFirestoreDoc(r.document) }));
 }
 
+// List ALL documents in a collection (no filter)
+export async function firestoreListAll(env: any, collection: string): Promise<any[]> {
+  const token = await getAccessToken(env);
+  const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
+  const resp = await fetch(
+    `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents:runQuery`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        structuredQuery: {
+          from: [{ collectionId: collection }],
+        },
+      }),
+    }
+  );
+  const results = await resp.json();
+  return results
+    .filter((r: any) => r.document)
+    .map((r: any) => ({ id: r.document.name.split('/').pop(), ...parseFirestoreDoc(r.document) }));
+}
+
 // Parse Firestore REST document format to plain object
 export function parseFirestoreDoc(doc: any): Record<string, any> {
   const result: Record<string, any> = {};

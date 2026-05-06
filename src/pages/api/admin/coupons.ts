@@ -7,7 +7,7 @@
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
-import { firestoreQuery, firestoreCreate, firestoreUpdate, firestoreDelete } from '../../../lib/firestore-rest';
+import { firestoreQuery, firestoreCreate, firestoreUpdate, firestoreDelete, firestoreListAll } from '../../../lib/firestore-rest';
 
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -18,8 +18,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    const coupons = await firestoreQuery(env, 'cupones_asetemyt', 'createdAt', 'GREATER_THAN', { stringValue: '2020-01-01' });
-    // firestoreQuery returns already-parsed objects with flat properties
+    const coupons = await firestoreListAll(env, 'cupones_asetemyt');
     const parsed = coupons.map((c: any) => ({
       id: c.id,
       code: c.code || '',
