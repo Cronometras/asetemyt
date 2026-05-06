@@ -1,0 +1,136 @@
+---
+// RequestQuote.astro — "Solicitar Presupuesto" form component
+// Props: slug, entryName
+export interface Props {
+  slug: string;
+  entryName: string;
+  services?: string[];
+}
+const { slug, entryName, services = [] } = Astro.props;
+---
+
+<div id="quote-section" class="mt-8">
+  <button
+    id="quote-toggle-btn"
+    class="w-full bg-gradient-to-r from-primary-700 to-primary-800 hover:from-primary-800 hover:to-primary-900 text-white font-bold px-6 py-4 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
+  >
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+    </svg>
+    Solicitar Presupuesto a {entryName}
+    <svg class="w-5 h-5 transition-transform" id="quote-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+    </svg>
+  </button>
+
+  <form id="quote-form" class="hidden mt-4 bg-white rounded-xl shadow-lg p-6 border border-primary-100">
+    <p class="text-sm text-steel-500 mb-5">Completa el formulario y {entryName} recibirá tu solicitud de presupuesto.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div>
+        <label for="quote-name" class="block text-sm font-medium text-steel-700 mb-1">Tu nombre *</label>
+        <input type="text" id="quote-name" name="contactName" required maxlength="100"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+      </div>
+      <div>
+        <label for="quote-email" class="block text-sm font-medium text-steel-700 mb-1">Email *</label>
+        <input type="email" id="quote-email" name="contactEmail" required maxlength="200"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+      </div>
+      <div>
+        <label for="quote-phone" class="block text-sm font-medium text-steel-700 mb-1">Teléfono</label>
+        <input type="tel" id="quote-phone" name="contactPhone" maxlength="30"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+      </div>
+      <div>
+        <label for="quote-company" class="block text-sm font-medium text-steel-700 mb-1">Empresa</label>
+        <input type="text" id="quote-company" name="company" maxlength="200"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+      </div>
+    </div>
+
+    {services.length > 0 && (
+      <div class="mb-4">
+        <label for="quote-service" class="block text-sm font-medium text-steel-700 mb-1">Servicio necesario</label>
+        <select id="quote-service" name="serviceNeeded"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none bg-white">
+          <option value="">Seleccionar...</option>
+          {services.map(s => <option value={s}>{s}</option>)}
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+    )}
+
+    <div class="mb-5">
+      <label for="quote-message" class="block text-sm font-medium text-steel-700 mb-1">Describe tu proyecto o necesidad</label>
+      <textarea id="quote-message" name="message" rows="4" maxlength="2000"
+        placeholder="Ej: Necesitamos un estudio de tiempos para nuestra línea de montaje de 15 operarios..."
+        class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none resize-y"></textarea>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <button type="submit"
+        class="bg-primary-700 hover:bg-primary-800 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors">
+        Enviar solicitud
+      </button>
+      <span id="quote-status" class="text-sm"></span>
+    </div>
+
+    <p class="text-xs text-steel-400 mt-3">Tus datos serán enviados únicamente a {entryName} para gestionar esta solicitud.</p>
+  </form>
+</div>
+
+<script define:vars={{ slug }}>
+  const toggleBtn = document.getElementById('quote-toggle-btn');
+  const form = document.getElementById('quote-form');
+  const arrow = document.getElementById('quote-arrow');
+
+  toggleBtn?.addEventListener('click', () => {
+    form.classList.toggle('hidden');
+    arrow.style.transform = form.classList.contains('hidden') ? '' : 'rotate(180deg)';
+  });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusEl = document.getElementById('quote-status');
+    const f = e.target;
+
+    const payload = {
+      slug,
+      targetName: document.querySelector('h1')?.textContent?.trim() || slug,
+      contactName: f.contactName.value,
+      contactEmail: f.contactEmail.value,
+      contactPhone: f.contactPhone?.value || '',
+      company: f.company?.value || '',
+      serviceNeeded: f.serviceNeeded?.value || '',
+      message: f.message?.value || '',
+    };
+
+    statusEl.textContent = 'Enviando...';
+    statusEl.className = 'text-sm text-steel-500';
+
+    try {
+      const res = await fetch('/api/leads/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        statusEl.textContent = '✓ ' + data.message;
+        statusEl.className = 'text-sm text-green-600';
+        f.reset();
+        setTimeout(() => {
+          form.classList.add('hidden');
+          arrow.style.transform = '';
+        }, 3000);
+      } else {
+        statusEl.textContent = data.error || 'Error.';
+        statusEl.className = 'text-sm text-red-600';
+      }
+    } catch {
+      statusEl.textContent = 'Error de conexión.';
+      statusEl.className = 'text-sm text-red-600';
+    }
+  });
+</script>

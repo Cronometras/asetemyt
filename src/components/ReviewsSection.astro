@@ -1,0 +1,261 @@
+---
+// ReviewsSection.astro — Reviews display + submission form
+// Props: slug (string), entryName (string)
+export interface Props {
+  slug: string;
+  entryName: string;
+}
+const { slug, entryName } = Astro.props;
+---
+
+<div id="reviews-section" class="mt-10">
+  <!-- Aggregate Rating Display -->
+  <div id="reviews-aggregate" class="hidden mb-8">
+    <h2 class="text-lg font-bold text-primary-800 mb-4 flex items-center gap-2">
+      <svg class="w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+      </svg>
+      Reseñas
+    </h2>
+    <div class="flex items-center gap-6 p-5 bg-amber-50 rounded-xl border border-amber-200">
+      <div class="text-center">
+        <p class="text-4xl font-extrabold text-amber-600" id="avg-rating">0</p>
+        <div id="avg-stars" class="flex gap-0.5 justify-center my-1"></div>
+        <p class="text-sm text-steel-500"><span id="total-reviews">0</span> reseñas</p>
+      </div>
+      <div class="flex-1 space-y-1.5" id="rating-bars"></div>
+    </div>
+  </div>
+
+  <!-- Reviews List -->
+  <div id="reviews-list" class="space-y-4 mb-8"></div>
+
+  <!-- Write Review Button -->
+  <div id="write-review-trigger" class="mb-6">
+    <button
+      onclick="document.getElementById('review-form-container').classList.toggle('hidden'); this.classList.add('hidden')"
+      class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+      </svg>
+      Escribir reseña
+    </button>
+  </div>
+
+  <!-- Review Form -->
+  <div id="review-form-container" class="hidden">
+    <form id="review-form" class="bg-white rounded-xl shadow-md p-6 border border-steel-200">
+      <h3 class="font-bold text-primary-800 mb-4">Deja tu reseña para {entryName}</h3>
+
+      <!-- Star Rating Input -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-steel-700 mb-2">Puntuación *</label>
+        <div id="star-input" class="flex gap-1">
+          {[1,2,3,4,5].map(i => (
+            <button type="button" data-star={i}
+              class="star-btn text-3xl text-steel-300 hover:text-amber-500 transition-colors cursor-pointer focus:outline-none">
+              ★
+            </button>
+          ))}
+        </div>
+        <input type="hidden" name="rating" id="rating-input" value="" />
+      </div>
+
+      <!-- Name -->
+      <div class="mb-4">
+        <label for="review-author" class="block text-sm font-medium text-steel-700 mb-1">Nombre *</label>
+        <input type="text" id="review-author" name="authorName" required maxlength="100"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
+      </div>
+
+      <!-- Email (optional) -->
+      <div class="mb-4">
+        <label for="review-email" class="block text-sm font-medium text-steel-700 mb-1">Email (no se publica)</label>
+        <input type="email" id="review-email" name="authorEmail"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
+      </div>
+
+      <!-- Comment -->
+      <div class="mb-4">
+        <label for="review-comment" class="block text-sm font-medium text-steel-700 mb-1">Comentario</label>
+        <textarea id="review-comment" name="comment" rows="3" maxlength="1000"
+          placeholder="Cuéntale a otros tu experiencia..."
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none resize-y"></textarea>
+      </div>
+
+      <!-- Submit -->
+      <div class="flex items-center gap-4">
+        <button type="submit"
+          class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors">
+          Enviar reseña
+        </button>
+        <span id="review-status" class="text-sm"></span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script define:vars={{ slug }}>
+  // --- Star input ---
+  let selectedRating = 0;
+  const starBtns = document.querySelectorAll('.star-btn');
+  const ratingInput = document.getElementById('rating-input');
+
+  starBtns.forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      const val = parseInt(btn.dataset.star);
+      starBtns.forEach(b => {
+        b.classList.toggle('text-amber-500', parseInt(b.dataset.star) <= val);
+        b.classList.toggle('text-steel-300', parseInt(b.dataset.star) > val);
+      });
+    });
+    btn.addEventListener('click', () => {
+      selectedRating = parseInt(btn.dataset.star);
+      ratingInput.value = selectedRating;
+      starBtns.forEach(b => {
+        b.classList.toggle('text-amber-500', parseInt(b.dataset.star) <= selectedRating);
+        b.classList.toggle('text-steel-300', parseInt(b.dataset.star) > selectedRating);
+      });
+    });
+  });
+
+  document.getElementById('star-input')?.addEventListener('mouseleave', () => {
+    starBtns.forEach(b => {
+      b.classList.toggle('text-amber-500', parseInt(b.dataset.star) <= selectedRating);
+      b.classList.toggle('text-steel-300', parseInt(b.dataset.star) > selectedRating);
+    });
+  });
+
+  // --- Load reviews ---
+  async function loadReviews() {
+    try {
+      const res = await fetch(`/api/reviews/get?slug=${encodeURIComponent(slug)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const { reviews, aggregate } = data;
+
+      if (aggregate.totalReviews > 0) {
+        // Show aggregate
+        const aggEl = document.getElementById('reviews-aggregate');
+        aggEl.classList.remove('hidden');
+        document.getElementById('avg-rating').textContent = aggregate.avgRating.toFixed(1);
+        document.getElementById('total-reviews').textContent = aggregate.totalReviews;
+
+        // Stars
+        const starsEl = document.getElementById('avg-stars');
+        starsEl.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+          const star = document.createElement('span');
+          star.textContent = '★';
+          star.className = i <= Math.round(aggregate.avgRating) ? 'text-amber-500' : 'text-steel-300';
+          starsEl.appendChild(star);
+        }
+
+        // Bars
+        const barsEl = document.getElementById('rating-bars');
+        barsEl.innerHTML = '';
+        for (let star = 5; star >= 1; star--) {
+          const count = aggregate.ratingDistribution[star] || 0;
+          const pct = aggregate.totalReviews > 0 ? (count / aggregate.totalReviews) * 100 : 0;
+          barsEl.innerHTML += `
+            <div class="flex items-center gap-2 text-sm">
+              <span class="w-3 text-right font-medium text-steel-600">${star}★</span>
+              <div class="flex-1 bg-steel-200 rounded-full h-2.5">
+                <div class="bg-amber-500 h-2.5 rounded-full transition-all" style="width:${pct}%"></div>
+              </div>
+              <span class="w-6 text-steel-500 text-xs">${count}</span>
+            </div>
+          `;
+        }
+      }
+
+      // Update AggregateRating schema.org in the page
+      if (aggregate.totalReviews > 0) {
+        const schemas = document.querySelectorAll('script[type="application/ld+json"]');
+        schemas.forEach(s => {
+          try {
+            const data = JSON.parse(s.textContent);
+            if (data.aggregateRating) {
+              data.aggregateRating.ratingValue = aggregate.avgRating.toString();
+              data.aggregateRating.ratingCount = aggregate.totalReviews.toString();
+              s.textContent = JSON.stringify(data);
+            }
+          } catch {}
+        });
+      }
+
+      // Review cards
+      const listEl = document.getElementById('reviews-list');
+      listEl.innerHTML = reviews.map(r => `
+        <div class="bg-white rounded-lg shadow-sm border border-steel-100 p-5">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="flex gap-0.5">
+              ${[1,2,3,4,5].map(i => `<span class="${i <= r.rating ? 'text-amber-500' : 'text-steel-300'}">★</span>`).join('')}
+            </div>
+            <span class="font-semibold text-primary-800 text-sm">${escapeHtml(r.authorName)}</span>
+            <span class="text-xs text-steel-400">${new Date(r.createdAt).toLocaleDateString('es-ES')}</span>
+          </div>
+          ${r.comment ? `<p class="text-steel-600 text-sm leading-relaxed">${escapeHtml(r.comment)}</p>` : ''}
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('Error loading reviews:', e);
+    }
+  }
+
+  // --- Submit review ---
+  document.getElementById('review-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusEl = document.getElementById('review-status');
+    const form = e.target;
+
+    if (!selectedRating) {
+      statusEl.textContent = 'Selecciona una puntuación.';
+      statusEl.className = 'text-sm text-red-600';
+      return;
+    }
+
+    const payload = {
+      slug,
+      rating: selectedRating,
+      authorName: form.authorName.value,
+      authorEmail: form.authorEmail.value || null,
+      comment: form.comment.value || '',
+    };
+
+    statusEl.textContent = 'Enviando...';
+    statusEl.className = 'text-sm text-steel-500';
+
+    try {
+      const res = await fetch('/api/reviews/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        statusEl.textContent = '✓ ' + data.message;
+        statusEl.className = 'text-sm text-green-600';
+        form.reset();
+        selectedRating = 0;
+        starBtns.forEach(b => b.classList.replace('text-amber-500', 'text-steel-300'));
+        document.getElementById('review-form-container').classList.add('hidden');
+      } else {
+        statusEl.textContent = data.error || 'Error.';
+        statusEl.className = 'text-sm text-red-600';
+      }
+    } catch {
+      statusEl.textContent = 'Error de conexión.';
+      statusEl.className = 'text-sm text-red-600';
+    }
+  });
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  loadReviews();
+</script>

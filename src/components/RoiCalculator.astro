@@ -1,0 +1,137 @@
+---
+// RoiCalculator.astro — Interactive savings calculator for industrial time study
+// Embeddable in home page or any page
+---
+
+<div id="roi-calculator" class="bg-white rounded-2xl shadow-xl border border-steel-200 overflow-hidden">
+  <div class="bg-gradient-to-r from-primary-800 to-primary-900 p-6">
+    <h3 class="text-xl font-bold text-white flex items-center gap-2">
+      <svg class="w-6 h-6 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+      </svg>
+      Calculadora de Ahorro por Mejora de Tiempos
+    </h3>
+    <p class="text-steel-300 text-sm mt-1">Estima el impacto económico del cronometraje industrial en tu planta</p>
+  </div>
+
+  <div class="p-6 space-y-5">
+    <!-- Inputs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div>
+        <label class="block text-sm font-medium text-steel-700 mb-1">Nº de operarios</label>
+        <input type="number" id="roi-workers" value="20" min="1" max="10000"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-steel-700 mb-1">Coste medio/hora por operario (€)</label>
+        <input type="number" id="roi-cost" value="18" min="1" max="500" step="0.5"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-steel-700 mb-1">Horas productivas/día</label>
+        <input type="number" id="roi-hours" value="7.5" min="1" max="24" step="0.5"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-steel-700 mb-1">Días laborables/año</label>
+        <input type="number" id="roi-days" value="230" min="1" max="365"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-steel-700 mb-1">% mejora estimada</label>
+        <input type="range" id="roi-improvement" value="10" min="3" max="30" step="1"
+          class="w-full accent-accent-500" />
+        <span id="roi-improvement-label" class="text-sm font-bold text-accent-600">10%</span>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-steel-700 mb-1">Inversión en estudio (€)</label>
+        <input type="number" id="roi-investment" value="5000" min="0" max="500000" step="500"
+          class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="roi-results" class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-steel-200">
+      <div class="bg-green-50 rounded-xl p-5 text-center border border-green-200">
+        <p class="text-sm font-medium text-green-700 mb-1">Ahorro anual estimado</p>
+        <p class="text-3xl font-extrabold text-green-800" id="roi-savings">—</p>
+      </div>
+      <div class="bg-blue-50 rounded-xl p-5 text-center border border-blue-200">
+        <p class="text-sm font-medium text-blue-700 mb-1">ROI (Retorno inversión)</p>
+        <p class="text-3xl font-extrabold text-blue-800" id="roi-return">—</p>
+      </div>
+      <div class="bg-amber-50 rounded-xl p-5 text-center border border-amber-200">
+        <p class="text-sm font-medium text-amber-700 mb-1">Payback (meses)</p>
+        <p class="text-3xl font-extrabold text-amber-800" id="roi-payback">—</p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div id="roi-cta" class="hidden bg-accent-50 rounded-xl p-4 border border-accent-200 text-center">
+      <p class="text-sm text-primary-800 font-medium mb-3">¿Quieres lograr esta mejora? Encuentra profesionales especializados:</p>
+      <a href="/directorio?especialidad=cronometraje" class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm">
+        Ver consultores en el directorio →
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const workersEl = document.getElementById('roi-workers') as HTMLInputElement;
+  const costEl = document.getElementById('roi-cost') as HTMLInputElement;
+  const hoursEl = document.getElementById('roi-hours') as HTMLInputElement;
+  const daysEl = document.getElementById('roi-days') as HTMLInputElement;
+  const improvementEl = document.getElementById('roi-improvement') as HTMLInputElement;
+  const improvementLabel = document.getElementById('roi-improvement-label')!;
+  const investmentEl = document.getElementById('roi-investment') as HTMLInputElement;
+
+  const savingsEl = document.getElementById('roi-savings')!;
+  const returnEl = document.getElementById('roi-return')!;
+  const paybackEl = document.getElementById('roi-payback')!;
+  const ctaEl = document.getElementById('roi-cta')!;
+
+  function formatEUR(n: number): string {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+  }
+
+  function calculate() {
+    const workers = parseFloat(workersEl.value) || 0;
+    const costPerHour = parseFloat(costEl.value) || 0;
+    const hoursPerDay = parseFloat(hoursEl.value) || 0;
+    const daysPerYear = parseFloat(daysEl.value) || 0;
+    const improvementPct = parseFloat(improvementEl.value) / 100;
+    const investment = parseFloat(investmentEl.value) || 0;
+
+    improvementLabel.textContent = `${improvementEl.value}%`;
+
+    // Annual labor cost
+    const annualLaborCost = workers * costPerHour * hoursPerDay * daysPerYear;
+
+    // Annual savings from improvement %
+    const annualSavings = annualLaborCost * improvementPct;
+
+    // ROI
+    const roi = investment > 0 ? ((annualSavings - investment) / investment) * 100 : 0;
+
+    // Payback in months
+    const paybackMonths = annualSavings > 0 ? (investment / annualSavings) * 12 : 0;
+
+    savingsEl.textContent = formatEUR(annualSavings);
+    returnEl.textContent = `${Math.round(roi)}%`;
+    paybackEl.textContent = paybackMonths < 1 ? '<1' : Math.round(paybackMonths).toString();
+
+    // Show CTA if savings are meaningful
+    if (annualSavings > 1000) {
+      ctaEl.classList.remove('hidden');
+    } else {
+      ctaEl.classList.add('hidden');
+    }
+  }
+
+  // Bind inputs
+  [workersEl, costEl, hoursEl, daysEl, improvementEl, investmentEl].forEach(el => {
+    el.addEventListener('input', calculate);
+  });
+
+  calculate();
+</script>
