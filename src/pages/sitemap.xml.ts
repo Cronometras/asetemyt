@@ -1,5 +1,7 @@
 import type { APIRoute } from 'astro';
-import { getDirectoryEntries } from '../lib/firebase';
+ import { getDirectoryEntries } from '../lib/firebase';
+  import { readFileSync } from 'fs';
+  import { join } from 'path';
 
 export const GET: APIRoute = async () => {
   let entries: any[] = [];
@@ -14,6 +16,9 @@ export const GET: APIRoute = async () => {
     { url: '/directorio', priority: '0.9', changefreq: 'daily' },
     { url: '/blog', priority: '0.8', changefreq: 'weekly' },
     { url: '/anadir', priority: '0.5', changefreq: 'monthly' },
+    { url: '/glosario', priority: '0.8', changefreq: 'weekly' },
+    { url: '/comparador', priority: '0.7', changefreq: 'weekly' },
+    { url: '/empleo', priority: '0.6', changefreq: 'daily' },
   ];
 
   const directoryPages = entries
@@ -55,7 +60,19 @@ export const GET: APIRoute = async () => {
     }
   }
 
-  const allPages = [...staticPages, ...directoryPages, ...landingPages];
+  // Glossary pages
+  let glossaryPages: any[] = [];
+  try {
+    const glossaryData = readFileSync(join(process.cwd(), 'public', 'data', 'glossary.json'), 'utf-8');
+    const glossaryTerms = JSON.parse(glossaryData);
+    glossaryPages = glossaryTerms.map((t: any) => ({
+      url: `/glosario/${t.slug}`,
+      priority: '0.6',
+      changefreq: 'monthly',
+    }));
+  } catch {}
+
+  const allPages = [...staticPages, ...directoryPages, ...landingPages, ...glossaryPages];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

@@ -4,6 +4,8 @@
   import ReviewsSection from '../../components/ReviewsSection.astro';
   import RequestQuote from '../../components/RequestQuote.astro';
   import Certificate from '../../components/Certificate.astro';
+  import PartnerBadge from '../../components/PartnerBadge.astro';
+  import CasesSection from '../../components/CasesSection.astro';
   import { getDirectoryEntries, getDirectoryEntryBySlug } from '../../lib/firebase';
 
 export async function getStaticPaths() {
@@ -88,6 +90,7 @@ const tipoColors: Record<string, string> = {
                   Verificado
                 </span>
               )}
+              <PartnerBadge tools={entry.herramientas || []} />
             </div>
             <span class={`inline-block text-sm font-semibold px-3 py-1 rounded-full ${tipoColors[entry.tipo] || 'bg-steel-100 text-steel-600'}`}>
               {entry.tipo === 'empresa' ? 'Empresa' : entry.tipo === 'consultor' ? 'Consultor' : entry.tipo === 'freelance' ? 'Freelancer' : entry.tipo || 'Sin tipo'}
@@ -250,6 +253,7 @@ const tipoColors: Record<string, string> = {
       <RequestQuote slug={entry.slug} entryName={entry.nombre} services={entry.servicios || []} />
     </div>
     <ReviewsSection slug={entry.slug} entryName={entry.nombre} />
+    <CasesSection slug={entry.slug} entryName={entry.nombre} isOwner={false} />
   </section>
 
   {/* Certificate for verified members */}
@@ -276,6 +280,11 @@ const tipoColors: Record<string, string> = {
           if (isOwner) {
             document.getElementById('ownerEditCTA')?.classList.remove('hidden');
             document.getElementById('ownerCertSection')?.classList.remove('hidden');
+            // Show cases form for owner
+            const casesForm = document.getElementById('case-form');
+            if (casesForm) {
+              document.getElementById('toggle-case-form')?.classList.remove('hidden');
+            }
           }
         } catch {}
       });

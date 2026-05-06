@@ -1,0 +1,267 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Empleo en Ingeniería de Métodos y Tiempos" description="Ofertas de trabajo en cronometraje industrial, ingeniería de métodos, Lean Manufacturing y optimización de procesos. Job board especializado.">
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-10">
+      <nav class="mb-4 text-sm text-steel-500">
+        <a href="/" class="hover:text-accent-600">Inicio</a>
+        <span class="mx-2">/</span>
+        <span>Empleo</span>
+      </nav>
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">Empleo en Ingeniería de Métodos</h1>
+          <p class="text-steel-500 text-lg">Ofertas de trabajo en cronometraje industrial, Lean Manufacturing y optimización de procesos.</p>
+        </div>
+        <button id="open-post-job"
+          class="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm whitespace-nowrap">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Publicar oferta
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-md p-4 mb-6 flex flex-wrap gap-3">
+      <select id="filter-type" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+        <option value="">Todos los tipos</option>
+        <option value="full-time">Tiempo completo</option>
+        <option value="part-time">Tiempo parcial</option>
+        <option value="contract">Contrato</option>
+        <option value="freelance">Freelance</option>
+      </select>
+      <input type="text" id="filter-location" placeholder="Filtrar por ubicación..."
+        class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none flex-1 min-w-[200px]" />
+    </div>
+
+    <!-- Jobs list -->
+    <div id="jobs-list" class="space-y-4">
+      <div class="text-center py-10">
+        <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-3 text-steel-400">Cargando ofertas...</p>
+      </div>
+    </div>
+
+    <!-- Post Job Modal -->
+    <div id="post-job-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-xl font-bold text-primary-800">Publicar oferta de empleo</h2>
+          <button id="close-modal" class="text-steel-400 hover:text-steel-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form id="job-form" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-steel-700 mb-1">Puesto *</label>
+              <input type="text" name="title" required maxlength="200" placeholder="Ingeniero de Métodos"
+                class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-steel-700 mb-1">Empresa *</label>
+              <input type="text" name="company" required maxlength="200" placeholder="Tu empresa"
+                class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-steel-700 mb-1">Ubicación</label>
+              <input type="text" name="location" maxlength="200" placeholder="Madrid, España"
+                class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-steel-700 mb-1">Tipo *</label>
+              <select name="type" required class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+                <option value="full-time">Tiempo completo</option>
+                <option value="part-time">Tiempo parcial</option>
+                <option value="contract">Contrato</option>
+                <option value="freelance">Freelance</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Rango salarial</label>
+            <input type="text" name="salary" maxlength="100" placeholder="30.000€ - 45.000€ brutos/año"
+              class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Descripción *</label>
+            <textarea name="description" required rows="4" maxlength="3000"
+              placeholder="Describe las responsabilidades, el equipo y el entorno de trabajo..."
+              class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none resize-y"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Requisitos</label>
+            <textarea name="requirements" rows="3" maxlength="2000"
+              placeholder="Experiencia en cronometraje, conocimiento de MTM, etc."
+              class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none resize-y"></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-steel-700 mb-1">Email de contacto *</label>
+              <input type="email" name="contactEmail" required placeholder="rrhh@empresa.com"
+                class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-steel-700 mb-1">URL de contacto</label>
+              <input type="url" name="contactUrl" placeholder="https://empresa.com/careers"
+                class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+            </div>
+          </div>
+          <div class="flex items-center gap-4 pt-2">
+            <button type="submit" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors">
+              Publicar oferta
+            </button>
+            <span id="job-status" class="text-sm"></span>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="mt-12 bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 text-white text-center">
+      <h2 class="text-xl md:text-2xl font-bold mb-3">¿Buscas profesionales del sector?</h2>
+      <p class="text-steel-300 mb-5">Publica tu oferta gratuita y llega a ingenieros de métodos y tiempos cualificados.</p>
+    </div>
+  </section>
+
+  <script>
+    const typeLabels = {
+      'full-time': 'Tiempo completo',
+      'part-time': 'Tiempo parcial',
+      'contract': 'Contrato',
+      'freelance': 'Freelance'
+    };
+    const typeColors = {
+      'full-time': 'bg-green-100 text-green-700',
+      'part-time': 'bg-blue-100 text-blue-700',
+      'contract': 'bg-amber-100 text-amber-700',
+      'freelance': 'bg-purple-100 text-purple-700'
+    };
+
+    async function loadJobs() {
+      try {
+        const res = await fetch('/api/jobs');
+        if (!res.ok) return;
+        const data = await res.json();
+        renderJobs(data.jobs || []);
+      } catch (e) {
+        console.error('Error loading jobs:', e);
+      }
+    }
+
+    function renderJobs(jobs) {
+      const list = document.getElementById('jobs-list');
+      if (jobs.length === 0) {
+        list.innerHTML = `
+          <div class="text-center py-16 bg-white rounded-xl shadow-sm">
+            <svg class="w-16 h-16 mx-auto text-steel-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <p class="text-steel-400 text-lg">No hay ofertas activas todavía.</p>
+            <p class="text-steel-400 text-sm mt-1">¡Sé el primero en publicar una oferta!</p>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = jobs.map(j => `
+        <div class="bg-white rounded-xl shadow-sm border border-steel-100 p-5 hover:shadow-md transition-shadow">
+          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <h3 class="text-lg font-bold text-primary-800">${escapeHtml(j.title)}</h3>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${typeColors[j.type] || 'bg-steel-100 text-steel-600'}">${typeLabels[j.type] || j.type}</span>
+              </div>
+              <p class="text-steel-600 font-medium text-sm mb-2">${escapeHtml(j.company)}${j.location ? ` · 📍 ${escapeHtml(j.location)}` : ''}</p>
+              ${j.salary ? `<p class="text-green-700 text-sm font-medium mb-2">💰 ${escapeHtml(j.salary)}</p>` : ''}
+              <p class="text-steel-500 text-sm line-clamp-3">${escapeHtml(j.description)}</p>
+              ${j.requirements ? `<p class="text-steel-400 text-xs mt-2 line-clamp-2"><strong>Requisitos:</strong> ${escapeHtml(j.requirements)}</p>` : ''}
+            </div>
+            <div class="flex-shrink-0">
+              <a href="${j.contactUrl || `mailto:${j.contactEmail}?subject=Oferta: ${encodeURIComponent(j.title)}`}"
+                ${j.contactUrl ? 'target="_blank" rel="noopener"' : ''}
+                class="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm whitespace-nowrap">
+                Contactar
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </a>
+            </div>
+          </div>
+          <p class="text-xs text-steel-400 mt-3">Publicado ${new Date(j.createdAt).toLocaleDateString('es-ES')}</p>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str || '';
+      return d.innerHTML;
+    }
+
+    // Modal
+    document.getElementById('open-post-job')?.addEventListener('click', () => {
+      document.getElementById('post-job-modal').classList.remove('hidden');
+    });
+    document.getElementById('close-modal')?.addEventListener('click', () => {
+      document.getElementById('post-job-modal').classList.add('hidden');
+    });
+
+    // Submit
+    document.getElementById('job-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target;
+      const statusEl = document.getElementById('job-status');
+      statusEl.textContent = 'Publicando...';
+      statusEl.className = 'text-sm text-steel-500';
+
+      const payload = {
+        title: f.title.value,
+        company: f.company.value,
+        location: f.location.value,
+        type: f.type.value,
+        salary: f.salary.value,
+        description: f.description.value,
+        requirements: f.requirements.value,
+        contactEmail: f.contactEmail.value,
+        contactUrl: f.contactUrl.value,
+      };
+
+      try {
+        const res = await fetch('/api/jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          statusEl.textContent = '✓ Oferta publicada';
+          statusEl.className = 'text-sm text-green-600';
+          f.reset();
+          document.getElementById('post-job-modal').classList.add('hidden');
+          loadJobs();
+        } else {
+          statusEl.textContent = data.error;
+          statusEl.className = 'text-sm text-red-600';
+        }
+      } catch {
+        statusEl.textContent = 'Error de conexión.';
+        statusEl.className = 'text-sm text-red-600';
+      }
+    });
+
+    // Filters
+    document.getElementById('filter-type')?.addEventListener('change', async () => {
+      const type = document.getElementById('filter-type').value;
+      const loc = document.getElementById('filter-location').value;
+      let url = '/api/jobs?';
+      if (type) url += `type=${type}&`;
+      if (loc) url += `location=${encodeURIComponent(loc)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      renderJobs(data.jobs || []);
+    });
+
+    loadJobs();
+  </script>
+</Layout>

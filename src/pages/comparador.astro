@@ -1,0 +1,214 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Comparador de Software de Cronometraje Industrial" description="Compara herramientas de software para cronometraje industrial, MTM, MOST, balanceo de líneas y Lean Manufacturing. Encuentra la mejor solución para tu empresa.">
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-10">
+      <nav class="mb-4 text-sm text-steel-500">
+        <a href="/" class="hover:text-accent-600">Inicio</a>
+        <span class="mx-2">/</span>
+        <span>Comparador</span>
+      </nav>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">Comparador de Software de Cronometraje</h1>
+      <p class="text-steel-500 text-lg">Selecciona hasta 3 herramientas y compara funciones, precios y plataforma.</p>
+    </div>
+
+    <!-- Selector -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" id="selector-grid">
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Herramienta 1</label>
+          <select id="select-1" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Herramienta 2</label>
+          <select id="select-2" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Herramienta 3 (opcional)</label>
+          <select id="select-3" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button id="compare-btn" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors">
+          Comparar
+        </button>
+        <button id="clear-btn" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-6 py-2.5 rounded-lg transition-colors">
+          Limpiar
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick filters -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="all">Todos</button>
+      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="cronometraje">Cronometraje</button>
+      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="mtm">MTM</button>
+      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="most">MOST</button>
+      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="oee">OEE</button>
+      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="lean">Lean</button>
+    </div>
+
+    <!-- Comparison Table -->
+    <div id="comparison-result" class="hidden mb-8">
+      <div class="overflow-x-auto">
+        <table class="w-full bg-white rounded-xl shadow-md overflow-hidden">
+          <thead id="comp-thead"></thead>
+          <tbody id="comp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Software cards (all) -->
+    <div id="software-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="text-center py-10 col-span-full">
+        <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    let allSoftware = [];
+
+    async function loadSoftware() {
+      try {
+        const res = await fetch('/data/software-comparison.json');
+        if (!res.ok) return;
+        const data = await res.json();
+        allSoftware = data.software.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Populate selects
+        const opts = allSoftware.map(s => `<option value="${s.slug}">${s.name}</option>`).join('');
+        ['select-1', 'select-2', 'select-3'].forEach(id => {
+          document.getElementById(id).innerHTML = `<option value="">Seleccionar...</option>` + opts;
+        });
+
+        renderGrid(allSoftware);
+        setupFilters();
+      } catch (e) {
+        console.error('Error loading software data:', e);
+      }
+    }
+
+    function renderGrid(software) {
+      const grid = document.getElementById('software-grid');
+      if (software.length === 0) {
+        grid.innerHTML = '<p class="text-center text-steel-400 py-10 col-span-full">No se encontraron herramientas.</p>';
+        return;
+      }
+
+      grid.innerHTML = software.map(s => `
+        <div class="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition-all border border-steel-100">
+          <h3 class="font-bold text-primary-800 text-lg mb-2">${s.name}</h3>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            ${(s.methods || []).map(m => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded font-medium">${m}</span>`).join('')}
+          </div>
+          <div class="space-y-1.5 text-sm text-steel-600 mb-3">
+            <p><span class="font-medium text-steel-700">Plataforma:</span> ${s.platform || '—'}</p>
+            <p><span class="font-medium text-steel-700">Precio:</span> ${s.pricing || 'Contactar'}</p>
+            <p><span class="font-medium text-steel-700">Target:</span> ${s.targetSize || '—'}</p>
+          </div>
+          ${s.features?.length ? `<p class="text-xs text-steel-500 line-clamp-2">${s.features.slice(0, 4).join(' · ')}</p>` : ''}
+          ${s.freeTrial ? '<span class="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">✓ Trial disponible</span>' : ''}
+          ${s.videoSupport ? '<span class="inline-block mt-2 ml-1 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">📹 Vídeo</span>' : ''}
+        </div>
+      `).join('');
+    }
+
+    function setupFilters() {
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const filter = chip.dataset.filter;
+          document.querySelectorAll('.filter-chip').forEach(c => {
+            c.className = c === chip
+              ? 'filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-accent-500 text-white cursor-pointer'
+              : 'filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer';
+          });
+
+          if (filter === 'all') {
+            renderGrid(allSoftware);
+          } else {
+            const filtered = allSoftware.filter(s =>
+              (s.methods || []).some(m => m.toLowerCase().includes(filter)) ||
+              (s.features || []).some(f => f.toLowerCase().includes(filter))
+            );
+            renderGrid(filtered);
+          }
+        });
+      });
+
+      // Compare button
+      document.getElementById('compare-btn').addEventListener('click', compareSelected);
+      document.getElementById('clear-btn').addEventListener('click', () => {
+        ['select-1', 'select-2', 'select-3'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('comparison-result').classList.add('hidden');
+      });
+    }
+
+    function compareSelected() {
+      const slugs = ['select-1', 'select-2', 'select-3']
+        .map(id => document.getElementById(id).value)
+        .filter(Boolean);
+
+      if (slugs.length < 2) {
+        alert('Selecciona al menos 2 herramientas para comparar.');
+        return;
+      }
+
+      const selected = slugs.map(s => allSoftware.find(sw => sw.slug === s)).filter(Boolean);
+      const resultEl = document.getElementById('comparison-result');
+      const thead = document.getElementById('comp-thead');
+      const tbody = document.getElementById('comp-tbody');
+
+      const headerColors = ['bg-accent-500', 'bg-primary-600', 'bg-green-600'];
+
+      thead.innerHTML = `<tr>
+        <th class="text-left p-4 bg-steel-50 text-steel-700 font-semibold text-sm min-w-[140px]">Característica</th>
+        ${selected.map((s, i) => `<th class="p-4 ${headerColors[i]} text-white font-bold text-sm text-center">${s.name}</th>`).join('')}
+      </tr>`;
+
+      const rows = [
+        { label: 'Plataforma', key: 'platform' },
+        { label: 'Precio', key: 'pricing' },
+        { label: 'Target', key: 'targetSize' },
+        { label: 'Idiomas', key: 'languages', format: v => v?.join(', ') || '—' },
+        { label: 'Trial', key: 'freeTrial' },
+        { label: 'Vídeo', key: 'videoSupport', format: v => v ? '✓ Sí' : '✗ No' },
+        { label: 'API/Integraciones', key: 'apiIntegration', format: v => v ? '✓ Sí' : '✗ No' },
+      ];
+
+      tbody.innerHTML = rows.map(row => `
+        <tr class="border-t border-steel-100">
+          <td class="p-4 font-medium text-steel-700 text-sm">${row.label}</td>
+          ${selected.map(s => {
+            let val = s[row.key];
+            if (row.format) val = row.format(val);
+            return `<td class="p-4 text-center text-sm text-steel-600">${val || '—'}</td>`;
+          }).join('')}
+        </tr>
+      `).join('') + `
+        <tr class="border-t border-steel-100">
+          <td class="p-4 font-medium text-steel-700 text-sm">Métodos</td>
+          ${selected.map(s => `<td class="p-4 text-center text-sm"><div class="flex flex-wrap gap-1 justify-center">${(s.methods||[]).map(m => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded">${m}</span>`).join('')}</div></td>`).join('')}
+        </tr>
+        <tr class="border-t border-steel-100">
+          <td class="p-4 font-medium text-steel-700 text-sm">Funciones clave</td>
+          ${selected.map(s => `<td class="p-4 text-sm"><ul class="text-xs text-steel-600 space-y-1">${(s.features||[]).map(f => `<li class="flex items-start gap-1"><span class="text-accent-500 mt-0.5">•</span>${f}</li>`).join('')}</ul></td>`).join('')}
+        </tr>
+      `;
+
+      resultEl.classList.remove('hidden');
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    loadSoftware();
+  </script>
+</Layout>

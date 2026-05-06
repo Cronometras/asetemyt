@@ -1,0 +1,113 @@
+---
+export const prerender = true;
+import Layout from '../../layouts/Layout.astro';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+export function getStaticPaths() {
+  try {
+    const data = readFileSync(join(process.cwd(), 'public', 'data', 'glossary.json'), 'utf-8');
+    const terms = JSON.parse(data);
+    return terms.map((term: any) => ({
+      params: { slug: term.slug },
+      props: { term, allTerms: terms },
+    }));
+  } catch (e) {
+    console.error('Error loading glossary for static paths:', e);
+    return [];
+  }
+}
+
+const { term, allTerms } = Astro.props;
+
+const relatedTerms = (term.related || [])
+  .map((slug: string) => allTerms.find((t: any) => t.slug === slug))
+  .filter(Boolean);
+---
+
+<Layout title={`${term.term} - Glosario ASETEMYT`} description={term.definition}>
+  <!-- Schema.org DefinedTerm -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "DefinedTerm",
+      "name": {JSON.stringify(term.term)},
+      "description": {JSON.stringify(term.definition)},
+      "url": {JSON.stringify(`https://asetemyt.com/glosario/${term.slug}`)},
+      "inDefinedTermSet": {
+        "@type": "DefinedTermSet",
+        "name": "Glosario de Cronometraje Industrial - ASETEMYT",
+        "url": "https://asetemyt.com/glosario"
+      }
+    }
+  </script>
+  <!-- BreadcrumbList -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://asetemyt.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Glosario", "item": "https://asetemyt.com/glosario" },
+        { "@type": "ListItem", "position": 3, "name": {JSON.stringify(term.term)}, "item": {JSON.stringify(`https://asetemyt.com/glosario/${term.slug}`)} }
+      ]
+    }
+  </script>
+
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Breadcrumb -->
+    <nav class="mb-8 text-sm text-steel-500">
+      <a href="/" class="hover:text-accent-600">Inicio</a>
+      <span class="mx-2">/</span>
+      <a href="/glosario" class="hover:text-accent-600">Glosario</a>
+      <span class="mx-2">/</span>
+      <span class="text-steel-700">{term.term}</span>
+    </nav>
+
+    <!-- Term Card -->
+    <article class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
+      <div class="bg-gradient-to-r from-primary-800 to-primary-900 p-6 sm:p-8">
+        <div class="flex items-center gap-3 mb-2">
+          <span class="bg-accent-500 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">Glosario</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white">{term.term}</h1>
+      </div>
+
+      <div class="p-6 sm:p-8">
+        <div class="prose prose-lg text-steel-600 max-w-none">
+          <p class="text-lg leading-relaxed">{term.definition}</p>
+        </div>
+
+        {relatedTerms.length > 0 && (
+          <div class="mt-8 pt-6 border-t border-steel-200">
+            <h2 class="text-sm font-bold text-primary-800 uppercase tracking-wide mb-3">Términos relacionados</h2>
+            <div class="flex flex-wrap gap-2">
+              {relatedTerms.map((rt: any) => (
+                <a href={`/glosario/${rt.slug}`}
+                  class="bg-primary-50 text-primary-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors">
+                  {rt.term}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </article>
+
+    <!-- CTA -->
+    <div class="bg-steel-50 rounded-xl p-6 border border-steel-200 text-center">
+      <p class="text-steel-600 mb-4">¿Necesitas un profesional especializado en {term.term.toLowerCase()}?</p>
+      <a href={`/directorio?especialidad=${term.slug.split('-')[0]}`}
+        class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm">
+        Ver profesionales en el directorio →
+      </a>
+    </div>
+
+    <!-- Back to glossary -->
+    <div class="mt-8 text-center">
+      <a href="/glosario" class="text-accent-600 hover:text-accent-700 font-semibold text-sm">
+        ← Volver al glosario completo
+      </a>
+    </div>
+  </section>
+</Layout>

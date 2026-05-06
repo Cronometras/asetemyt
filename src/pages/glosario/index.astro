@@ -1,0 +1,140 @@
+---
+export const prerender = true;
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Glosario de Cronometraje Industrial e Ingeniería de Métodos y Tiempos" description="Diccionario de términos de cronometraje industrial: tiempo estándar, MTM, MOST, OEE, Lean Manufacturing y más. La referencia del sector.">
+  <!-- Schema.org DefinedTermSet -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "DefinedTermSet",
+      "name": "Glosario de Cronometraje Industrial - ASETEMYT",
+      "description": "Diccionario de términos de cronometraje industrial, ingeniería de métodos y tiempos, y Lean Manufacturing.",
+      "url": "https://asetemyt.com/glosario"
+    }
+  </script>
+
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-10">
+      <nav class="mb-4 text-sm text-steel-500">
+        <a href="/" class="hover:text-accent-600">Inicio</a>
+        <span class="mx-2">/</span>
+        <span>Glosario</span>
+      </nav>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">Glosario de Cronometraje Industrial</h1>
+      <p class="text-steel-500 text-lg">Diccionario de términos técnicos de ingeniería de métodos y tiempos, cronometraje industrial, Lean Manufacturing y optimización de procesos.</p>
+    </div>
+
+    <!-- Alphabet filter -->
+    <div id="alpha-filter" class="flex flex-wrap gap-1.5 mb-8"></div>
+
+    <!-- Search -->
+    <div class="mb-6">
+      <input type="text" id="glossary-search" placeholder="Buscar término..."
+        class="w-full md:w-96 border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none" />
+    </div>
+
+    <!-- Terms list -->
+    <div id="glossary-list" class="space-y-4">
+      <div class="text-center py-10">
+        <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-3 text-steel-400">Cargando glosario...</p>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="mt-12 bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 text-white text-center">
+      <h2 class="text-xl md:text-2xl font-bold mb-3">¿Necesitas un profesional?</h2>
+      <p class="text-steel-300 mb-5">Encuentra consultores especializados en estos métodos en nuestro directorio.</p>
+      <a href="/directorio" class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+        Explorar directorio →
+      </a>
+    </div>
+  </section>
+
+  <script>
+    async function loadGlossary() {
+      try {
+        const res = await fetch('/data/glossary.json');
+        if (!res.ok) return;
+        const terms = await res.json();
+
+        // Sort alphabetically
+        terms.sort((a, b) => a.term.localeCompare(b.term, 'es'));
+
+        // Alphabet filter
+        const letters = [...new Set(terms.map(t => t.term[0].toUpperCase()))].sort();
+        const alphaEl = document.getElementById('alpha-filter');
+        alphaEl.innerHTML = `<button class="alpha-btn px-2.5 py-1 text-xs font-semibold rounded bg-accent-500 text-white" data-letter="all">Todos</button>` +
+          letters.map(l => `<button class="alpha-btn px-2.5 py-1 text-xs font-semibold rounded bg-steel-100 text-steel-600 hover:bg-steel-200 transition-colors" data-letter="${l}">${l}</button>`).join('');
+
+        let activeLetter = 'all';
+
+        function render(filteredTerms) {
+          const listEl = document.getElementById('glossary-list');
+          if (filteredTerms.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-steel-400 py-10">No se encontraron términos.</p>';
+            return;
+          }
+
+          listEl.innerHTML = filteredTerms.map(t => `
+            <div class="bg-white rounded-xl shadow-sm border border-steel-100 p-5 hover:shadow-md transition-shadow">
+              <h3 class="text-lg font-bold text-primary-800 mb-2">
+                <a href="/glosario/${t.slug}" class="hover:text-accent-600 transition-colors">${t.term}</a>
+              </h3>
+              <p class="text-steel-600 text-sm leading-relaxed mb-3">${t.definition}</p>
+              ${t.related?.length ? `
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="text-xs text-steel-400">Relacionados:</span>
+                  ${t.related.map(r => {
+                    const relatedTerm = terms.find(x => x.slug === r);
+                    return relatedTerm ? `<a href="/glosario/${r}" class="text-xs bg-steel-100 text-accent-700 px-2 py-0.5 rounded hover:bg-accent-100 transition-colors">${relatedTerm.term}</a>` : '';
+                  }).join('')}
+                </div>
+              ` : ''}
+            </div>
+          `).join('');
+        }
+
+        // Alpha filter clicks
+        alphaEl.addEventListener('click', (e) => {
+          const btn = e.target.closest('.alpha-btn');
+          if (!btn) return;
+          activeLetter = btn.dataset.letter;
+          alphaEl.querySelectorAll('.alpha-btn').forEach(b => {
+            b.className = b.dataset.letter === activeLetter
+              ? 'alpha-btn px-2.5 py-1 text-xs font-semibold rounded bg-accent-500 text-white'
+              : 'alpha-btn px-2.5 py-1 text-xs font-semibold rounded bg-steel-100 text-steel-600 hover:bg-steel-200 transition-colors';
+          });
+          applyFilters();
+        });
+
+        // Search
+        const searchEl = document.getElementById('glossary-search');
+        searchEl.addEventListener('input', () => applyFilters());
+
+        function applyFilters() {
+          const search = searchEl.value.toLowerCase().trim();
+          let filtered = terms;
+          if (activeLetter !== 'all') {
+            filtered = filtered.filter(t => t.term[0].toUpperCase() === activeLetter);
+          }
+          if (search) {
+            filtered = filtered.filter(t =>
+              t.term.toLowerCase().includes(search) ||
+              t.definition.toLowerCase().includes(search)
+            );
+          }
+          render(filtered);
+        }
+
+        render(terms);
+      } catch (e) {
+        console.error('Error loading glossary:', e);
+      }
+    }
+
+    loadGlossary();
+  </script>
+</Layout>

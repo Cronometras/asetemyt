@@ -1,0 +1,74 @@
+---
+// FeaturedSpotlight.astro — "Software del Mes" / "Consultor Destacado" spotlight
+// Shows a rotating featured entry with enhanced visual treatment
+export interface Props {
+  entries: any[];
+  lang?: 'es' | 'en';
+}
+const { entries, lang = 'es' } = Astro.props;
+const featured = entries.filter(e => e.destacado).slice(0, 3);
+if (featured.length === 0) return;
+---
+
+<div class="mb-12">
+  <div class="flex items-center gap-3 mb-6">
+    <span class="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">⭐ {lang === 'es' ? 'Destacado' : 'Featured'}</span>
+    <h2 class="text-xl md:text-2xl font-bold text-primary-800">{lang === 'es' ? 'Software del Mes' : 'Software of the Month'}</h2>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {featured.map((entry, i) => (
+      <a href={`/directorio/${entry.slug}`}
+        class={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 group ${i === 0 ? 'lg:col-span-2' : ''}`}
+        style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);">
+        {/* Decorative circles */}
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-white/5 rounded-full"></div>
+        <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-accent-500/10 rounded-full"></div>
+
+        <div class="relative p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-5">
+          {/* Logo */}
+          <div class="flex-shrink-0">
+            {entry.logo ? (
+              <img src={entry.logo} alt={entry.nombre} class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover shadow-lg border-2 border-white/20" loading="lazy" />
+            ) : (
+              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-accent-500 flex items-center justify-center text-white font-bold text-3xl shadow-lg">
+                {(entry.nombre || '?')[0].toUpperCase()}
+              </div>
+            )}
+          </div>
+
+          {/* Content */}
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                {lang === 'es' ? 'Software del Mes' : 'Software of the Month'}
+              </span>
+              {entry.verificado && (
+                <span class="bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <svg class="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                  Verificado
+                </span>
+              )}
+            </div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-white mb-2 group-hover:text-accent-300 transition-colors">{entry.nombre}</h3>
+            {entry.descripcion && (
+              <p class="text-steel-300 text-sm line-clamp-2 mb-3">{entry.descripcion}</p>
+            )}
+            <div class="flex flex-wrap gap-1.5">
+              {(entry.especialidades || []).slice(0, 4).map((esp: string) => (
+                <span class="text-xs bg-white/10 text-white/80 px-2 py-0.5 rounded-full">{esp}</span>
+              ))}
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <div class="hidden sm:flex items-center">
+            <svg class="w-8 h-8 text-white/30 group-hover:text-accent-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+      </a>
+    ))}
+  </div>
+</div>
