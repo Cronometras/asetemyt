@@ -1,6 +1,6 @@
 ---
 export const prerender = true;
-import Layout from '../layouts/Layout.astro';
+import Layout from '../../layouts/Layout.astro';
 ---
 
 <Layout title="Directorio de Software de Cronometraje Industrial" description="Software profesional para cronometraje industrial, MTM, MOST, balanceo de líneas, OEE y Lean Manufacturing.">
@@ -30,7 +30,7 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <script>
-    import { db, t, getLang, type Lang, COLLECTION_SOFTWARE } from '../lib/firebase';
+    import { db, t, getLang, type Lang, COLLECTION_SOFTWARE } from '../../lib/firebase';
     import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
     let lang: Lang = getLang();
