@@ -30,7 +30,32 @@ export const GET: APIRoute = async () => {
       return { url: `/directorio/${e.slug}`, priority: '0.7', changefreq: 'monthly', lastmod };
     });
 
-  const allPages = [...staticPages, ...directoryPages];
+  // Landing pages: countries and specialties
+  const countries = new Map<string, number>();
+  const specialties = new Map<string, number>();
+  entries.forEach((e: any) => {
+    const country = e.ubicacion?.pais?.toLowerCase()?.trim();
+    if (country) countries.set(country, (countries.get(country) || 0) + 1);
+    (e.especialidades || []).forEach((esp: string) => {
+      const key = esp.toLowerCase().trim();
+      specialties.set(key, (specialties.get(key) || 0) + 1);
+    });
+  });
+
+  const landingPages: any[] = [];
+  for (const [country, count] of countries) {
+    if (count >= 2) {
+      const slug = country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+      landingPages.push({ url: `/directorio/pais/${slug}`, priority: '0.7', changefreq: 'weekly' });
+    }
+  }
+  for (const [esp, count] of specialties) {
+    if (count >= 2) {
+      landingPages.push({ url: `/directorio/especialidad/${esp}`, priority: '0.7', changefreq: 'weekly' });
+    }
+  }
+
+  const allPages = [...staticPages, ...directoryPages, ...landingPages];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

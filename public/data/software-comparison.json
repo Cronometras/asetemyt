@@ -19,7 +19,7 @@
     {
       "name": "CRONOMETRAS",
       "slug": "cronometras",
-      "pricing": "Desde 50€/año. Plan Pro disponible.",
+      "pricing": "Por definir",
       "platform": "PWA (web, móvil, desktop)",
       "methods": ["Cronometraje", "MTM", "MOST", "OEE"],
       "features": ["Análisis de tiempos", "Multi-elemento", "Exportación informes PDF", "Balanceo de líneas", "Estudio de tiempos con vídeo", "Cálculo de suplementos", "Desglose de operaciones"],
@@ -33,7 +33,7 @@
     {
       "name": "Worksamp",
       "slug": "worksamp",
-      "pricing": "Desde 50€/año",
+      "pricing": "Por definir",
       "platform": "PWA (web, móvil)",
       "methods": ["Work Sampling (Muestreo del Trabajo)", "Cronometraje"],
       "features": ["Muestreo del trabajo", "Observaciones aleatorias", "Cálculo de márgenes de error", "Exportación de datos", "Estadísticas en tiempo real"],
@@ -47,7 +47,7 @@
     {
       "name": "Induly",
       "slug": "induly",
-      "pricing": "Desde 50€/año por cliente",
+      "pricing": "Por definir",
       "platform": "PWA (web, móvil)",
       "methods": ["Control de producción", "Fichaje industrial", "OEE"],
       "features": ["Control de producción en tiempo real", "Fichaje de operarios", "Gestión de turnos", "OEE", "Partes de trabajo", "Integración con CRONOMETRAS"],

@@ -1,0 +1,219 @@
+---
+// Landing pages SEO: /directorio/[...filter]
+// Handles: /directorio/espana, /directorio/barcelona, /directorio/cronometraje,
+//          /directorio/espana/cronometraje, etc.
+export const prerender = true;
+import Layout from '../../layouts/Layout.astro';
+import { getDirectoryEntries } from '../../lib/firebase';
+
+export async function getStaticPaths() {
+  let entries: any[] = [];
+  try {
+    entries = await getDirectoryEntries();
+  } catch (e) {
+    console.error('Error fetching entries for filter paths:', e);
+  }
+
+  const paths: any[] = [];
+
+  // Collect all countries and cities
+  const countries = new Map<string, number>();
+  const cities = new Map<string, number>();
+  const specialties = new Map<string, number>();
+
+  entries.forEach((e: any) => {
+    const country = e.ubicacion?.pais?.toLowerCase()?.trim();
+    const city = e.ubicacion?.ciudad?.toLowerCase()?.trim();
+    if (country) countries.set(country, (countries.get(country) || 0) + 1);
+    if (city) cities.set(city, (cities.get(city) || 0) + 1);
+    (e.especialidades || []).forEach((esp: string) => {
+      const key = esp.toLowerCase().trim();
+      specialties.set(key, (specialties.get(key) || 0) + 1);
+    });
+  });
+
+  // Country pages: /directorio/pais/[slug]
+  for (const [country, count] of countries) {
+    if (count >= 2) { // Only generate pages with enough entries
+      const slug = country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+      paths.push({
+        params: { filter: `pais/${slug}` },
+        props: { type: 'country', value: country, entries: entries.filter((e: any) => e.ubicacion?.pais?.toLowerCase()?.trim() === country) },
+      });
+    }
+  }
+
+  // Specialty pages: /directorio/especialidad/[slug]
+  const espLabels: Record<string, string> = {
+    cronometraje: 'Cronometraje Industrial',
+    mtm: 'MTM (Methods-Time Measurement)',
+    most: 'MOST (Maynard Operation Sequence Technique)',
+    oee: 'OEE (Overall Equipment Effectiveness)',
+    lean: 'Lean Manufacturing',
+    estudio_trabajo: 'Estudio del Trabajo',
+  };
+
+  for (const [esp, count] of specialties) {
+    if (count >= 2) {
+      paths.push({
+        params: { filter: `especialidad/${esp}` },
+        props: { type: 'specialty', value: esp, entries: entries.filter((e: any) => (e.especialidades || []).some((s: string) => s.toLowerCase() === esp)) },
+      });
+    }
+  }
+
+  // Country + specialty combo: /directorio/pais/[country]/[specialty]
+  for (const [country, cCount] of countries) {
+    if (cCount < 3) continue;
+    const countrySlug = country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+    for (const [esp, eCount] of specialties) {
+      if (eCount < 2) continue;
+      const matching = entries.filter((e: any) =>
+        e.ubicacion?.pais?.toLowerCase()?.trim() === country &&
+        (e.especialidades || []).some((s: string) => s.toLowerCase() === esp)
+      );
+      if (matching.length >= 1) {
+        paths.push({
+          params: { filter: `pais/${countrySlug}/${esp}` },
+          props: { type: 'country_specialty', value: `${country}|${esp}`, entries: matching },
+        });
+      }
+    }
+  }
+
+  return paths;
+}
+
+const { type, value, entries } = Astro.props;
+
+let title = '';
+let description = '';
+let h1 = '';
+let breadcrumbs: { name: string; url: string }[] = [{ name: 'Inicio', url: '/' }, { name: 'Directorio', url: '/directorio' }];
+
+const espLabels: Record<string, string> = {
+  cronometraje: 'Cronometraje Industrial',
+  mtm: 'MTM (Methods-Time Measurement)',
+  most: 'MOST (Maynard Operation Sequence Technique)',
+  oee: 'OEE (Overall Equipment Effectiveness)',
+  lean: 'Lean Manufacturing',
+  estudio_trabajo: 'Estudio del Trabajo',
+};
+
+function capitalize(s: string) {
+  return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+if (type === 'country') {
+  const countryName = capitalize(value);
+  title = `Consultores de Cronometraje en ${countryName}`;
+  h1 = `Profesionales del Cronometraje Industrial en ${countryName}`;
+  description = `Encuentra consultores, empresas y freelancers especializados en cronometraje industrial, MTM, MOST y Lean Manufacturing en ${countryName}.`;
+  breadcrumbs.push({ name: countryName, url: `/directorio/pais/${value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}` });
+} else if (type === 'specialty') {
+  const espName = espLabels[value] || capitalize(value);
+  title = `${espName} — Consultores y Software`;
+  h1 = `Profesionales de ${espName}`;
+  description = `Directorio de consultores, empresas y software especializado en ${espName}. Encuentra expertos en ingeniería de métodos y tiempos.`;
+  breadcrumbs.push({ name: espName, url: `/directorio/especialidad/${value}` });
+} else if (type === 'country_specialty') {
+  const [country, esp] = value.split('|');
+  const countryName = capitalize(country);
+  const espName = espLabels[esp] || capitalize(esp);
+  title = `${espName} en ${countryName}`;
+  h1 = `Profesionales de ${espName} en ${countryName}`;
+  description = `Consultores y empresas especializadas en ${espName} en ${countryName}. Directorio de ingeniería de métodos y tiempos.`;
+  breadcrumbs.push({ name: countryName, url: `/directorio/pais/${country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}` });
+  breadcrumbs.push({ name: espName, url: '#' });
+}
+
+const tipoColors: Record<string, string> = {
+  empresa: 'bg-blue-100 text-blue-700',
+  consultor: 'bg-green-100 text-green-700',
+  freelance: 'bg-purple-100 text-purple-700',
+};
+---
+
+<Layout title={title} description={description}>
+  <!-- BreadcrumbList Schema -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": ${JSON.stringify(breadcrumbs.map((b, i) => ({
+        "@type": "ListItem",
+        "position": i + 1,
+        "name": b.name,
+        "item": `https://asetemyt.com${b.url}`
+      })))}
+    }
+  </script>
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Breadcrumb -->
+    <nav class="mb-6 flex items-center gap-2 text-sm text-steel-500 flex-wrap">
+      {breadcrumbs.map((b, i) => (
+        <>
+          {i > 0 && <span class="text-steel-300">/</span>}
+          <a href={b.url} class="hover:text-accent-600 transition-colors">{b.name}</a>
+        </>
+      ))}
+    </nav>
+
+    <!-- Header -->
+    <div class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">{h1}</h1>
+      <p class="text-steel-500 text-lg">{description}</p>
+      <p class="text-sm text-steel-400 mt-2">{entries.length} {entries.length === 1 ? 'resultado' : 'resultados'}</p>
+    </div>
+
+    <!-- Directory Grid -->
+    {entries.length === 0 ? (
+      <div class="text-center py-20 bg-white rounded-xl shadow">
+        <p class="text-steel-400 text-lg">No se encontraron entradas para esta búsqueda.</p>
+        <a href="/directorio" class="inline-block mt-4 text-accent-600 hover:text-accent-700 font-semibold">Ver todo el directorio →</a>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {entries.map((entry: any) => (
+          <a href={`/directorio/${entry.slug}`} class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group">
+            <div class="flex items-start gap-4 mb-4">
+              {entry.logo ? (
+                <img src={entry.logo} alt={entry.nombre} class="w-14 h-14 rounded-lg object-cover shadow-sm" loading="lazy" />
+              ) : (
+                <div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl">
+                  {(entry.nombre || '?')[0].toUpperCase()}
+                </div>
+              )}
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">{entry.nombre}</h3>
+                <span class={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1 ${tipoColors[entry.tipo] || 'bg-steel-100 text-steel-600'}`}>
+                  {entry.tipo === 'empresa' ? 'Empresa' : entry.tipo === 'consultor' ? 'Consultor' : 'Freelancer'}
+                </span>
+              </div>
+            </div>
+            {entry.descripcion && <p class="text-steel-500 text-sm line-clamp-2 mb-3">{entry.descripcion}</p>}
+            <div class="flex flex-wrap gap-1.5 mb-3">
+              {(entry.especialidades || []).slice(0, 3).map((esp: string) => (
+                <span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded font-medium">{esp}</span>
+              ))}
+            </div>
+            <div class="flex items-center text-sm text-steel-400">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              {[entry.ubicacion?.ciudad, entry.ubicacion?.pais].filter(Boolean).join(', ') || 'Sin ubicación'}
+            </div>
+          </a>
+        ))}
+      </div>
+    )}
+
+    <!-- CTA -->
+    <div class="mt-12 bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 text-white text-center">
+      <h2 class="text-xl md:text-2xl font-bold mb-3">¿Tu empresa no aparece aquí?</h2>
+      <p class="text-steel-300 mb-5">Añade tu perfil al directorio gratuito y conecta con clientes potenciales.</p>
+      <a href="/anadir" class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+        Añadir mi empresa
+      </a>
+    </div>
+  </section>
+</Layout>
