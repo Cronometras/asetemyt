@@ -49,13 +49,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
 
       // Update user: add stripeCustomerId and ficha to list
-      const userDoc = await firestoreGet(env, 'users_asetemyt', uid);
-      if (userDoc) {
-        const currentSlugs = userDoc.fichasReclamadas || [];
-        await firestoreUpdate(env, 'users_asetemyt', uid, {
+      let userDoc = await firestoreGet(env, 'users_asetemyt', uid);
+      if (!userDoc) {
+        // Create user document if it doesn't exist
+        await firestoreCreate(env, 'users_asetemyt', uid, {
+          uid: { stringValue: uid },
+          email: { stringValue: session.customer_email || session.customer_details?.email || '' },
+          nombre: { stringValue: '' },
+          createdAt: { timestampValue: new Date().toISOString() },
           stripeCustomerId: { stringValue: customerId },
-          fichasReclamadas: { arrayValue: { values: [...currentSlugs, slug].map((s: string) => ({ stringValue: s })) } },
+          fichasReclamadas: { arrayValue: { values: [{ stringValue: slug }] } },
         });
+      } else {
+        const currentSlugs = userDoc.fichasReclamadas || [];
+        if (!currentSlugs.includes(slug)) {
+          await firestoreUpdate(env, 'users_asetemyt', uid, {
+            stripeCustomerId: { stringValue: customerId },
+            fichasReclamadas: { arrayValue: { values: [...currentSlugs, slug].map((s: string) => ({ stringValue: s })) } },
+          });
+        }
       }
 
       // Update claim status

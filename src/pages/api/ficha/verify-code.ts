@@ -185,6 +185,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
           trial_end: trialEnd,
         };
         sessionParams.metadata.trialMonths = String(couponData.value);
+        // Add a 0.01€ one-time charge to validate the card immediately
+        sessionParams.line_items.push({
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: 'Validación de tarjeta',
+              description: 'Cargo de 0,01€ para verificar el método de pago',
+            },
+            unit_amount: 1, // 0.01€ in cents
+          },
+          quantity: 1,
+        });
       }
 
       // Increment coupon usage

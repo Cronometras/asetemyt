@@ -234,7 +234,8 @@ import Layout from '../layouts/Layout.astro';
     try {
       const resp = await authFetch('/api/user/data');
       if (!resp.ok) {
-        fichasList.innerHTML = '<p class="text-steel-500 text-sm">No tienes fichas verificadas todavía.</p>';
+        const errData = await resp.json().catch(() => null);
+        fichasList.innerHTML = `<p class="text-red-500 text-sm">Error cargando fichas: ${errData?.error || resp.status}</p>`;
         subInfo.innerHTML = '<p class="text-steel-500 text-sm">No tienes suscripción activa.</p>';
         return;
       }
@@ -246,19 +247,19 @@ import Layout from '../layouts/Layout.astro';
         fichasList.innerHTML = data.fichas.map((f: any) => `
           <div class="flex items-center justify-between p-4 bg-steel-50 rounded-xl">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <div class="w-10 h-10 ${f.verificado ? 'bg-green-100' : 'bg-amber-100'} rounded-lg flex items-center justify-center">
                 ${f.verificado
                   ? '<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
-                  : '<span class="text-steel-500 font-bold text-sm">?</span>'}
+                  : '<svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'}
               </div>
               <div>
                 <p class="font-semibold text-steel-700">${f.nombre || f.slug}</p>
-                <p class="text-xs text-steel-500">${f.verificado ? '✓ Verificada' : 'Pendiente de verificación'}</p>
+                <p class="text-xs ${f.verificado ? 'text-green-600' : 'text-amber-600'}">${f.verificado ? '✓ Verificada' : '⏳ Pendiente de verificación'}</p>
               </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
               <a href="/directorio/${f.slug}" class="text-xs text-accent-600 hover:text-accent-700 font-medium">Ver</a>
-              ${f.verificado ? `<a href="/editar/${f.slug}" class="text-xs text-accent-600 hover:text-accent-700 font-medium">Editar</a>` : ''}
+              <a href="/editar/${f.slug}" class="text-xs bg-accent-500 hover:bg-accent-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Editar</a>
             </div>
           </div>
         `).join('');
