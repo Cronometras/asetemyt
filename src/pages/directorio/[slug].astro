@@ -254,7 +254,7 @@ const tipoColors: Record<string, string> = {
 
   {/* Certificate for verified members */}
   {entry.verificado && (
-    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <section id="ownerCertSection" class="hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
       <Certificate entryName={entry.nombre} entrySlug={entry.slug} tipo={entry.tipo} />
     </section>
   )}
@@ -275,6 +275,7 @@ const tipoColors: Record<string, string> = {
           const isOwner = data.fichas?.some((f: any) => f.slug === slug);
           if (isOwner) {
             document.getElementById('ownerEditCTA')?.classList.remove('hidden');
+            document.getElementById('ownerCertSection')?.classList.remove('hidden');
           }
         } catch {}
       });
