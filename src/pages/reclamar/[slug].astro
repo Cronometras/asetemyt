@@ -147,10 +147,12 @@ if (!entry) return Astro.redirect('/directorio');
   const $$ = (s) => document.querySelectorAll(s);
 
   let appliedCoupon: string | null = null;
+  let currentUser: any = null;
 
   // Check state
   const unsub = onAuthStateChanged(auth, async (user) => {
     unsub();
+    currentUser = user;
     if (verificado) {
       $('#alreadyVerified').classList.remove('hidden');
       return;
@@ -158,6 +160,11 @@ if (!entry) return Astro.redirect('/directorio');
     if (!user) {
       $('#loginRequired').classList.remove('hidden');
       return;
+    }
+    // Pre-fill email with auth email
+    const emailInput = $('#email') as HTMLInputElement;
+    if (emailInput && user.email) {
+      emailInput.value = user.email;
     }
     $('#step1').classList.remove('hidden');
   });
@@ -229,7 +236,7 @@ if (!entry) return Astro.redirect('/directorio');
       const resp = await fetch('/api/ficha/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, nombre, email, mensaje }),
+        body: JSON.stringify({ slug, nombre, email, mensaje, uid: currentUser?.uid || '' }),
       });
       const data = await resp.json();
       if (!resp.ok) {
@@ -350,7 +357,7 @@ if (!entry) return Astro.redirect('/directorio');
       await fetch('/api/ficha/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ slug, nombre, email, mensaje }),
+        body: JSON.stringify({ slug, nombre, email, mensaje, uid: currentUser?.uid || '' }),
       });
       $('#btnResend').textContent = '✓ Código reenviado';
       setTimeout(() => { $('#btnResend').textContent = 'Reenviar código'; }, 3000);

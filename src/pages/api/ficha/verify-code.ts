@@ -2,7 +2,7 @@
 // Now supports coupon codes: free coupons skip Stripe, discount/trial modify the session
 
 import type { APIRoute } from 'astro';
-import { firestoreGet, firestoreDelete, firestoreCreate, getAccessToken } from '../../../lib/firestore-rest';
+import { firestoreGet, firestoreDelete, firestoreCreate, firestoreUpdate, getAccessToken } from '../../../lib/firestore-rest';
 import { getStripe } from '../../../lib/stripe-server';
 import { validateCoupon, incrementCouponUsage } from '../../../lib/coupons';
 
@@ -105,6 +105,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Increment coupon usage
     await incrementCouponUsage(env, couponData.code);
+
+    // Add ficha to user's fichasReclamadas (same as Stripe webhook does)
+    if (doc.uid) {
+      try {
+        const userDoc = await firestoreGet(env, 'users_asetemyt', doc.uid);
+        if (userDoc) {
+          const currentSlugs: string[] = userDoc.fichasReclamadas || [];
+          if (!currentSlugs.includes(doc.slug)) {
+            await firestoreUpdate(env, 'users_asetemyt', doc.uid, {
+              fichasReclamadas: { arrayValue: { values: [...currentSlugs, doc.slug].map((s: string) => ({ stringValue: s })) } },
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Error updating fichasReclamadas for free coupon:', e);
+      }
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 
