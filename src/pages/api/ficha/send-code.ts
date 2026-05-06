@@ -107,19 +107,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     </div>
   `;
 
-  async function sendEmail(from: string): Promise<{ ok: boolean; error?: string }> {
+  async function sendEmail(from: string, to: string[], subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
     const resp = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${resendKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from,
-        to: [email],
-        subject: 'Código de verificación ASETEMYT',
-        html: emailHtml,
-      }),
+      body: JSON.stringify({ from, to, subject, html }),
     });
     if (resp.ok) return { ok: true };
     try {
@@ -130,16 +125,60 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
   }
 
-  // Try with custom domain first, fallback to resend.dev
-  let result = await sendEmail(fromAddress);
-  if (!result.ok) {
-    fromAddress = 'ASETEMYT <onboarding@resend.dev>';
-    result = await sendEmail(fromAddress);
+  // Helper to try custom domain first, fallback to resend.dev
+  async function sendWithFallback(to: string[], subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
+    let result = await sendEmail(fromAddress, to, subject, html);
+    if (!result.ok) {
+      const fallbackFrom = 'ASETEMYT <onboarding@resend.dev>';
+      result = await sendEmail(fallbackFrom, to, subject, html);
+    }
+    return result;
   }
+
+  // 1) Send verification code to claimant
+  const result = await sendWithFallback(
+    [email],
+    'Código de verificación ASETEMYT',
+    emailHtml,
+  );
 
   if (!result.ok) {
     console.error('Resend error:', result.error);
     return new Response(JSON.stringify({ error: 'Error enviando el email de verificación. Inténtalo de nuevo en unos minutos.' }), { status: 500 });
+  }
+
+  // 2) Notify the ficha's published email (if any, and different from claimant)
+  const fichaEmail = found.listing.contacto?.email;
+  if (fichaEmail && fichaEmail.toLowerCase() !== email.toLowerCase()) {
+    const notifyHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 20px;">
+        <h2 style="color: #1a2332;">Solicitud de reclamación de ficha</h2>
+        <p style="font-size: 16px; color: #374151;">
+          Un usuario ha solicitado reclamar y verificar la ficha <strong>${found.listing.nombre || slug}</strong> en el directorio ASETEMYT.
+        </p>
+        <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin: 16px 0; border-left: 4px solid #6366f1;">
+          <p style="margin: 0 0 8px;"><strong>Datos del solicitante:</strong></p>
+          <p style="margin: 0; color: #4b5563;">Nombre: ${nombre}</p>
+          <p style="margin: 0; color: #4b5563;">Email: ${email}</p>
+          ${mensaje ? `<p style="margin: 8px 0 0; color: #4b5563;">Mensaje: ${mensaje}</p>` : ''}
+        </div>
+        <p style="color: #6b7280; font-size: 14px;">
+          Si tú eres el propietario y reconoces esta solicitud, no necesitas hacer nada: el solicitante está verificando la propiedad mediante su email corporativo.
+        </p>
+        <p style="color: #6b7280; font-size: 14px;">
+          Si no reconoces esta solicitud o consideras que alguien ajeno está intentando reclamar tu ficha, contacta con nosotros en <a href="mailto:info@asetemyt.com">info@asetemyt.com</a>.
+        </p>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+        <p style="color: #9ca3af; font-size: 12px;">ASETEMYT — Directorio de Cronometraje Industrial</p>
+      </div>
+    `;
+
+    // Fire-and-forget — don't block the claim flow if this fails
+    sendWithFallback(
+      [fichaEmail],
+      `Reclamación de ficha: ${found.listing.nombre || slug}`,
+      notifyHtml,
+    ).catch((err) => console.error('Error notifying ficha email:', err));
   }
 
   return new Response(JSON.stringify({ success: true, message: 'Código enviado' }), { status: 200 });

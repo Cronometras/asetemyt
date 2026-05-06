@@ -2,19 +2,15 @@
 // GET /api/admin/claims — List pending and approved claims (admin only)
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
+import { isAdmin } from '../../../lib/admin';
 import { firestoreGet, firestoreUpdate, firestoreQuery } from '../../../lib/firestore-rest';
-
-// Admin UIDs — add yours here
-const ADMIN_UIDS = ['NCCrZqW3xuhK6E2wkBGDpylStFH3'];
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
   const apiKey = env.FIREBASE_API_KEY || '';
 
   const { user } = await getAuthUser(request, apiKey);
-  if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
-
-  if (!ADMIN_UIDS.includes(user.user_id)) {
+  if (!user || !(await isAdmin(env, user))) {
     return new Response(JSON.stringify({ error: 'Acceso denegado' }), { status: 403 });
   }
 
@@ -32,9 +28,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     reviewedAt: { timestampValue: new Date().toISOString() },
   });
 
-  // If approved, mark the listing for payment (ownerUid set after Stripe payment)
-  // The user will be directed to pay via Stripe, which sets verificado + ownerUid
-
   return new Response(JSON.stringify({ success: true, status: newStatus }), { status: 200 });
 };
 
@@ -44,8 +37,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const apiKey = env.FIREBASE_API_KEY || '';
 
   const { user } = await getAuthUser(request, apiKey);
-  if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
-  if (!ADMIN_UIDS.includes(user.user_id)) {
+  if (!user || !(await isAdmin(env, user))) {
     return new Response(JSON.stringify({ error: 'Acceso denegado' }), { status: 403 });
   }
 
