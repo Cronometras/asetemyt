@@ -222,6 +222,16 @@ if (!entry) return Astro.redirect('/directorio');
     }
   });
 
+  // Clear applied coupon if user edits the input
+  $('#couponInput').addEventListener('input', () => {
+    if (appliedCoupon) {
+      appliedCoupon = null;
+      const resultEl = $('#couponResult');
+      resultEl.classList.add('hidden');
+      $('#btnSend').textContent = 'Enviar código de verificación';
+    }
+  });
+
   // STEP 1 — Send code
   $('#claimForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -230,6 +240,15 @@ if (!entry) return Astro.redirect('/directorio');
     const mensaje = $('#mensaje').value.trim();
     const errEl = $('#error1');
     errEl.classList.add('hidden');
+
+    // Block if user typed a coupon but didn't validate it or it was invalid
+    const couponInputValue = ($('#couponInput') as HTMLInputElement).value.trim();
+    if (couponInputValue && !appliedCoupon) {
+      errEl.textContent = 'El cupón introducido no es válido. Pulsa "Aplicar" para validarlo o borrarlo para continuar.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
     $('#btnSend').disabled = true;
 
     try {
