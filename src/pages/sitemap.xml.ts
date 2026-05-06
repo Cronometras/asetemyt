@@ -19,6 +19,7 @@ export const GET: APIRoute = async () => {
     { url: '/glosario', priority: '0.8', changefreq: 'weekly' },
     { url: '/comparador', priority: '0.7', changefreq: 'weekly' },
     { url: '/empleo', priority: '0.6', changefreq: 'daily' },
+    { url: '/software', priority: '0.9', changefreq: 'daily' },
   ];
 
   const directoryPages = entries
