@@ -198,7 +198,7 @@ const tipoColors: Record<string, string> = {
       </div>
     </div>
 
-    <!-- Reclamar ficha CTA -->
+    <!-- Reclamar ficha CTA (not verified) -->
     {!entry.verificado && (
       <div class="mt-8 p-6 bg-gradient-to-r from-accent-50 to-accent-100 rounded-xl border border-accent-200">
         <div class="flex items-start gap-4">
@@ -218,5 +218,48 @@ const tipoColors: Record<string, string> = {
         </div>
       </div>
     )}
+
+    <!-- Editar ficha CTA (verified — shown to owner only via client-side check) -->
+    {entry.verificado && (
+      <div id="ownerEditCTA" class="hidden mt-8 p-6 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-primary-900">Tu ficha verificada</h3>
+            <p class="text-sm text-steel-600 mt-1 mb-3">Edita los datos de tu ficha para mantenerla actualizada.</p>
+            <a href={`/editar/${entry.slug}`}
+              class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">
+              Editar ficha →
+            </a>
+          </div>
+        </div>
+      </div>
+    )}
   </section>
+
+  {/* Client-side: show edit CTA to the owner of this verified ficha */}
+  {entry.verificado && (
+    <script>
+      import { onAuthStateChanged, auth, authFetch } from '../../lib/auth';
+
+      const slug = window.location.pathname.split('/').filter(Boolean).pop();
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user || !slug) return;
+        try {
+          const resp = await authFetch('/api/user/data');
+          if (!resp.ok) return;
+          const data = await resp.json();
+          const isOwner = data.fichas?.some((f: any) => f.slug === slug);
+          if (isOwner) {
+            document.getElementById('ownerEditCTA')?.classList.remove('hidden');
+          }
+        } catch {}
+      });
+    </script>
+  )}
 </Layout>
