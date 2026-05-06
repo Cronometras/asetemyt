@@ -45,20 +45,19 @@ export async function validateCoupon(env: any, code: string): Promise<{ valid: b
     return { valid: false, error: 'Cupón no encontrado' };
   }
 
-  // Parse the first result
+  // firestoreQuery returns already-parsed objects — flat properties, no .fields
   const doc = results[0];
-  const fields = doc.fields || {};
   const coupon: Coupon = {
-    code: fields.code?.stringValue || '',
-    type: fields.type?.stringValue as Coupon['type'] || 'free',
-    value: Number(fields.value?.integerValue || fields.value?.doubleValue || 0),
-    maxUses: Number(fields.maxUses?.integerValue || 0),
-    usedCount: Number(fields.usedCount?.integerValue || 0),
-    expiresAt: fields.expiresAt?.stringValue || null,
-    activo: fields.activo?.booleanValue ?? true,
-    descripcion: fields.descripcion?.stringValue || '',
-    createdAt: fields.createdAt?.stringValue || '',
-    createdBy: fields.createdBy?.stringValue || '',
+    code: doc.code || '',
+    type: (doc.type || 'free') as Coupon['type'],
+    value: Number(doc.value || 0),
+    maxUses: Number(doc.maxUses || 0),
+    usedCount: Number(doc.usedCount || 0),
+    expiresAt: doc.expiresAt || null,
+    activo: doc.activo ?? true,
+    descripcion: doc.descripcion || '',
+    createdAt: doc.createdAt || '',
+    createdBy: doc.createdBy || '',
   };
 
   if (!coupon.activo) {
@@ -80,12 +79,12 @@ export async function incrementCouponUsage(env: any, code: string): Promise<void
   const normalizedCode = code.toUpperCase().trim();
   const results = await firestoreQuery(env, 'cupones_asetemyt', 'code', 'EQUAL', { stringValue: normalizedCode });
   if (results && results.length > 0) {
-    const docName = results[0].name;
-    const docId = docName?.split('/').pop();
+    // firestoreQuery returns parsed objects — id is the document ID
+    const docId = results[0].id;
     if (docId) {
-      const current = results[0].fields?.usedCount?.integerValue || '0';
+      const current = Number(results[0].usedCount || 0);
       await firestoreUpdate(env, 'cupones_asetemyt', docId, {
-        usedCount: { integerValue: String(Number(current) + 1) },
+        usedCount: { integerValue: String(current + 1) },
       });
     }
   }

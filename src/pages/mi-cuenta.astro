@@ -73,6 +73,118 @@ import Layout from '../layouts/Layout.astro';
           Gestionar suscripción →
         </button>
       </div>
+
+      <!-- ===== ADMIN PANEL ===== -->
+      <div id="adminSection" class="hidden">
+        <div class="bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 border border-purple-200 rounded-2xl shadow-lg p-6 mb-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+              <span class="text-xl">👑</span>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-purple-900">Administración</h2>
+              <p class="text-purple-600 text-sm">Gestiona cupones y solicitudes</p>
+            </div>
+          </div>
+
+          <!-- Admin nav links -->
+          <div class="flex flex-wrap gap-3 mb-6">
+            <a href="/admin/claims" class="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-lg border border-purple-200 text-purple-700 hover:bg-purple-50 font-medium text-sm transition-colors">
+              📋 Solicitudes de verificación
+            </a>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex flex-wrap gap-2 mb-6">
+            <button id="tabCoupons" class="admin-tab px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white shadow-md">
+              🎫 Cupones
+            </button>
+            <button id="tabCreate" class="admin-tab px-4 py-2 rounded-lg text-sm font-medium bg-white text-purple-700 border border-purple-200 hover:bg-purple-100">
+              ➕ Crear Cupón
+            </button>
+          </div>
+
+          <!-- Tab: Coupon list -->
+          <div id="panelCoupons" class="bg-white rounded-xl shadow-md border border-purple-100 p-4 sm:p-6">
+            <div id="couponsList">
+              <p class="text-steel-500 text-sm">Cargando cupones...</p>
+            </div>
+          </div>
+
+          <!-- Tab: Create coupon -->
+          <div id="panelCreate" class="hidden bg-white rounded-xl shadow-md border border-purple-100 p-4 sm:p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Crear Nuevo Cupón</h3>
+            <form id="couponForm" class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Código *</label>
+                <input type="text" id="couponCode" required uppercase
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-mono text-lg"
+                  placeholder="Ej: EMPRESA2024" />
+                <p class="text-xs text-gray-500 mt-1">Se convertirá a mayúsculas automáticamente</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                <input type="text" id="couponDesc"
+                  class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Nota interna sobre este cupón" />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de descuento *</label>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <label class="coupon-type-option flex items-center gap-3 p-4 rounded-lg border-2 border-purple-500 bg-purple-50 cursor-pointer" data-type="free">
+                    <input type="radio" name="couponType" value="free" checked class="hidden" />
+                    <span class="text-2xl">🆓</span>
+                    <span class="font-medium text-gray-700">Gratis</span>
+                  </label>
+                  <label class="coupon-type-option flex items-center gap-3 p-4 rounded-lg border-2 border-gray-200 hover:border-purple-300 cursor-pointer" data-type="discount">
+                    <input type="radio" name="couponType" value="discount" class="hidden" />
+                    <span class="text-2xl">💰</span>
+                    <span class="font-medium text-gray-700">Descuento %</span>
+                  </label>
+                  <label class="coupon-type-option flex items-center gap-3 p-4 rounded-lg border-2 border-gray-200 hover:border-purple-300 cursor-pointer" data-type="trial">
+                    <input type="radio" name="couponType" value="trial" class="hidden" />
+                    <span class="text-2xl">📅</span>
+                    <span class="font-medium text-gray-700">Meses gratis</span>
+                  </label>
+                </div>
+              </div>
+
+              <div id="valueField" class="hidden">
+                <label id="valueLabel" class="block text-sm font-medium text-gray-700 mb-1">Valor *</label>
+                <div class="relative">
+                  <input type="number" id="couponValue" min="1" max="100"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 pr-12" />
+                  <span id="valueUnit" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Usos máximos</label>
+                  <input type="number" id="couponMaxUses" min="0" value="0"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  <p class="text-xs text-gray-500 mt-1">0 = ilimitados</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Caduca</label>
+                  <input type="datetime-local" id="couponExpiry"
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500" />
+                  <p class="text-xs text-gray-500 mt-1">Vacío = sin caducidad</p>
+                </div>
+              </div>
+
+              <div id="formError" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
+              <div id="formSuccess" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded-lg"></div>
+
+              <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                Crear Cupón
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 </Layout>
@@ -114,6 +226,9 @@ import Layout from '../layouts/Layout.astro';
 
     dashboard.classList.remove('hidden');
     userName.textContent = user.displayName || user.email || 'Usuario';
+
+    // Check admin status (shows admin panel if applicable)
+    checkAdmin();
 
     // Load user data from API
     try {
@@ -203,5 +318,228 @@ import Layout from '../layouts/Layout.astro';
     } catch (err) {
       console.error('Error opening portal:', err);
     }
+  });
+
+  // ===== ADMIN PANEL LOGIC =====
+  const adminSection = document.getElementById('adminSection')!;
+  const tabCoupons = document.getElementById('tabCoupons')!;
+  const tabCreate = document.getElementById('tabCreate')!;
+  const panelCoupons = document.getElementById('panelCoupons')!;
+  const panelCreate = document.getElementById('panelCreate')!;
+  const couponsList = document.getElementById('couponsList')!;
+  const couponForm = document.getElementById('couponForm') as HTMLFormElement;
+  const formError = document.getElementById('formError')!;
+  const formSuccess = document.getElementById('formSuccess')!;
+
+  // Check admin status after auth
+  async function checkAdmin() {
+    try {
+      const resp = await authFetch('/api/admin/status');
+      const data = await resp.json();
+      if (data.admin) {
+        adminSection.classList.remove('hidden');
+        loadCoupons();
+      }
+    } catch {}
+  }
+
+  // Tab switching
+  tabCoupons.addEventListener('click', () => {
+    tabCoupons.className = 'admin-tab px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white shadow-md';
+    tabCreate.className = 'admin-tab px-4 py-2 rounded-lg text-sm font-medium bg-white text-purple-700 border border-purple-200 hover:bg-purple-100';
+    panelCoupons.classList.remove('hidden');
+    panelCreate.classList.add('hidden');
+  });
+
+  tabCreate.addEventListener('click', () => {
+    tabCreate.className = 'admin-tab px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white shadow-md';
+    tabCoupons.className = 'admin-tab px-4 py-2 rounded-lg text-sm font-medium bg-white text-purple-700 border border-purple-200 hover:bg-purple-100';
+    panelCreate.classList.remove('hidden');
+    panelCoupons.classList.add('hidden');
+  });
+
+  // Coupon type selection
+  const typeOptions = document.querySelectorAll('.coupon-type-option');
+  const valueField = document.getElementById('valueField')!;
+  const valueLabel = document.getElementById('valueLabel')!;
+  const valueUnit = document.getElementById('valueUnit')!;
+  const couponValue = document.getElementById('couponValue') as HTMLInputElement;
+
+  typeOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      typeOptions.forEach(o => {
+        o.className = 'coupon-type-option flex items-center gap-3 p-4 rounded-lg border-2 border-gray-200 hover:border-purple-300 cursor-pointer';
+      });
+      opt.className = 'coupon-type-option flex items-center gap-3 p-4 rounded-lg border-2 border-purple-500 bg-purple-50 cursor-pointer';
+      const type = (opt as HTMLElement).dataset.type;
+      if (type === 'free') {
+        valueField.classList.add('hidden');
+      } else {
+        valueField.classList.remove('hidden');
+        if (type === 'discount') {
+          valueLabel.textContent = 'Porcentaje de descuento *';
+          valueUnit.textContent = '%';
+          couponValue.max = '100';
+          couponValue.placeholder = '25';
+        } else {
+          valueLabel.textContent = 'Meses gratis *';
+          valueUnit.textContent = 'meses';
+          couponValue.max = '';
+          couponValue.placeholder = '3';
+        }
+      }
+    });
+  });
+
+  // Load coupons
+  async function loadCoupons() {
+    try {
+      const resp = await authFetch('/api/admin/coupons');
+      const data = await resp.json();
+      if (!data.coupons || data.coupons.length === 0) {
+        couponsList.innerHTML = '<p class="text-steel-500 text-sm">No hay cupones creados.</p>';
+        return;
+      }
+      couponsList.innerHTML = data.coupons.map((c: any) => {
+        const expired = c.expiresAt && new Date(c.expiresAt) < new Date();
+        const maxedOut = c.maxUses > 0 && c.usedCount >= c.maxUses;
+        const statusBadge = !c.activo
+          ? '<span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">Inactivo</span>'
+          : expired
+          ? '<span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Expirado</span>'
+          : maxedOut
+          ? '<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Agotado</span>'
+          : '<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Activo</span>';
+
+        const typeIcon = c.type === 'free' ? '🆓' : c.type === 'discount' ? '💰' : '📅';
+        const typeLabel = c.type === 'free' ? 'Gratis' : c.type === 'discount' ? `${c.value}%` : `${c.value} meses`;
+
+        return `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-steel-50 rounded-xl mb-3 ${!c.activo ? 'opacity-60' : ''}">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">${typeIcon}</span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <code class="font-bold font-mono bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-sm">${c.code}</code>
+                  ${statusBadge}
+                </div>
+                <p class="text-xs text-steel-500 mt-1">
+                  ${typeLabel} · Usos: ${c.usedCount}${c.maxUses > 0 ? '/' + c.maxUses : ''} (∞)
+                  ${c.expiresAt ? ' · Caduca: ' + new Date(c.expiresAt).toLocaleDateString('es-ES') : ''}
+                  ${c.descripcion ? ' · ' + c.descripcion : ''}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="toggleCoupon('${c.id}', ${!c.activo})"
+                class="p-2 rounded-lg ${c.activo ? 'text-green-600 hover:bg-green-100' : 'text-gray-400 hover:bg-gray-100'} transition-colors"
+                title="${c.activo ? 'Desactivar' : 'Activar'}">
+                ${c.activo ? '✅' : '⬜'}
+              </button>
+              <button onclick="deleteCoupon('${c.id}', '${c.code}')"
+                class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                title="Eliminar">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch {
+      couponsList.innerHTML = '<p class="text-red-500 text-sm">Error cargando cupones.</p>';
+    }
+  }
+
+  // Toggle coupon active
+  (window as any).toggleCoupon = async (id: string, activo: boolean) => {
+    try {
+      await authFetch('/api/admin/coupons', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, activo }),
+      });
+      loadCoupons();
+    } catch {
+      alert('Error actualizando cupón');
+    }
+  };
+
+  // Delete coupon
+  (window as any).deleteCoupon = async (id: string, code: string) => {
+    if (!confirm(`¿Eliminar el cupón ${code}?`)) return;
+    try {
+      await authFetch('/api/admin/coupons', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      loadCoupons();
+    } catch {
+      alert('Error eliminando cupón');
+    }
+  };
+
+  // Create coupon form
+  couponForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    formError.classList.add('hidden');
+    formSuccess.classList.add('hidden');
+
+    const code = (document.getElementById('couponCode') as HTMLInputElement).value.trim();
+    const descripcion = (document.getElementById('couponDesc') as HTMLInputElement).value.trim();
+    const typeRadio = document.querySelector('input[name="couponType"]:checked') as HTMLInputElement;
+    const type = typeRadio?.value || 'free';
+    const maxUses = Number((document.getElementById('couponMaxUses') as HTMLInputElement).value || 0);
+    const expiryEl = document.getElementById('couponExpiry') as HTMLInputElement;
+    const expiresAt = expiryEl.value ? new Date(expiryEl.value).toISOString() : null;
+
+    let value = 0;
+    if (type !== 'free') {
+      value = Number(couponValue.value);
+      if (!value || value < 1) {
+        formError.textContent = 'Introduce un valor válido';
+        formError.classList.remove('hidden');
+        return;
+      }
+      if (type === 'discount' && value > 100) {
+        formError.textContent = 'El descuento no puede superar el 100%';
+        formError.classList.remove('hidden');
+        return;
+      }
+    }
+
+    try {
+      const resp = await authFetch('/api/admin/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, type, value, maxUses, expiresAt, descripcion }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        formError.textContent = data.error || 'Error creando cupón';
+        formError.classList.remove('hidden');
+        return;
+      }
+      formSuccess.textContent = `✅ Cupón ${data.code} creado correctamente`;
+      formSuccess.classList.remove('hidden');
+      couponForm.reset();
+      // Reset type selector to free
+      typeOptions.forEach(o => {
+        o.className = 'coupon-type-option flex items-center gap-3 p-4 rounded-lg border-2 border-gray-200 hover:border-purple-300 cursor-pointer';
+      });
+      typeOptions[0].className = 'coupon-type-option flex items-center gap-3 p-4 rounded-lg border-2 border-purple-500 bg-purple-50 cursor-pointer';
+      valueField.classList.add('hidden');
+      // Switch to list tab and reload
+      tabCoupons.click();
+      loadCoupons();
+    } catch {
+      formError.textContent = 'Error de conexión';
+      formError.classList.remove('hidden');
+    }
+  });
+
+  // Uppercase coupon code input
+  (document.getElementById('couponCode') as HTMLInputElement).addEventListener('input', (e) => {
+    (e.target as HTMLInputElement).value = (e.target as HTMLInputElement).value.toUpperCase();
   });
 </script>
