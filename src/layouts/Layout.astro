@@ -53,7 +53,8 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
           </a>
           <div class="hidden md:flex items-center gap-6">
             <a href="/" class="hover:text-accent-400 transition-colors font-medium" data-nav="home">Inicio</a>
-            <a href="/directorio" class="hover:text-accent-400 transition-colors font-medium" data-nav="dir">Directorio</a>
+            <a href="/directorio" class="hover:text-accent-400 transition-colors font-medium" data-nav="prof">Profesionales</a>
+            <a href="/directorio#software" class="hover:text-accent-400 transition-colors font-medium" data-nav="soft">Software</a>
             <a href="/blog" class="hover:text-accent-400 transition-colors font-medium" data-nav="blog">Blog</a>
             <a href="/anadir" class="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors" data-nav="add">
               Añadir Empresa
@@ -76,7 +77,8 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
         </div>
         <div id="mobile-menu" class="hidden md:hidden pb-4">
           <a href="/" class="block py-2 hover:text-accent-400" data-nav="home">Inicio</a>
-          <a href="/directorio" class="block py-2 hover:text-accent-400" data-nav="dir">Directorio</a>
+          <a href="/directorio" class="block py-2 hover:text-accent-400" data-nav="prof">Profesionales</a>
+          <a href="/directorio#software" class="block py-2 hover:text-accent-400" data-nav="soft">Software</a>
           <a href="/blog" class="block py-2 hover:text-accent-400" data-nav="blog">Blog</a>
           <a href="/anadir" class="block py-2 text-accent-400 font-semibold" data-nav="add">Añadir Empresa</a>
           <div id="mob-auth-link" class="border-t border-steel-700 mt-2 pt-2">
@@ -109,7 +111,8 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
           <div>
             <h3 class="font-semibold text-white mb-3" data-text="links">Enlaces</h3>
             <ul class="space-y-2 text-sm">
-              <li><a href="/directorio" class="hover:text-accent-400 transition-colors" data-nav="dir">Directorio</a></li>
+              <li><a href="/directorio" class="hover:text-accent-400 transition-colors" data-nav="prof">Profesionales</a></li>
+              <li><a href="/directorio#software" class="hover:text-accent-400 transition-colors" data-nav="soft">Software</a></li>
               <li><a href="/blog" class="hover:text-accent-400 transition-colors" data-nav="blog">Blog</a></li>
               <li><a href="/anadir" class="hover:text-accent-400 transition-colors" data-nav="add">Añadir Empresa</a></li>
             </ul>
@@ -133,8 +136,8 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
       import { getLang, type Lang } from '../lib/firebase';
 
       const navLabels: Record<Lang, Record<string, string>> = {
-        es: { home: 'Inicio', dir: 'Directorio', blog: 'Blog', add: 'Añadir Empresa', login: 'Iniciar Sesión', account: 'Mi Cuenta' },
-        en: { home: 'Home', dir: 'Directory', blog: 'Blog', add: 'Add Company', login: 'Log In', account: 'My Account' },
+        es: { home: 'Inicio', prof: 'Profesionales', soft: 'Software', blog: 'Blog', add: 'Añadir Empresa', login: 'Iniciar Sesión', account: 'Mi Cuenta' },
+        en: { home: 'Home', prof: 'Professionals', soft: 'Software', blog: 'Blog', add: 'Add Company', login: 'Log In', account: 'My Account' },
       };
 
       const footerLabels: Record<Lang, Record<string, string>> = {
