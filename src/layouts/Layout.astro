@@ -8,7 +8,7 @@ export interface Props {
 const {
   title,
   description = 'Directorio de técnicos, consultores y empresas de cronometraje industrial e ingeniería de métodos y tiempos.',
-  image = 'https://asetemyt.com/favicon.svg',
+  image = 'https://asetemyt.com/images/logo-asetemyt.png',
 } = Astro.props;
 const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
 ---
@@ -19,7 +19,9 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/images/logo-asetemyt-icon.png" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="alternate" hreflang="es" href={canonicalUrl} />
     <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
@@ -48,7 +50,7 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <a href="/" class="flex items-center gap-3 group">
-            <div class="w-9 h-9 bg-accent-500 rounded-lg flex items-center justify-center font-bold text-lg tracking-tight">A</div>
+            <img src="/images/logo-asetemyt-nav.png" alt="ASETEMYT" class="h-9 w-auto" width="51" height="40" loading="eager" />
             <span class="text-xl font-bold tracking-tight">ASETEMYT</span>
           </a>
           <div class="hidden md:flex items-center gap-6">
@@ -107,7 +109,7 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div class="flex items-center gap-2 mb-4">
-              <div class="w-8 h-8 bg-accent-500 rounded-lg flex items-center justify-center font-bold text-white">A</div>
+              <img src="/images/logo-asetemyt-nav.png" alt="ASETEMYT" class="h-8 w-auto" width="51" height="40" loading="lazy" />
               <span class="text-lg font-bold text-white">ASETEMYT</span>
             </div>
             <p class="text-sm" data-text="footerDesc">
