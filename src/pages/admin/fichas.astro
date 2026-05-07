@@ -26,12 +26,31 @@ import Layout from '../../layouts/Layout.astro';
           <h1 class="text-3xl font-extrabold text-primary-900">Gestión de Fichas</h1>
           <p class="text-steel-500 text-sm mt-1" id="statsLine"></p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
           <a href="/admin" class="text-sm text-accent-600 font-medium hover:text-accent-700">← Admin</a>
           <button id="btn-create" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
             + Nueva ficha
           </button>
         </div>
+      </div>
+
+      <!-- Bulk contact lock/unlock -->
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 class="font-bold text-amber-900 text-sm">🔒 Bloqueo de datos de contacto</h3>
+            <p class="text-xs text-amber-700 mt-1">Al bloquear: solo las fichas verificadas muestran datos de contacto. Las no verificadas aparecen difuminadas.</p>
+          </div>
+          <div class="flex gap-2">
+            <button id="btn-unlock-all" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg text-xs transition-colors">
+              🔓 Desbloquear todos
+            </button>
+            <button id="btn-lock-all" class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg text-xs transition-colors">
+              🔒 Bloquear no verificados
+            </button>
+          </div>
+        </div>
+        <div id="bulk-status" class="hidden mt-2 text-xs font-medium"></div>
       </div>
 
       <!-- Search & Filters -->
@@ -145,6 +164,10 @@ import Layout from '../../layouts/Layout.astro';
               <input type="checkbox" id="f-verificado" class="w-4 h-4 text-accent-500 rounded border-steel-300" />
               <span class="text-steel-700">Verificado</span>
             </label>
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" id="f-contacto-locked" class="w-4 h-4 text-accent-500 rounded border-steel-300" />
+              <span class="text-steel-700">Contacto desbloqueado</span>
+            </label>
           </div>
         </div>
 
@@ -211,6 +234,9 @@ import Layout from '../../layouts/Layout.astro';
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
               <a href="/directorio/${f.slug}" target="_blank" class="text-xs text-steel-400 hover:text-accent-600 px-2 py-1">Ver</a>
+              <button class="unlock-btn text-xs px-2 py-1.5 rounded-lg font-medium ${f.contactoDesbloqueado !== false ? 'bg-green-50 text-green-700' : 'bg-steel-100 text-steel-500'}" data-slug="${f.slug}" data-locked="${f.contactoDesbloqueado === false}" title="${f.contactoDesbloqueado !== false ? 'Contacto desbloqueado — click para bloquear' : 'Contacto bloqueado — click para desbloquear'}">
+                ${f.contactoDesbloqueado !== false ? '🔓' : '🔒'}
+              </button>
               <button class="edit-btn text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium" data-slug="${f.slug}">Editar</button>
               <button class="delete-btn text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-medium" data-slug="${f.slug}" data-nombre="${f.nombre}">Eliminar</button>
             </div>
@@ -233,6 +259,61 @@ import Layout from '../../layouts/Layout.astro';
           }
         });
       });
+
+      // Unlock toggle buttons
+      list.querySelectorAll('.unlock-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const slug = (btn as HTMLElement).dataset.slug!;
+          const currentlyLocked = (btn as HTMLElement).dataset.locked === 'true';
+          await toggleContactLock(slug, currentlyLocked);
+        });
+      });
+    }
+
+    async function toggleContactLock(slug: string, currentlyLocked: boolean) {
+      const newUnlocked = currentlyLocked; // If locked, unlock it
+      try {
+        const res = await authFetch('/api/admin/fichas', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug, updates: { contactoDesbloqueado: newUnlocked } }),
+        });
+        if (res.ok) {
+          // Update local data
+          const ficha = allFichas.find(f => f.slug === slug);
+          if (ficha) ficha.contactoDesbloqueado = newUnlocked;
+          renderFichas(allFichas);
+          applyFilters(); // Re-apply current filters
+        } else {
+          alert('Error actualizando');
+        }
+      } catch { alert('Error de conexión'); }
+    }
+
+    async function bulkAction(action: string) {
+      const statusEl = document.getElementById('bulk-status')!;
+      statusEl.textContent = action === 'unlock_all' ? '⏳ Desbloqueando todos...' : '⏳ Bloqueando no verificados...';
+      statusEl.className = 'mt-2 text-xs font-medium text-amber-700';
+
+      try {
+        const res = await authFetch('/api/admin/fichas', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          statusEl.textContent = `✅ ${data.updated} actualizadas, ${data.skipped} omitidas de ${data.total} totales.`;
+          statusEl.className = 'mt-2 text-xs font-medium text-green-700';
+          await loadFichas();
+        } else {
+          statusEl.textContent = `❌ ${data.error}`;
+          statusEl.className = 'mt-2 text-xs font-medium text-red-700';
+        }
+      } catch {
+        statusEl.textContent = '❌ Error de conexión';
+        statusEl.className = 'mt-2 text-xs font-medium text-red-700';
+      }
     }
 
     function applyFilters() {
@@ -283,6 +364,7 @@ import Layout from '../../layouts/Layout.astro';
       document.getElementById('f-linkedin')!.value = ficha.contacto?.linkedin || '';
       document.getElementById('f-logo')!.value = ficha.logo || '';
       (document.getElementById('f-verificado') as HTMLInputElement).checked = ficha.verificado || false;
+      (document.getElementById('f-contacto-locked') as HTMLInputElement).checked = ficha.contactoDesbloqueado !== false; // default true
 
       // Check especialidades
       document.querySelectorAll('#f-especialidades input[type="checkbox"]').forEach((cb: any) => {
@@ -313,6 +395,7 @@ import Layout from '../../layouts/Layout.astro';
         },
         logo: (document.getElementById('f-logo') as HTMLInputElement).value,
         verificado: (document.getElementById('f-verificado') as HTMLInputElement).checked,
+        contactoDesbloqueado: (document.getElementById('f-contacto-locked') as HTMLInputElement).checked,
       };
     }
 
@@ -357,6 +440,10 @@ import Layout from '../../layouts/Layout.astro';
       document.getElementById('search')!.addEventListener('input', applyFilters);
       document.getElementById('filter-collection')!.addEventListener('change', applyFilters);
       document.getElementById('filter-verified')!.addEventListener('change', applyFilters);
+
+      // Bulk lock/unlock buttons
+      document.getElementById('btn-unlock-all')!.addEventListener('click', () => bulkAction('unlock_all'));
+      document.getElementById('btn-lock-all')!.addEventListener('click', () => bulkAction('lock_all'));
 
       // Create button
       document.getElementById('btn-create')!.addEventListener('click', () => {

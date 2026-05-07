@@ -3,6 +3,7 @@
 // POST   → Create a new ficha directly (skip pending)
 // PATCH  → Update any ficha (admin override)
 // DELETE → Delete any ficha
+// PUT    → Bulk operations (lock_all, unlock_all)
 
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
@@ -75,6 +76,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       contacto: contacto || { email: '', telefono: '', web: '', linkedin: '' },
       logo: logo || '',
       verificado: verificado ?? false,
+      contactoDesbloqueado: true, // New fichas are unlocked by default
       status: 'active',
       createdAt: new Date().toISOString(),
       createdBy: user.user_id,
@@ -108,7 +110,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: 'Ficha no encontrada' }), { status: 404 });
     }
 
-    // Admin can update ALL fields (unlike owner which is restricted)
+    // Admin can update ALL fields
     const firestoreFields: Record<string, any> = {};
     for (const [key, val] of Object.entries(updates)) {
       firestoreFields[key] = toFirestoreValue(val);
@@ -124,6 +126,66 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     }
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+  }
+};
+
+// PUT — Bulk operations: lock_all (block unverified) or unlock_all
+export const PUT: APIRoute = async ({ request, locals }) => {
+  const env = (locals as any).runtime?.env || {};
+  const apiKey = env.FIREBASE_API_KEY || '';
+  const { user } = await getAuthUser(request, apiKey);
+  if (!user || !(await isAdmin(env, user))) {
+    return new Response(JSON.stringify({ error: 'Acceso denegado' }), { status: 403 });
+  }
+
+  try {
+    const { action } = await request.json();
+
+    if (action !== 'lock_all' && action !== 'unlock_all') {
+      return new Response(JSON.stringify({ error: 'Acción inválida. Usa lock_all o unlock_all' }), { status: 400 });
+    }
+
+    const unlock = action === 'unlock_all';
+
+    // Get all fichas from both collections
+    const [consultores, software] = await Promise.all([
+      firestoreListAll(env, COLLECTION_CONSULTORES),
+      firestoreListAll(env, COLLECTION_SOFTWARE),
+    ]);
+
+    const all = [
+      ...consultores.map((c: any) => ({ ...c, _col: COLLECTION_CONSULTORES })),
+      ...software.map((s: any) => ({ ...s, _col: COLLECTION_SOFTWARE })),
+    ];
+
+    let updated = 0;
+    let skipped = 0;
+
+    for (const ficha of all) {
+      if (unlock) {
+        // Unlock all fichas
+        const ok = await firestoreUpdate(env, ficha._col, ficha.id, { contactoDesbloqueado: toFirestoreValue(true) });
+        if (ok) updated++; else skipped++;
+      } else {
+        // Lock only UNVERIFIED fichas (verified ones stay unlocked)
+        if (ficha.verificado) {
+          skipped++;
+          continue;
+        }
+        const ok = await firestoreUpdate(env, ficha._col, ficha.id, { contactoDesbloqueado: toFirestoreValue(false) });
+        if (ok) updated++; else skipped++;
+      }
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      action,
+      updated,
+      skipped,
+      total: all.length,
+    }), { status: 200 });
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }
