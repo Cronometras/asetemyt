@@ -1,0 +1,166 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Newsletter Preview" description="Previsualiza el newsletter antes de enviarlo.">
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div id="loading" class="text-center py-20">
+      <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-steel-500 mt-4">Cargando...</p>
+    </div>
+
+    <div id="notAuth" class="hidden text-center py-20">
+      <h2 class="text-2xl font-bold text-primary-900 mb-2">Acceso denegado</h2>
+      <p class="text-steel-500">No tienes permisos de administrador.</p>
+      <a href="/login" class="inline-block mt-4 text-accent-600 font-semibold">Iniciar sesión →</a>
+    </div>
+
+    <div id="adminPanel" class="hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-3xl font-extrabold text-primary-900">Newsletter Preview</h1>
+          <p class="text-steel-500 text-sm mt-1">Previsualiza el newsletter mensual antes de enviarlo.</p>
+        </div>
+        <div class="flex gap-3">
+          <a href="/admin" class="text-sm text-accent-600 font-medium hover:text-accent-700">← Admin</a>
+          <button id="btn-refresh" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
+            ↻ Actualizar
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div id="stats" class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8"></div>
+
+      <!-- Preview toggle -->
+      <div class="flex gap-3 mb-6">
+        <button id="view-desktop" class="bg-accent-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+          Desktop
+        </button>
+        <button id="view-mobile" class="bg-steel-100 text-steel-600 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+          Mobile
+        </button>
+        <button id="view-html" class="bg-steel-100 text-steel-600 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+          HTML
+        </button>
+      </div>
+
+      <!-- Preview iframe -->
+      <div id="preview-container" class="bg-white rounded-xl shadow-md overflow-hidden border border-steel-200">
+        <div id="iframe-wrapper" class="flex justify-center p-4 bg-steel-100">
+          <iframe id="preview-frame" class="bg-white shadow-lg transition-all duration-300" style="width: 600px; height: 800px; border: none;"></iframe>
+        </div>
+        <div id="html-view" class="hidden p-4">
+          <pre id="html-source" class="bg-steel-900 text-green-400 p-4 rounded-lg text-xs overflow-auto max-h-[600px]"></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
+
+    async function checkAdmin() {
+      return new Promise<boolean>((resolve) => {
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) { resolve(false); return; }
+          try {
+            const res = await authFetch('/api/admin/coupons');
+            resolve(res.ok);
+          } catch { resolve(false); }
+        });
+      });
+    }
+
+    async function loadPreview() {
+      const res = await authFetch('/api/newsletter/preview');
+      if (!res.ok) throw new Error('Error loading preview');
+      const data = await res.json();
+
+      // Stats
+      const statsEl = document.getElementById('stats')!;
+      statsEl.innerHTML = `
+        <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-extrabold text-primary-800">${data.stats.newSoftware}</p>
+          <p class="text-xs text-steel-500">Nuevo software</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-extrabold text-primary-800">${data.stats.newConsultores}</p>
+          <p class="text-xs text-steel-500">Nuevos profesionales</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+          <p class="text-2xl font-extrabold text-primary-800">${data.stats.subscribers}</p>
+          <p class="text-xs text-steel-500">Suscriptores</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+          <p class="text-lg font-bold text-primary-800">${data.stats.month}</p>
+          <p class="text-xs text-steel-500">Período</p>
+        </div>
+      `;
+
+      // Iframe preview
+      const iframe = document.getElementById('preview-frame') as HTMLIFrameElement;
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (doc) {
+        doc.open();
+        doc.write(data.html);
+        doc.close();
+      }
+
+      // HTML source
+      document.getElementById('html-source')!.textContent = data.html;
+    }
+
+    // View toggles
+    document.getElementById('view-desktop')!.addEventListener('click', () => {
+      const iframe = document.getElementById('preview-frame')!;
+      iframe.style.width = '600px';
+      document.getElementById('iframe-wrapper')!.classList.remove('hidden');
+      document.getElementById('html-view')!.classList.add('hidden');
+      setActiveView('view-desktop');
+    });
+
+    document.getElementById('view-mobile')!.addEventListener('click', () => {
+      const iframe = document.getElementById('preview-frame')!;
+      iframe.style.width = '375px';
+      document.getElementById('iframe-wrapper')!.classList.remove('hidden');
+      document.getElementById('html-view')!.classList.add('hidden');
+      setActiveView('view-mobile');
+    });
+
+    document.getElementById('view-html')!.addEventListener('click', () => {
+      document.getElementById('iframe-wrapper')!.classList.add('hidden');
+      document.getElementById('html-view')!.classList.remove('hidden');
+      setActiveView('view-html');
+    });
+
+    function setActiveView(activeId: string) {
+      ['view-desktop', 'view-mobile', 'view-html'].forEach(id => {
+        const btn = document.getElementById(id)!;
+        if (id === activeId) {
+          btn.className = 'bg-accent-500 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors';
+        } else {
+          btn.className = 'bg-steel-100 text-steel-600 font-semibold px-4 py-2 rounded-lg text-sm transition-colors';
+        }
+      });
+    }
+
+    // Init
+    (async () => {
+      const ok = await checkAdmin();
+      if (!ok) {
+        document.getElementById('loading')!.classList.add('hidden');
+        document.getElementById('notAuth')!.classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('adminPanel')!.classList.remove('hidden');
+
+      await loadPreview();
+
+      document.getElementById('btn-refresh')!.addEventListener('click', loadPreview);
+    })();
+  </script>
+</Layout>

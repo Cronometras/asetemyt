@@ -1,0 +1,428 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Gestión de Fichas" description="Panel de administración para gestionar fichas del directorio.">
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Loading -->
+    <div id="loading" class="text-center py-20">
+      <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-steel-500 mt-4">Cargando...</p>
+    </div>
+
+    <!-- Not admin -->
+    <div id="notAuth" class="hidden text-center py-20">
+      <h2 class="text-2xl font-bold text-primary-900 mb-2">Acceso denegado</h2>
+      <p class="text-steel-500">No tienes permisos de administrador.</p>
+      <a href="/login" class="inline-block mt-4 text-accent-600 font-semibold">Iniciar sesión →</a>
+    </div>
+
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="hidden">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-3xl font-extrabold text-primary-900">Gestión de Fichas</h1>
+          <p class="text-steel-500 text-sm mt-1" id="statsLine"></p>
+        </div>
+        <div class="flex gap-3">
+          <a href="/admin" class="text-sm text-accent-600 font-medium hover:text-accent-700">← Admin</a>
+          <button id="btn-create" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
+            + Nueva ficha
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="bg-white rounded-xl shadow-md p-4 mb-6 flex flex-wrap gap-3">
+        <input type="text" id="search" placeholder="Buscar por nombre, slug, email..."
+          class="border border-steel-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none flex-1 min-w-[200px]" />
+        <select id="filter-collection" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+          <option value="">Todas las colecciones</option>
+          <option value="consultores">Consultores</option>
+          <option value="software">Software</option>
+        </select>
+        <select id="filter-verified" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+          <option value="">Todos los estados</option>
+          <option value="true">Verificados</option>
+          <option value="false">No verificados</option>
+        </select>
+      </div>
+
+      <!-- Fichas list -->
+      <div id="fichas-list" class="space-y-3"></div>
+    </div>
+  </section>
+
+  <!-- Create/Edit Modal -->
+  <div id="ficha-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8">
+      <div class="flex items-center justify-between mb-6">
+        <h2 id="modal-title" class="text-xl font-bold text-primary-800">Nueva ficha</h2>
+        <button id="close-modal" class="text-steel-400 hover:text-steel-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="ficha-form" class="space-y-4">
+        <input type="hidden" id="edit-slug" value="" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Nombre *</label>
+            <input type="text" id="f-nombre" required class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Slug *</label>
+            <input type="text" id="f-slug" required class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Tipo</label>
+            <select id="f-tipo" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+              <option value="empresa">Empresa</option>
+              <option value="consultor" selected>Consultor</option>
+              <option value="freelance">Freelancer</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Colección</label>
+            <select id="f-seccion" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+              <option value="consultores">Consultores</option>
+              <option value="software">Software</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Especialidades</label>
+          <div class="flex flex-wrap gap-2" id="f-especialidades">
+            {['cronometraje', 'mtm', 'most', 'oee', 'lean', 'estudio_trabajo'].map(esp => (
+              <label class="flex items-center gap-1 text-sm">
+                <input type="checkbox" value={esp} class="w-4 h-4 text-accent-500 rounded border-steel-300" />
+                <span class="text-steel-600">{esp.replace('_', ' ').toUpperCase()}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Descripción</label>
+          <textarea id="f-descripcion" rows="3" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none resize-y"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-steel-700 mb-1">Servicios (uno por línea)</label>
+          <textarea id="f-servicios" rows="2" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none resize-y"></textarea>
+        </div>
+
+        <fieldset class="border border-steel-200 rounded-xl p-4">
+          <legend class="text-sm font-semibold text-steel-700 px-2">Ubicación</legend>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <input type="text" id="f-pais" placeholder="País" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none" />
+            <input type="text" id="f-ciudad" placeholder="Ciudad" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none" />
+            <input type="text" id="f-direccion" placeholder="Dirección" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none" />
+          </div>
+        </fieldset>
+
+        <fieldset class="border border-steel-200 rounded-xl p-4">
+          <legend class="text-sm font-semibold text-steel-700 px-2">Contacto</legend>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input type="email" id="f-email" placeholder="Email" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none" />
+            <input type="tel" id="f-telefono" placeholder="Teléfono" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none" />
+            <input type="url" id="f-web" placeholder="Web" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none" />
+            <input type="url" id="f-linkedin" placeholder="LinkedIn" class="border border-steel-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent-500 outline-none" />
+          </div>
+        </fieldset>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Logo URL</label>
+            <input type="url" id="f-logo" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none" />
+          </div>
+          <div class="flex items-center gap-6 pt-6">
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" id="f-verificado" class="w-4 h-4 text-accent-500 rounded border-steel-300" />
+              <span class="text-steel-700">Verificado</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="modal-alert" class="hidden p-3 rounded-lg text-sm"></div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button type="submit" id="modal-submit" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors">
+            Guardar
+          </button>
+          <button type="button" id="modal-cancel" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-6 py-2.5 rounded-lg transition-colors">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
+
+    let allFichas: any[] = [];
+
+    async function checkAdmin() {
+      return new Promise<boolean>((resolve) => {
+        onAuthStateChanged(auth, async (user) => {
+          if (!user) { resolve(false); return; }
+          try {
+            const res = await authFetch('/api/admin/coupons');
+            resolve(res.ok);
+          } catch { resolve(false); }
+        });
+      });
+    }
+
+    async function loadFichas() {
+      const res = await authFetch('/api/admin/fichas');
+      if (!res.ok) throw new Error('Error loading');
+      const data = await res.json();
+      allFichas = data.fichas || [];
+      renderFichas(allFichas);
+    }
+
+    function renderFichas(fichas: any[]) {
+      const list = document.getElementById('fichas-list')!;
+      document.getElementById('statsLine')!.textContent = `${fichas.length} fichas totales`;
+
+      if (fichas.length === 0) {
+        list.innerHTML = '<p class="text-center text-steel-400 py-10">No hay fichas.</p>';
+        return;
+      }
+
+      list.innerHTML = fichas.map(f => `
+        <div class="bg-white rounded-xl shadow-sm border border-steel-100 p-4 hover:shadow-md transition-shadow" data-slug="${f.slug}">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              ${f.logo ? `<img src="${f.logo}" class="w-10 h-10 rounded-lg object-cover" />` : `<div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">${(f.nombre || '?')[0]}</div>`}
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-bold text-primary-800 truncate">${f.nombre || 'Sin nombre'}</h3>
+                  ${f.verificado ? '<span class="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0" title="Verificado"><svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>' : ''}
+                </div>
+                <p class="text-xs text-steel-400 truncate">${f.slug} · ${f._collection} · ${f.tipo || '—'}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <a href="/directorio/${f.slug}" target="_blank" class="text-xs text-steel-400 hover:text-accent-600 px-2 py-1">Ver</a>
+              <button class="edit-btn text-xs bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg font-medium" data-slug="${f.slug}">Editar</button>
+              <button class="delete-btn text-xs bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg font-medium" data-slug="${f.slug}" data-nombre="${f.nombre}">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Edit buttons
+      list.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => openEdit((btn as HTMLElement).dataset.slug!));
+      });
+
+      // Delete buttons
+      list.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const slug = (btn as HTMLElement).dataset.slug!;
+          const nombre = (btn as HTMLElement).dataset.nombre!;
+          if (confirm(`¿Eliminar "${nombre}" (${slug})? Esta acción no se puede deshacer.`)) {
+            deleteFicha(slug);
+          }
+        });
+      });
+    }
+
+    function applyFilters() {
+      const search = (document.getElementById('search') as HTMLInputElement).value.toLowerCase();
+      const collection = (document.getElementById('filter-collection') as HTMLSelectElement).value;
+      const verified = (document.getElementById('filter-verified') as HTMLSelectElement).value;
+
+      const filtered = allFichas.filter(f => {
+        const matchSearch = !search || f.nombre?.toLowerCase().includes(search) || f.slug?.toLowerCase().includes(search) || f.contacto?.email?.toLowerCase().includes(search);
+        const matchCollection = !collection || f._collection === collection;
+        const matchVerified = verified === '' || String(f.verificado) === verified;
+        return matchSearch && matchCollection && matchVerified;
+      });
+
+      renderFichas(filtered);
+    }
+
+    function openModal(title: string) {
+      document.getElementById('modal-title')!.textContent = title;
+      document.getElementById('ficha-modal')!.classList.remove('hidden');
+      document.getElementById('modal-alert')!.classList.add('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('ficha-modal')!.classList.add('hidden');
+      (document.getElementById('ficha-form') as HTMLFormElement).reset();
+      document.getElementById('edit-slug')!.value = '';
+    }
+
+    function openEdit(slug: string) {
+      const ficha = allFichas.find(f => f.slug === slug);
+      if (!ficha) return;
+
+      openModal(`Editar: ${ficha.nombre}`);
+      document.getElementById('edit-slug')!.value = slug;
+      document.getElementById('f-nombre')!.value = ficha.nombre || '';
+      document.getElementById('f-slug')!.value = ficha.slug || '';
+      (document.getElementById('f-tipo') as HTMLSelectElement).value = ficha.tipo || 'consultor';
+      (document.getElementById('f-seccion') as HTMLSelectElement).value = ficha._collection === 'software' ? 'software' : 'consultores';
+      document.getElementById('f-descripcion')!.value = ficha.descripcion || '';
+      document.getElementById('f-servicios')!.value = (ficha.servicios || []).join('\n');
+      document.getElementById('f-pais')!.value = ficha.ubicacion?.pais || '';
+      document.getElementById('f-ciudad')!.value = ficha.ubicacion?.ciudad || '';
+      document.getElementById('f-direccion')!.value = ficha.ubicacion?.direccion || '';
+      document.getElementById('f-email')!.value = ficha.contacto?.email || '';
+      document.getElementById('f-telefono')!.value = ficha.contacto?.telefono || '';
+      document.getElementById('f-web')!.value = ficha.contacto?.web || '';
+      document.getElementById('f-linkedin')!.value = ficha.contacto?.linkedin || '';
+      document.getElementById('f-logo')!.value = ficha.logo || '';
+      (document.getElementById('f-verificado') as HTMLInputElement).checked = ficha.verificado || false;
+
+      // Check especialidades
+      document.querySelectorAll('#f-especialidades input[type="checkbox"]').forEach((cb: any) => {
+        cb.checked = (ficha.especialidades || []).includes(cb.value);
+      });
+    }
+
+    function gatherFormData() {
+      const especialidades = Array.from(document.querySelectorAll('#f-especialidades input:checked')).map((cb: any) => cb.value);
+      return {
+        nombre: (document.getElementById('f-nombre') as HTMLInputElement).value,
+        slug: (document.getElementById('f-slug') as HTMLInputElement).value,
+        tipo: (document.getElementById('f-tipo') as HTMLSelectElement).value,
+        seccion: (document.getElementById('f-seccion') as HTMLSelectElement).value,
+        especialidades,
+        descripcion: (document.getElementById('f-descripcion') as HTMLTextAreaElement).value,
+        servicios: (document.getElementById('f-servicios') as HTMLTextAreaElement).value.split('\n').map(s => s.trim()).filter(Boolean),
+        ubicacion: {
+          pais: (document.getElementById('f-pais') as HTMLInputElement).value,
+          ciudad: (document.getElementById('f-ciudad') as HTMLInputElement).value,
+          direccion: (document.getElementById('f-direccion') as HTMLInputElement).value,
+        },
+        contacto: {
+          email: (document.getElementById('f-email') as HTMLInputElement).value,
+          telefono: (document.getElementById('f-telefono') as HTMLInputElement).value,
+          web: (document.getElementById('f-web') as HTMLInputElement).value,
+          linkedin: (document.getElementById('f-linkedin') as HTMLInputElement).value,
+        },
+        logo: (document.getElementById('f-logo') as HTMLInputElement).value,
+        verificado: (document.getElementById('f-verificado') as HTMLInputElement).checked,
+      };
+    }
+
+    function showAlert(msg: string, isError: boolean) {
+      const el = document.getElementById('modal-alert')!;
+      el.textContent = msg;
+      el.className = `p-3 rounded-lg text-sm ${isError ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'}`;
+    }
+
+    async function deleteFicha(slug: string) {
+      try {
+        const res = await authFetch('/api/admin/fichas', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug }),
+        });
+        if (res.ok) {
+          allFichas = allFichas.filter(f => f.slug !== slug);
+          renderFichas(allFichas);
+        } else {
+          const data = await res.json();
+          alert(data.error || 'Error eliminando');
+        }
+      } catch { alert('Error de conexión'); }
+    }
+
+    // Init
+    (async () => {
+      const ok = await checkAdmin();
+      if (!ok) {
+        document.getElementById('loading')!.classList.add('hidden');
+        document.getElementById('notAuth')!.classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('adminPanel')!.classList.remove('hidden');
+
+      await loadFichas();
+
+      // Search & filters
+      document.getElementById('search')!.addEventListener('input', applyFilters);
+      document.getElementById('filter-collection')!.addEventListener('change', applyFilters);
+      document.getElementById('filter-verified')!.addEventListener('change', applyFilters);
+
+      // Create button
+      document.getElementById('btn-create')!.addEventListener('click', () => {
+        openModal('Nueva ficha');
+        // Auto-generate slug from nombre
+        document.getElementById('f-nombre')!.addEventListener('input', (e) => {
+          const slug = (e.target as HTMLInputElement).value
+            .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          if (!document.getElementById('edit-slug')!.value) {
+            (document.getElementById('f-slug') as HTMLInputElement).value = slug;
+          }
+        });
+      });
+
+      // Modal close/cancel
+      document.getElementById('close-modal')!.addEventListener('click', closeModal);
+      document.getElementById('modal-cancel')!.addEventListener('click', closeModal);
+
+      // Form submit
+      document.getElementById('ficha-form')!.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = gatherFormData();
+        const editSlug = document.getElementById('edit-slug')!.value;
+        const btn = document.getElementById('modal-submit') as HTMLButtonElement;
+        btn.disabled = true;
+        btn.textContent = 'Guardando...';
+
+        try {
+          if (editSlug) {
+            // Edit mode — update existing
+            const res = await authFetch('/api/admin/fichas', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ slug: editSlug, updates: data }),
+            });
+            if (res.ok) {
+              closeModal();
+              await loadFichas();
+            } else {
+              const err = await res.json();
+              showAlert(err.error || 'Error actualizando', true);
+            }
+          } else {
+            // Create mode
+            if (!data.slug) { showAlert('El slug es obligatorio', true); btn.disabled = false; btn.textContent = 'Guardar'; return; }
+            const res = await authFetch('/api/admin/fichas', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            });
+            if (res.ok) {
+              closeModal();
+              await loadFichas();
+            } else {
+              const err = await res.json();
+              showAlert(err.error || 'Error creando', true);
+            }
+          }
+        } catch {
+          showAlert('Error de conexión', true);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Guardar';
+        }
+      });
+    })();
+  </script>
+</Layout>
