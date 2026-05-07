@@ -7,7 +7,7 @@
   import PartnerBadge from '../../components/PartnerBadge.astro';
   import CasesSection from '../../components/CasesSection.astro';
   import ContactSection from '../../components/ContactSection.astro';
-  import { getDirectoryEntries, getDirectoryEntryBySlug } from '../../lib/firebase';
+  import { getDirectoryEntries } from '../../lib/firebase';
 
 export async function getStaticPaths() {
   let entries: any[] = [];
@@ -238,14 +238,14 @@ const tipoColors: Record<string, string> = {
           script.textContent = JSON.stringify(schema);
           document.head.appendChild(script);
         }
-      } catch(e) { /* silent */ }
+      } catch(e) { console.error('AggregateRating schema error:', e); }
     })();
   </script>
 
   {/* Reviews */}
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
     {/* Lead Gen: Solicitar Presupuesto */}
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-4">
+    <div class="pb-4">
       <RequestQuote slug={entry.slug} entryName={entry.nombre} services={entry.servicios || []} />
     </div>
     <ReviewsSection slug={entry.slug} entryName={entry.nombre} />
@@ -298,12 +298,8 @@ const tipoColors: Record<string, string> = {
           if (isOwner) {
             document.getElementById('ownerEditCTA')?.classList.remove('hidden');
             document.getElementById('ownerCertSection')?.classList.remove('hidden');
-            const casesForm = document.getElementById('case-form');
-            if (casesForm) {
-              document.getElementById('toggle-case-form')?.classList.remove('hidden');
-            }
           }
-        } catch {}
+        } catch (e) { console.error('Owner auth check failed:', e); }
       });
     </script>
   )}

@@ -18,17 +18,19 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     const listing = found.listing;
     const isVerified = listing.verificado === true;
-    const isUnlocked = listing.contactoDesbloqueado !== false;
+    const isUnlocked = listing.contactoDesbloqueado === true;
+
+    const headers = { 'Content-Type': 'application/json' };
 
     if (!isVerified && !isUnlocked) {
-      return new Response(JSON.stringify({ locked: true, contacto: null }), { status: 200 });
+      return new Response(JSON.stringify({ locked: true, contacto: null }), { status: 200, headers });
     }
 
     return new Response(JSON.stringify({
       locked: false,
       contacto: listing.contacto || {},
-    }), { status: 200 });
+    }), { status: 200, headers });
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { 'Content-Type': 'application/json' } });
   }
 };

@@ -446,18 +446,19 @@ import Layout from '../../layouts/Layout.astro';
       document.getElementById('btn-unlock-all')!.addEventListener('click', () => bulkAction('unlock_all'));
       document.getElementById('btn-lock-all')!.addEventListener('click', () => bulkAction('lock_all'));
 
+      // Auto-generate slug from nombre (attached once, checks edit mode on each input)
+      document.getElementById('f-nombre')!.addEventListener('input', (e) => {
+        const slug = (e.target as HTMLInputElement).value
+          .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        if (!document.getElementById('edit-slug')!.value) {
+          (document.getElementById('f-slug') as HTMLInputElement).value = slug;
+        }
+      });
+
       // Create button
       document.getElementById('btn-create')!.addEventListener('click', () => {
         openModal('Nueva ficha');
-        // Auto-generate slug from nombre
-        document.getElementById('f-nombre')!.addEventListener('input', (e) => {
-          const slug = (e.target as HTMLInputElement).value
-            .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-            .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          if (!document.getElementById('edit-slug')!.value) {
-            (document.getElementById('f-slug') as HTMLInputElement).value = slug;
-          }
-        });
       });
 
       // Modal close/cancel
