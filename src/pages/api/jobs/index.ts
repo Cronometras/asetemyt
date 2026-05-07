@@ -55,17 +55,20 @@ export const GET: APIRoute = async ({ url }) => {
     const type = url.searchParams.get('type');
     const location = url.searchParams.get('location');
 
-    let query: any = adminDb.collection('jobs_asetemyt').where('status', '==', 'active').orderBy('createdAt', 'desc').limit(50);
-
-    const snap = await query.get();
+    // Avoid composite index requirement: fetch all, filter in-memory
+    const snap = await adminDb.collection('jobs_asetemyt').orderBy('createdAt', 'desc').limit(100).get();
     let jobs = snap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
 
+    // Filter active only (avoid composite index on status+createdAt)
+    jobs = jobs.filter((j: any) => j.status === 'active');
+
+    // Apply optional filters
     if (type) jobs = jobs.filter((j: any) => j.type === type);
     if (location) jobs = jobs.filter((j: any) => j.location?.toLowerCase().includes(location.toLowerCase()));
 
     return new Response(JSON.stringify({ jobs }), { status: 200 });
   } catch (err: any) {
     console.error('Jobs fetch error:', err);
-    return new Response(JSON.stringify({ error: 'Error interno.' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Error interno.', details: err.message }), { status: 500 });
   }
 };

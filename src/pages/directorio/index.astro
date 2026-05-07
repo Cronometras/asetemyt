@@ -50,6 +50,31 @@ import Layout from '../../layouts/Layout.astro';
         { value: 'freelance', label: lang === 'es' ? 'Freelancers' : 'Freelancers' },
       ];
 
+      // Normalize country names to prevent duplicates (e.g. "España"/"Spain")
+      const countryMap: Record<string, string> = {
+        'spain': 'España', 'españa': 'España',
+        'germany': 'Alemania', 'alemania': 'Alemania',
+        'mexico': 'México', 'méxico': 'México', 'méjico': 'México',
+        'peru': 'Perú', 'perú': 'Perú',
+        'usa': 'Estados Unidos', 'us': 'Estados Unidos', 'united states': 'Estados Unidos', 'estados unidos': 'Estados Unidos',
+        'france': 'Francia', 'francia': 'Francia',
+        'italy': 'Italia', 'italia': 'Italia',
+        'portugal': 'Portugal',
+        'brazil': 'Brasil', 'brasil': 'Brasil',
+        'colombia': 'Colombia',
+        'argentina': 'Argentina',
+        'chile': 'Chile',
+        'uk': 'Reino Unido', 'united kingdom': 'Reino Unido', 'reino unido': 'Reino Unido',
+        'china': 'China',
+        'japan': 'Japón', 'japón': 'Japón',
+        'india': 'India',
+      };
+      consultores.forEach((e: any) => {
+        if (e.ubicacion?.pais) {
+          const normalized = countryMap[e.ubicacion.pais.toLowerCase().trim()];
+          if (normalized) e.ubicacion.pais = normalized;
+        }
+      });
       const paises = [...new Set(consultores.map((e: any) => e.ubicacion?.pais).filter(Boolean))].sort();
       const especialidades = ['cronometraje', 'mtm', 'most', 'oee', 'lean'];
 

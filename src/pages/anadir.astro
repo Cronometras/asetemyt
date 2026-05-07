@@ -146,21 +146,8 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <script>
-    import { initializeApp } from 'firebase/app';
-    import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-    import { t, getLang, type Lang, PENDING_CONSULTORES } from '../lib/firebase';
-
-    const firebaseConfig = {
-      apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || 'AIzaSyCWrnHpOz_2-BSL8vPQDxmYRD_sAlZuiDs',
-      authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || 'asetemyt-ec205.firebaseapp.com',
-      projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'asetemyt-ec205',
-      storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || 'asetemyt-ec205.firebasestorage.app',
-      messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '948469680704',
-      appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || '1:948469680704:web:a9161fb82acd6766ee6da5',
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+    import { db, t, getLang, type Lang, PENDING_CONSULTORES } from '../lib/firebase';
 
     let lang: Lang = getLang();
 

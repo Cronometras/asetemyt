@@ -246,6 +246,36 @@ const tipoColors: Record<string, string> = {
       </div>
     )}
   </section>
+  {/* AggregateRating schema.org — injected dynamically after reviews load */}
+  <script is:inline define:vars={{ entrySlug: entry.slug, entryName: entry.nombre }}>
+    (async function() {
+      try {
+        var res = await fetch('/api/reviews/get?slug=' + encodeURIComponent(entrySlug));
+        if (!res.ok) return;
+        var data = await res.json();
+        if (data.aggregateRating && data.aggregateRating.reviewCount > 0) {
+          var schema = {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": entryName,
+            "url": "https://asetemyt.com/directorio/" + entrySlug,
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": String(data.aggregateRating.avgRating),
+              "bestRating": "5",
+              "worstRating": "1",
+              "ratingCount": String(data.aggregateRating.reviewCount)
+            }
+          };
+          var script = document.createElement('script');
+          script.type = 'application/ld+json';
+          script.textContent = JSON.stringify(schema);
+          document.head.appendChild(script);
+        }
+      } catch(e) { /* silent */ }
+    })();
+  </script>
+
   {/* Reviews */}
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
     {/* Lead Gen: Solicitar Presupuesto */}

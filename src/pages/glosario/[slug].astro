@@ -97,10 +97,56 @@ const relatedTerms = (term.related || [])
     <!-- CTA -->
     <div class="bg-steel-50 rounded-xl p-6 border border-steel-200 text-center">
       <p class="text-steel-600 mb-4">¿Necesitas un profesional especializado en {term.term.toLowerCase()}?</p>
-      <a href={`/directorio?especialidad=${term.slug.split('-')[0]}`}
-        class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm">
-        Ver profesionales en el directorio →
-      </a>
+      {(() => {
+        // Map glossary slugs to valid specialty filter values
+        const specialtyMap: Record<string, string> = {
+          'tiempo-estandar': 'cronometraje',
+          'cronometraje-industrial': 'cronometraje',
+          'mtm': 'mtm',
+          'most': 'most',
+          'factor-actuacion': 'cronometraje',
+          'suplemento-fatiga': 'cronometraje',
+          'tiempo-normal': 'cronometraje',
+          'oee': 'oee',
+          'ciclo-operativo': 'cronometraje',
+          'elemento-operativo': 'cronometraje',
+          'balanceo-lineas': 'lean',
+          'takt-time': 'lean',
+          'lean-manufacturing': 'lean',
+          'kaizen': 'lean',
+          '5s': 'lean',
+          'smed': 'lean',
+          'tpm': 'lean',
+          'work-sampling': 'cronometraje',
+          'predeterminacion-tiempos': 'mtm',
+          'modapts': 'mtm',
+          'valor-agregado': 'lean',
+          'diagrama-procesos': 'cronometraje',
+          'ergonomia-industrial': 'cronometraje',
+          'rula': 'cronometraje',
+          'reba': 'cronometraje',
+          'mapa-flujo-valor': 'lean',
+          'hoshin-kanri': 'lean',
+          'heijunka': 'lean',
+          'kanban': 'lean',
+          'gemba': 'lean',
+          'mejora-continua': 'lean',
+          'evaluacion-ritmo': 'cronometraje',
+          'movimientos-basicos': 'mtm',
+          'eficiencia-linea': 'lean',
+          'tiempo-ciclo': 'cronometraje',
+          'analisis-metodos': 'cronometraje',
+          'diagrama-espacio': 'cronometraje',
+          'owas': 'cronometraje',
+        };
+        const esp = specialtyMap[term.slug] || 'cronometraje';
+        return (
+          <a href={`/directorio?especialidad=${esp}`}
+            class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm">
+            Ver profesionales en el directorio →
+          </a>
+        );
+      })()}
     </div>
 
     <!-- Back to glossary -->
