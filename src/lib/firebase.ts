@@ -102,6 +102,18 @@ export const translations = {
     errorMsg: 'Error al enviar',
     ctaTitle: '¿Eres especialista en cronometraje?',
     ctaDesc: 'Añade tu perfil o empresa al directorio y conecta con empresas que buscan tus servicios.',
+    // Tipo labels
+    empresa: 'Empresa',
+    consultor: 'Consultor',
+    freelancer: 'Freelancer',
+    sinTipo: 'Sin tipo',
+    // Especialidades labels
+    cronometraje: 'Cronometraje',
+    mtm: 'MTM',
+    most: 'MOST',
+    oee: 'OEE',
+    lean: 'Lean Manufacturing',
+    estudioTrabajo: 'Estudio del Trabajo',
     // Empleo page
     jobsTitle: 'Empleo en Ingeniería de Métodos',
     jobsDesc: 'Ofertas de trabajo en cronometraje industrial, Lean Manufacturing y optimización de procesos.',
@@ -246,6 +258,18 @@ export const translations = {
     errorMsg: 'Error submitting',
     ctaTitle: 'Are you a time study specialist?',
     ctaDesc: 'Add your profile or company to the directory and connect with companies looking for your services.',
+    // Tipo labels
+    empresa: 'Company',
+    consultor: 'Consultant',
+    freelancer: 'Freelancer',
+    sinTipo: 'No type',
+    // Especialidades labels
+    cronometraje: 'Time Study',
+    mtm: 'MTM',
+    most: 'MOST',
+    oee: 'OEE',
+    lean: 'Lean Manufacturing',
+    estudioTrabajo: 'Work Study',
     // Empleo page
     jobsTitle: 'Jobs in Methods Engineering',
     jobsDesc: 'Job offers in industrial time study, Lean Manufacturing and process optimization.',

@@ -162,7 +162,7 @@ import Layout from '../../layouts/Layout.astro';
                 </div>
                 ${entry.descripcion ? `<p class="text-steel-500 text-sm line-clamp-2 mb-3">${entry.descripcion}</p>` : ''}
                 <div class="flex flex-wrap gap-1.5 mb-3">
-                  ${(entry.especialidades || []).slice(0, 3).map((esp: string) => `<span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded font-medium">${esp}</span>`).join('')}
+                  ${(entry.especialidades || []).slice(0, 3).map((esp: string) => `<span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded font-medium" data-field="${esp}">${esp}</span>`).join('')}
                 </div>
                 <div class="flex items-center text-sm text-steel-400">
                   <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -223,11 +223,19 @@ import Layout from '../../layouts/Layout.astro';
       if (params.toString()) applyFilters();
     }
 
+    function updateLabels() {
+      document.querySelectorAll('[data-field]').forEach((el) => {
+        const key = (el as HTMLElement).dataset.field!;
+        const label = t(key, lang);
+        if (label && label !== key) el.textContent = label;
+      });
+    }
+
     window.addEventListener('langChange', ((e: CustomEvent) => {
       lang = e.detail;
-      load();
+      load().then(() => updateLabels());
     }) as EventListener);
 
-    load();
+    load().then(() => updateLabels());
   </script>
 </Layout>
