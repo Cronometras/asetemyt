@@ -13,6 +13,7 @@ import {
   firestoreCreate,
   firestoreUpdate,
   firestoreDelete,
+  firestoreBatchUpdate,
   findListingBySlug,
   toFirestoreValue,
 } from '../../../lib/firestore-rest';
@@ -160,24 +161,33 @@ export const PUT: APIRoute = async ({ request, locals }) => {
       ...software.map((s: any) => ({ ...s, _col: COLLECTION_SOFTWARE })),
     ];
 
-    let updated = 0;
+    // Build batch update array
+    const batchUpdates: Array<{ collection: string; docId: string; fields: Record<string, any> }> = [];
     let skipped = 0;
 
     for (const ficha of all) {
       if (unlock) {
-        // Unlock all fichas
-        const ok = await firestoreUpdate(env, ficha._col, ficha.id, { contactoDesbloqueado: toFirestoreValue(true) });
-        if (ok) updated++; else skipped++;
+        batchUpdates.push({
+          collection: ficha._col,
+          docId: ficha.id,
+          fields: { contactoDesbloqueado: toFirestoreValue(true) },
+        });
       } else {
         // Lock only UNVERIFIED fichas (verified ones stay unlocked)
         if (ficha.verificado) {
           skipped++;
           continue;
         }
-        const ok = await firestoreUpdate(env, ficha._col, ficha.id, { contactoDesbloqueado: toFirestoreValue(false) });
-        if (ok) updated++; else skipped++;
+        batchUpdates.push({
+          collection: ficha._col,
+          docId: ficha.id,
+          fields: { contactoDesbloqueado: toFirestoreValue(false) },
+        });
       }
     }
+
+    // Execute batch (uses Firestore commit — few HTTP requests instead of 180+)
+    const updated = await firestoreBatchUpdate(env, batchUpdates);
 
     return new Response(JSON.stringify({
       success: true,

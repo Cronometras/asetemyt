@@ -214,6 +214,50 @@ export async function firestoreDelete(env: any, collection: string, docId: strin
   return resp.ok;
 }
 
+// Batch update multiple documents in a single commit (max 500 per batch)
+export async function firestoreBatchUpdate(
+  env: any,
+  updates: Array<{ collection: string; docId: string; fields: Record<string, any> }>
+): Promise<number> {
+  const token = await getAccessToken(env);
+  const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
+
+  // Split into chunks of 500 (Firestore commit limit)
+  let totalUpdated = 0;
+  for (let i = 0; i < updates.length; i += 500) {
+    const chunk = updates.slice(i, i + 500);
+
+    const writes = chunk.map(u => ({
+      update: {
+        name: `projects/${projectId}/databases/(default)/documents/${u.collection}/${u.docId}`,
+        fields: u.fields,
+      },
+      updateMask: {
+        fieldPaths: Object.keys(u.fields),
+      },
+    }));
+
+    const resp = await fetch(
+      `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents:commit`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ writes }),
+      }
+    );
+
+    if (resp.ok) {
+      totalUpdated += chunk.length;
+    } else {
+      const errText = await resp.text().catch(() => 'unknown');
+      console.error(`firestoreBatchUpdate failed (chunk ${i}): ${resp.status} ${errText}`);
+      throw new Error(`Batch update failed: ${resp.status} ${errText.slice(0, 200)}`);
+    }
+  }
+
+  return totalUpdated;
+}
+
 // --- Split collection helpers ---
 const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
 const COLLECTION_SOFTWARE = 'directorio_software_asetemyt';
