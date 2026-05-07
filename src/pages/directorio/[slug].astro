@@ -103,7 +103,7 @@ const tipoColors: Record<string, string> = {
         <!-- Description -->
         {entry.descripcion && (
           <div class="mb-8">
-            <h2 class="text-lg font-bold text-primary-800 mb-3">Acerca de</h2>
+            <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="about">Acerca de</h2>
             <p class="text-steel-600 leading-relaxed">{entry.descripcion}</p>
           </div>
         )}
@@ -111,7 +111,7 @@ const tipoColors: Record<string, string> = {
         <!-- Especialidades -->
         {entry.especialidades?.length > 0 && (
           <div class="mb-8">
-            <h2 class="text-lg font-bold text-primary-800 mb-3">Especialidades</h2>
+            <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="specialtiesLabel">Especialidades</h2>
             <div class="flex flex-wrap gap-2">
               {entry.especialidades.map((esp: string) => (
                 <a
@@ -128,7 +128,7 @@ const tipoColors: Record<string, string> = {
         <!-- Servicios -->
         {entry.servicios?.length > 0 && (
           <div class="mb-8">
-            <h2 class="text-lg font-bold text-primary-800 mb-3">Servicios</h2>
+            <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="servicesLabel">Servicios</h2>
             <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
               {entry.servicios.map((servicio: string) => (
                 <li class="flex items-center gap-2 text-steel-600">
@@ -145,7 +145,7 @@ const tipoColors: Record<string, string> = {
         <!-- Ubicación -->
         {entry.ubicacion && (
           <div class="mb-8">
-            <h2 class="text-lg font-bold text-primary-800 mb-3">Ubicación</h2>
+            <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="locationLabel">Ubicación</h2>
             <div class="flex items-start gap-3 text-steel-600">
               <svg class="w-5 h-5 text-steel-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -164,7 +164,7 @@ const tipoColors: Record<string, string> = {
         <!-- Contacto -->
         {entry.contacto && (
           <div>
-            <h2 class="text-lg font-bold text-primary-800 mb-3">Contacto</h2>
+            <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="contactLabel">Contacto</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {entry.contacto.email && (
                 <a href={`mailto:${entry.contacto.email}`} class="flex items-center gap-3 p-3 bg-steel-50 rounded-lg hover:bg-steel-100 transition-colors">
@@ -195,7 +195,7 @@ const tipoColors: Record<string, string> = {
                   <svg class="w-5 h-5 text-accent-500" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                   </svg>
-                  <span class="text-sm text-steel-700">LinkedIn</span>
+                  <span class="text-sm text-steel-700" data-field="linkedin">LinkedIn</span>
                 </a>
               )}
             </div>
@@ -214,11 +214,11 @@ const tipoColors: Record<string, string> = {
             </svg>
           </div>
           <div>
-            <h3 class="font-bold text-primary-900">¿Eres el propietario de esta ficha?</h3>
-            <p class="text-sm text-steel-600 mt-1 mb-3">Verifícala para editar los datos y mostrar el badge de confianza. 50€/año.</p>
+            <h3 class="font-bold text-primary-900" data-field="ownerQuestion">¿Eres el propietario de esta ficha?</h3>
+            <p class="text-sm text-steel-600 mt-1 mb-3" data-field="ownerDesc">Verifícala para editar los datos y mostrar el badge de confianza. 50€/año.</p>
             <a href={`/reclamar/${entry.slug}`}
               class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">
-              Reclamar esta ficha →
+              <span data-field="claimFicha">Reclamar esta ficha →</span>
             </a>
           </div>
         </div>
@@ -235,11 +235,11 @@ const tipoColors: Record<string, string> = {
             </svg>
           </div>
           <div>
-            <h3 class="font-bold text-primary-900">Tu ficha verificada</h3>
-            <p class="text-sm text-steel-600 mt-1 mb-3">Edita los datos de tu ficha para mantenerla actualizada.</p>
+            <h3 class="font-bold text-primary-900" data-field="verifiedFicha">Tu ficha verificada</h3>
+            <p class="text-sm text-steel-600 mt-1 mb-3" data-field="editFichaDesc">Edita los datos de tu ficha para mantenerla actualizada.</p>
             <a href={`/editar/${entry.slug}`}
               class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">
-              Editar ficha →
+              <span data-field="editFicha">Editar ficha →</span>
             </a>
           </div>
         </div>
@@ -293,6 +293,28 @@ const tipoColors: Record<string, string> = {
     </section>
   )}
 
+  {/* i18n: translate data-field labels on all ficha pages */}
+  <script>
+    import { t, getLang, type Lang } from '../../lib/firebase';
+
+    let lang: Lang = getLang();
+
+    function updateLabels() {
+      document.querySelectorAll('[data-field]').forEach((el) => {
+        const key = (el as HTMLElement).dataset.field!;
+        const label = t(key, lang);
+        if (label && label !== key) el.textContent = label;
+      });
+    }
+
+    window.addEventListener('langChange', ((e: CustomEvent) => {
+      lang = e.detail;
+      updateLabels();
+    }) as EventListener);
+
+    updateLabels();
+  </script>
+
   {/* Client-side: show edit CTA to the owner of this verified ficha */}
   {entry.verificado && (
     <script>
@@ -310,7 +332,6 @@ const tipoColors: Record<string, string> = {
           if (isOwner) {
             document.getElementById('ownerEditCTA')?.classList.remove('hidden');
             document.getElementById('ownerCertSection')?.classList.remove('hidden');
-            // Show cases form for owner
             const casesForm = document.getElementById('case-form');
             if (casesForm) {
               document.getElementById('toggle-case-form')?.classList.remove('hidden');
