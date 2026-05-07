@@ -99,7 +99,7 @@ const relatedTerms = (term.related || [])
       <p class="text-steel-600 mb-4">¿Necesitas un profesional especializado en {term.term.toLowerCase()}?</p>
       {(() => {
         // Map glossary slugs to valid specialty filter values
-        const specialtyMap: Record<string, string> = {
+        const specialtyMap = {
           'tiempo-estandar': 'cronometraje',
           'cronometraje-industrial': 'cronometraje',
           'mtm': 'mtm',
