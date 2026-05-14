@@ -14,6 +14,33 @@ import Layout from '../../layouts/Layout.astro';
       </p>
     </div>
 
+    <!-- Search Bar -->
+    <div class="mb-8">
+      <div class="relative max-w-xl">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-5 w-5 text-steel-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Buscar artículos por título, tema o etiqueta..."
+          class="block w-full pl-10 pr-4 py-3 border border-steel-200 rounded-xl bg-white text-steel-700 placeholder-steel-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 shadow-sm"
+        />
+        <button
+          id="search-clear"
+          class="absolute inset-y-0 right-0 pr-3 flex items-center text-steel-400 hover:text-steel-600 hidden"
+          onclick="clearSearch()"
+        >
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <p id="search-results-count" class="mt-2 text-sm text-steel-400 hidden"></p>
+    </div>
+
     <!-- Loading State -->
     <div id="loading" class="text-center py-20">
       <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
@@ -34,12 +61,37 @@ import Layout from '../../layouts/Layout.astro';
       <p class="text-steel-300 mt-2">Vuelve pronto para leer las últimas novedades.</p>
     </div>
 
+    <!-- No Results State -->
+    <div id="no-results" class="hidden text-center py-20 bg-white rounded-xl shadow">
+      <svg class="mx-auto h-12 w-12 text-steel-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <p class="text-steel-400 text-lg">No se encontraron artículos</p>
+      <p class="text-steel-300 mt-2">Prueba con otros términos de búsqueda.</p>
+    </div>
+
     <!-- Articles Grid -->
     <div id="articles-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="hidden mt-10 flex items-center justify-center gap-2">
+      <button id="prev-btn" class="px-4 py-2 rounded-lg border border-steel-200 bg-white text-steel-600 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium text-sm" onclick="prevPage()" disabled>
+        ← Anterior
+      </button>
+      <div id="page-numbers" class="flex gap-1"></div>
+      <button id="next-btn" class="px-4 py-2 rounded-lg border border-steel-200 bg-white text-steel-600 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium text-sm" onclick="nextPage()">
+        Siguiente →
+      </button>
+    </div>
   </section>
 </Layout>
 
 <script>
+  let allArticles: any[] = [];
+  let filteredArticles: any[] = [];
+  let currentPage = 1;
+  const ARTICLES_PER_PAGE = 9;
+
   function formatDate(dateStr: string | null): string {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -51,6 +103,164 @@ import Layout from '../../layouts/Layout.astro';
     if (clean.length <= maxLength) return clean;
     return clean.substring(0, maxLength) + '...';
   }
+
+  function buildSearchIndex(article: any): string {
+    const parts = [
+      article.title || '',
+      article.excerpt || '',
+      ...(article.tags || []),
+    ];
+    return parts.join(' ').toLowerCase();
+  }
+
+  function filterArticles(query: string) {
+    if (!query.trim()) {
+      filteredArticles = [...allArticles];
+    } else {
+      const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+      filteredArticles = allArticles.filter(article => {
+        const index = buildSearchIndex(article);
+        return terms.every(term => index.includes(term));
+      });
+    }
+    currentPage = 1;
+    renderPage();
+  }
+
+  function clearSearch() {
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    input.value = '';
+    filterArticles('');
+    document.getElementById('search-clear')!.classList.add('hidden');
+    document.getElementById('search-results-count')!.classList.add('hidden');
+  }
+
+  function renderPage() {
+    const grid = document.getElementById('articles-grid')!;
+    const empty = document.getElementById('empty')!;
+    const noResults = document.getElementById('no-results')!;
+    const pagination = document.getElementById('pagination')!;
+    const searchCount = document.getElementById('search-results-count')!;
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+
+    const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
+    const start = (currentPage - 1) * ARTICLES_PER_PAGE;
+    const pageArticles = filteredArticles.slice(start, start + ARTICLES_PER_PAGE);
+
+    // Show search results count if searching
+    if (searchInput.value.trim()) {
+      searchCount.textContent = `${filteredArticles.length} artículo${filteredArticles.length !== 1 ? 's' : ''} encontrado${filteredArticles.length !== 1 ? 's' : ''}`;
+      searchCount.classList.remove('hidden');
+    } else {
+      searchCount.classList.add('hidden');
+    }
+
+    if (filteredArticles.length === 0 && searchInput.value.trim()) {
+      noResults.classList.remove('hidden');
+      grid.classList.add('hidden');
+      pagination.classList.add('hidden');
+      return;
+    }
+
+    noResults.classList.add('hidden');
+
+    if (pageArticles.length === 0) {
+      empty.classList.remove('hidden');
+      grid.classList.add('hidden');
+      pagination.classList.add('hidden');
+      return;
+    }
+
+    empty.classList.add('hidden');
+
+    grid.innerHTML = pageArticles.map((article: any) => {
+      const excerpt = article.excerpt || truncateText(article.content || '', 150);
+      const formattedDate = formatDate(article.publishedAt);
+
+      return `
+        <a
+          href="/blog/${article.slug}"
+          class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group"
+        >
+          ${article.coverImage ? `
+            <div class="overflow-hidden">
+              <img
+                src="${article.coverImage}"
+                alt="${article.title}"
+                class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
+              />
+            </div>
+          ` : ''}
+          <div class="p-6">
+            <div class="flex gap-2 mb-3 flex-wrap">
+              ${(article.tags || []).slice(0, 3).map((tag: string) => `
+                <span class="text-xs bg-primary-100 text-primary-700 px-2.5 py-1 rounded-full font-medium">
+                  ${tag}
+                </span>
+              `).join('')}
+            </div>
+            <h2 class="text-xl font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">
+              ${article.title}
+            </h2>
+            <p class="text-steel-500 text-sm line-clamp-3">${excerpt}</p>
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-steel-100">
+              <span class="text-sm text-steel-400">${article.author || 'ASETEMYT'}</span>
+              <span class="text-xs text-steel-400">${formattedDate}</span>
+            </div>
+          </div>
+        </a>
+      `;
+    }).join('');
+
+    grid.classList.remove('hidden');
+
+    // Pagination
+    if (totalPages > 1) {
+      pagination.classList.remove('hidden');
+      const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
+      const nextBtn = document.getElementById('next-btn') as HTMLButtonElement;
+      prevBtn.disabled = currentPage <= 1;
+      nextBtn.disabled = currentPage >= totalPages;
+
+      const pageNumbers = document.getElementById('page-numbers')!;
+      pageNumbers.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = String(i);
+        btn.className = `w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+          i === currentPage
+            ? 'bg-primary-600 text-white'
+            : 'bg-white border border-steel-200 text-steel-600 hover:bg-primary-50 hover:border-primary-300'
+        }`;
+        btn.onclick = () => goToPage(i);
+        pageNumbers.appendChild(btn);
+      }
+    } else {
+      pagination.classList.add('hidden');
+    }
+  }
+
+  function goToPage(page: number) {
+    currentPage = page;
+    renderPage();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function prevPage() {
+    if (currentPage > 1) goToPage(currentPage - 1);
+  }
+
+  function nextPage() {
+    const totalPages = Math.ceil(filteredArticles.length / ARTICLES_PER_PAGE);
+    if (currentPage < totalPages) goToPage(currentPage + 1);
+  }
+
+  // Expose for onclick handlers
+  (window as any).clearSearch = clearSearch;
+  (window as any).prevPage = prevPage;
+  (window as any).nextPage = nextPage;
+  (window as any).loadArticles = loadArticles;
 
   async function loadArticles() {
     const loading = document.getElementById('loading')!;
@@ -70,60 +280,36 @@ import Layout from '../../layouts/Layout.astro';
 
       loading.classList.add('hidden');
 
-      const publishedArticles = articles.filter((a: any) => a.status === 'published');
+      // Filter published and sort by date (most recent first)
+      allArticles = articles
+        .filter((a: any) => a.status === 'published')
+        .sort((a: any, b: any) => {
+          const da = new Date(a.publishedAt || 0).getTime();
+          const db = new Date(b.publishedAt || 0).getTime();
+          return db - da;
+        });
 
-      if (publishedArticles.length === 0) {
-        empty.classList.remove('hidden');
-        return;
-      }
-
-      grid.innerHTML = publishedArticles.map((article: any) => {
-        const excerpt = article.excerpt || truncateText(article.content || '', 150);
-        const formattedDate = formatDate(article.publishedAt);
-
-        return `
-          <a
-            href="/blog/${article.slug}"
-            class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group"
-          >
-            ${article.coverImage ? `
-              <div class="overflow-hidden">
-                <img
-                  src="${article.coverImage}"
-                  alt="${article.title}"
-                  class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-              </div>
-            ` : ''}
-            <div class="p-6">
-              <div class="flex gap-2 mb-3 flex-wrap">
-                ${(article.tags || []).slice(0, 3).map((tag: string) => `
-                  <span class="text-xs bg-primary-100 text-primary-700 px-2.5 py-1 rounded-full font-medium">
-                    ${tag}
-                  </span>
-                `).join('')}
-              </div>
-              <h2 class="text-xl font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">
-                ${article.title}
-              </h2>
-              <p class="text-steel-500 text-sm line-clamp-3">${excerpt}</p>
-              <div class="flex items-center justify-between mt-4 pt-4 border-t border-steel-100">
-                <span class="text-sm text-steel-400">${article.author || 'ASETEMYT'}</span>
-                <span class="text-xs text-steel-400">${formattedDate}</span>
-              </div>
-            </div>
-          </a>
-        `;
-      }).join('');
-
-      grid.classList.remove('hidden');
+      filteredArticles = [...allArticles];
+      renderPage();
     } catch (err) {
       console.error('Error fetching articles:', err);
       loading.classList.add('hidden');
       error.classList.remove('hidden');
     }
   }
+
+  // Setup search
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    const clearBtn = document.getElementById('search-clear')!;
+    let debounce: ReturnType<typeof setTimeout>;
+
+    input.addEventListener('input', () => {
+      clearTimeout(debounce);
+      clearBtn.classList.toggle('hidden', !input.value.trim());
+      debounce = setTimeout(() => filterArticles(input.value), 200);
+    });
+  });
 
   loadArticles();
 </script>
