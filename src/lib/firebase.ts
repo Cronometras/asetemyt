@@ -483,7 +483,6 @@ export async function getDirectoryStats() {
     total: allEntries.length,
     empresas: allEntries.filter((e) => e.tipo === 'empresa').length,
     consultores: allEntries.filter((e) => e.tipo === 'consultor').length,
-    freelancers: allEntries.filter((e) => e.tipo === 'freelance').length,
     software: allEntries.filter((e) => e.seccion === 'software').length,
   };
 }

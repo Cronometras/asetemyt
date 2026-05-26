@@ -1,0 +1,194 @@
+---
+// Cookie consent banner for GDPR compliance - ASETEMYT
+const GA_ID = 'G-BMZHR6ZS9Y';
+---
+
+<div id="cookie-consent" class="fixed bottom-0 left-0 right-0 bg-white shadow-lg z-50 transition-transform duration-500 transform translate-y-full border-t border-steel-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 p-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h3 class="text-lg font-bold text-primary-800">🍪 Aviso de Cookies</h3>
+        <p class="text-sm text-steel-600 mt-1">
+          Utilizamos cookies para mejorar su experiencia. Algunas son necesarias para el funcionamiento del sitio, y otras nos ayudan a mejorar mediante análisis de uso.
+          <a href="/politica-de-cookies" class="text-accent-500 hover:underline ml-1">Más información</a>
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2 shrink-0">
+        <button id="cookie-settings-btn" class="px-4 py-2 text-sm border border-steel-300 rounded-md hover:bg-steel-100 transition-colors">
+          Configuración
+        </button>
+        <button id="cookie-accept-all" class="px-4 py-2 text-sm bg-accent-500 text-white rounded-md hover:bg-accent-600 transition-colors">
+          Aceptar Todas
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="cookie-settings-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold text-primary-800">Configuración de Cookies</h3>
+          <button id="close-settings" class="text-steel-500 hover:text-steel-700">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Necessary -->
+          <div class="border border-steel-200 rounded-md p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-medium text-primary-800">Cookies Necesarias</h4>
+                <p class="text-sm text-steel-500">Esenciales para el funcionamiento básico del sitio. No pueden desactivarse.</p>
+              </div>
+              <div class="relative">
+                <input type="checkbox" id="necessary-cookies" class="sr-only" checked disabled>
+                <div class="block bg-steel-200 w-14 h-8 rounded-full"></div>
+                <div class="dot absolute left-1 top-1 bg-accent-500 w-6 h-6 rounded-full transition"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Analytics -->
+          <div class="border border-steel-200 rounded-md p-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="font-medium text-primary-800">Cookies Analíticas</h4>
+                <p class="text-sm text-steel-500">Nos ayudan a entender cómo interactúas con el sitio web para mejorar la experiencia.</p>
+              </div>
+              <div class="relative">
+                <input type="checkbox" id="analytics-cookies" class="sr-only cookie-checkbox">
+                <div class="block bg-steel-200 w-14 h-8 rounded-full"></div>
+                <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-2 justify-end">
+          <button id="cookie-reject-all" class="px-4 py-2 text-sm border border-steel-300 rounded-md hover:bg-steel-100 transition-colors">
+            Rechazar Todas
+          </button>
+          <button id="cookie-save-preferences" class="px-4 py-2 text-sm bg-accent-500 text-white rounded-md hover:bg-accent-600 transition-colors">
+            Guardar Preferencias
+          </button>
+        </div>
+
+        <div class="mt-4 text-sm text-steel-500 flex gap-4">
+          <a href="/politica-de-privacidad" class="text-accent-500 hover:underline">Política de Privacidad</a>
+          <a href="/politica-de-cookies" class="text-accent-500 hover:underline">Política de Cookies</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ GA_ID }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    const cookieConsent = document.getElementById('cookie-consent');
+    const cookieSettingsBtn = document.getElementById('cookie-settings-btn');
+    const cookieSettingsModal = document.getElementById('cookie-settings-modal');
+    const closeSettings = document.getElementById('close-settings');
+    const cookieAcceptAll = document.getElementById('cookie-accept-all');
+    const cookieRejectAll = document.getElementById('cookie-reject-all');
+    const cookieSavePreferences = document.getElementById('cookie-save-preferences');
+    const cookieCheckboxes = document.querySelectorAll('.cookie-checkbox');
+
+    const hasConsent = localStorage.getItem('cookie-consent');
+    if (!hasConsent) {
+      setTimeout(() => {
+        cookieConsent.classList.remove('translate-y-full');
+      }, 1000);
+    } else {
+      const prefs = JSON.parse(localStorage.getItem('cookie-preferences') || '{}');
+      if (prefs.analytics) enableAnalytics();
+    }
+
+    cookieCheckboxes.forEach(checkbox => {
+      const dot = checkbox.nextElementSibling.nextElementSibling;
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          dot.classList.add('bg-accent-500');
+          dot.classList.remove('bg-white');
+          dot.classList.add('translate-x-6');
+        } else {
+          dot.classList.remove('bg-accent-500');
+          dot.classList.add('bg-white');
+          dot.classList.remove('translate-x-6');
+        }
+      });
+    });
+
+    cookieSettingsBtn.addEventListener('click', () => {
+      cookieSettingsModal.classList.remove('hidden');
+    });
+
+    closeSettings.addEventListener('click', () => {
+      cookieSettingsModal.classList.add('hidden');
+    });
+
+    cookieSettingsModal.addEventListener('click', (e) => {
+      if (e.target === cookieSettingsModal) cookieSettingsModal.classList.add('hidden');
+    });
+
+    cookieAcceptAll.addEventListener('click', () => {
+      setConsent({ necessary: true, analytics: true });
+      hideBanner();
+    });
+
+    cookieRejectAll.addEventListener('click', () => {
+      setConsent({ necessary: true, analytics: false });
+      hideBanner();
+    });
+
+    cookieSavePreferences.addEventListener('click', () => {
+      const analytics = document.getElementById('analytics-cookies').checked;
+      setConsent({ necessary: true, analytics });
+      hideBanner();
+    });
+
+    function setConsent(prefs) {
+      localStorage.setItem('cookie-consent', 'true');
+      localStorage.setItem('cookie-preferences', JSON.stringify(prefs));
+      if (prefs.analytics) enableAnalytics();
+    }
+
+    function hideBanner() {
+      cookieConsent.classList.add('translate-y-full');
+      cookieSettingsModal.classList.add('hidden');
+    }
+
+    function enableAnalytics() {
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'update', { 'analytics_storage': 'granted' });
+    }
+
+    const saved = localStorage.getItem('cookie-preferences');
+    if (saved) {
+      const prefs = JSON.parse(saved);
+      document.getElementById('analytics-cookies').checked = prefs.analytics;
+      cookieCheckboxes.forEach(checkbox => {
+        const dot = checkbox.nextElementSibling.nextElementSibling;
+        if (checkbox.checked) {
+          dot.classList.add('bg-accent-500');
+          dot.classList.remove('bg-white');
+          dot.classList.add('translate-x-6');
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .dot {
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  }
+  input:checked ~ .dot {
+    transform: translateX(1.5rem);
+  }
+</style>

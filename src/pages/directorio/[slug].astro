@@ -94,7 +94,7 @@ const tipoColors: Record<string, string> = {
               <PartnerBadge tools={entry.herramientas || []} />
             </div>
             <span class={`inline-block text-sm font-semibold px-3 py-1 rounded-full ${tipoColors[entry.tipo] || 'bg-steel-100 text-steel-600'}`}>
-              <span data-field={entry.tipo || 'sinTipo'}>{entry.tipo === 'empresa' ? 'Empresa' : entry.tipo === 'consultor' ? 'Consultor' : entry.tipo === 'freelance' ? 'Freelancer' : entry.tipo || 'Sin tipo'}</span>
+              <span data-field={entry.tipo || 'sinTipo'}>{entry.tipo === 'empresa' ? 'Empresa' : 'Consultor'}</span>
             </span>
           </div>
         </div>
@@ -154,8 +154,26 @@ const tipoColors: Record<string, string> = {
               </svg>
               <div>
                 {entry.ubicacion.direccion && <p>{entry.ubicacion.direccion}</p>}
-                <p>
-                  {[entry.ubicacion.ciudad, entry.ubicacion.pais].filter(Boolean).join(', ')}
+                <p class="flex flex-wrap items-center gap-1">
+                  {entry.ubicacion.ciudad && (
+                    <a href={`/directorio?ciudad=${encodeURIComponent(entry.ubicacion.ciudad)}`}
+                       class="text-accent-600 hover:text-accent-800 hover:underline font-medium transition-colors">
+                      {entry.ubicacion.ciudad}
+                    </a>
+                  )}
+                  {entry.ubicacion.ciudad && entry.ubicacion.provincia && <span class="text-steel-400">,</span>}
+                  {entry.ubicacion.provincia && (
+                    <a href={`/directorio?provincia=${encodeURIComponent(entry.ubicacion.provincia)}`}
+                       class="text-accent-600 hover:text-accent-800 hover:underline font-medium transition-colors">
+                      {entry.ubicacion.provincia}
+                    </a>
+                  )}
+                  {entry.ubicacion.pais && (
+                    <>
+                      <span class="text-steel-400">·</span>
+                      <span>{entry.ubicacion.pais}</span>
+                    </>
+                  )}
                 </p>
               </div>
             </div>

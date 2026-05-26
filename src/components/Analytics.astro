@@ -1,0 +1,34 @@
+---
+// Google Analytics with consent gating for ASETEMYT
+const GA_ID = 'G-BMZHR6ZS9Y';
+---
+
+<!-- Consent mode default: deny analytics until user consents -->
+<script is:inline>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    'analytics_storage': 'denied'
+  });
+</script>
+
+<!-- Google tag (gtag.js) -->
+<script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+<script define:vars={{ GA_ID }} is:inline>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', GA_ID, {
+    'send_page_view': false
+  });
+
+  // Check saved consent and apply
+  const saved = localStorage.getItem('cookie-preferences');
+  if (saved) {
+    const prefs = JSON.parse(saved);
+    if (prefs.analytics) {
+      gtag('consent', 'update', { 'analytics_storage': 'granted' });
+      gtag('event', 'page_view');
+    }
+  }
+</script>

@@ -3,7 +3,7 @@ export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Directorio de Profesionales del Cronometraje Industrial" description="Consultores, empresas y freelancers especializados en cronometraje industrial, MTM, MOST, OEE y Lean Manufacturing.">
+<Layout title="Directorio de Profesionales del Cronometraje Industrial" description="Consultores y empresas especializados en cronometraje industrial, MTM, MOST, OEE y Lean Manufacturing.">
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div id="directory-content">
       <!-- Skeleton loader -->
@@ -47,7 +47,6 @@ import Layout from '../../layouts/Layout.astro';
       const tipos = [
         { value: 'empresa', label: lang === 'es' ? 'Empresas' : 'Companies' },
         { value: 'consultor', label: lang === 'es' ? 'Consultores' : 'Consultants' },
-        { value: 'freelance', label: lang === 'es' ? 'Freelancers' : 'Freelancers' },
       ];
 
       // Normalize country names to prevent duplicates (e.g. "España"/"Spain")
@@ -76,6 +75,8 @@ import Layout from '../../layouts/Layout.astro';
         }
       });
       const paises = [...new Set(consultores.map((e: any) => e.ubicacion?.pais).filter(Boolean))].sort();
+      const provincias = [...new Set(consultores.map((e: any) => e.ubicacion?.provincia).filter(Boolean))].sort();
+      const ciudades = [...new Set(consultores.map((e: any) => e.ubicacion?.ciudad).filter(Boolean))].sort();
       const especialidades = ['cronometraje', 'mtm', 'most', 'oee', 'lean'];
 
       const container = document.getElementById('directory-content')!;
@@ -88,12 +89,12 @@ import Layout from '../../layouts/Layout.astro';
             <span class="text-steel-700">${lang === 'es' ? 'Profesionales' : 'Professionals'}</span>
           </nav>
           <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">${lang === 'es' ? 'Directorio de Profesionales' : 'Professionals Directory'}</h1>
-          <p class="text-steel-500 text-lg">${lang === 'es' ? 'Consultores, empresas y freelancers especializados en ingeniería de métodos y tiempos.' : 'Consultants, companies and freelancers specialized in methods and time engineering.'}</p>
+          <p class="text-steel-500 text-lg">${lang === 'es' ? 'Consultores y empresas especializados en ingeniería de métodos y tiempos.' : 'Consultants and companies specialized in methods and time engineering.'}</p>
         </div>
 
         <!-- Filters -->
         <div class="bg-white rounded-xl shadow-md p-6 mb-8" id="filters-container">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div>
               <label class="block text-sm font-medium text-steel-600 mb-1">${tr('search')}</label>
               <input type="text" id="search-input" placeholder="${lang === 'es' ? 'Nombre, especialidad...' : 'Name, specialty...'}"
@@ -120,6 +121,20 @@ import Layout from '../../layouts/Layout.astro';
                 ${paises.map((p) => `<option value="${(p as string).toLowerCase()}">${p}</option>`).join('')}
               </select>
             </div>
+            <div>
+              <label class="block text-sm font-medium text-steel-600 mb-1">${lang === 'es' ? 'Provincia' : 'Province'}</label>
+              <select id="filter-provincia" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+                <option value="">${lang === 'es' ? 'Todas' : 'All'}</option>
+                ${provincias.map((p) => `<option value="${(p as string).toLowerCase()}">${p}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-steel-600 mb-1">${lang === 'es' ? 'Ciudad' : 'City'}</label>
+              <select id="filter-ciudad" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+                <option value="">${lang === 'es' ? 'Todas' : 'All'}</option>
+                ${ciudades.map((c) => `<option value="${(c as string).toLowerCase()}">${c}</option>`).join('')}
+              </select>
+            </div>
           </div>
         </div>
 
@@ -142,7 +157,9 @@ import Layout from '../../layouts/Layout.astro';
                 data-name="${(entry.nombre || '').toLowerCase()}"
                 data-tipo="${entry.tipo || ''}"
                 data-especialidades="${(entry.especialidades || []).join(',').toLowerCase()}"
-                data-ubicacion="${`${entry.ubicacion?.pais || ''} ${entry.ubicacion?.ciudad || ''}`.toLowerCase()}">
+                data-ubicacion="${`${entry.ubicacion?.pais || ''} ${entry.ubicacion?.ciudad || ''}`.toLowerCase()}"
+                data-provincia="${(entry.ubicacion?.provincia || '').toLowerCase()}"
+                data-ciudad="${(entry.ubicacion?.ciudad || '').toLowerCase()}">
                 ${entry.verificado ? '<span class="absolute top-3 right-3 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-sm" title="Verificado"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>' : ''}
                 <div class="flex items-start gap-4 mb-4">
                   ${entry.logo
@@ -156,7 +173,7 @@ import Layout from '../../layouts/Layout.astro';
                       entry.tipo === 'consultor' ? 'bg-green-100 text-green-700' :
                       'bg-purple-100 text-purple-700'
                     }">
-                      ${entry.tipo === 'empresa' ? tr('empresa') : entry.tipo === 'consultor' ? tr('consultor') : tr('freelancer')}
+                      ${entry.tipo === 'empresa' ? tr('empresa') : tr('consultor')}
                     </span>
                   </div>
                 </div>
@@ -179,6 +196,8 @@ import Layout from '../../layouts/Layout.astro';
       const filterTipo = document.getElementById('filter-tipo') as HTMLSelectElement;
       const filterEsp = document.getElementById('filter-especialidad') as HTMLSelectElement;
       const filterLoc = document.getElementById('filter-ubicacion') as HTMLSelectElement;
+      const filterProv = document.getElementById('filter-provincia') as HTMLSelectElement;
+      const filterCiudad = document.getElementById('filter-ciudad') as HTMLSelectElement;
       const cards = document.querySelectorAll('.directory-card') as NodeListOf<HTMLElement>;
       const countEl = document.getElementById('results-count');
 
@@ -187,6 +206,8 @@ import Layout from '../../layouts/Layout.astro';
         const tipo = filterTipo?.value?.toLowerCase() || '';
         const esp = filterEsp?.value?.toLowerCase() || '';
         const loc = filterLoc?.value?.toLowerCase() || '';
+        const prov = filterProv?.value?.toLowerCase() || '';
+        const ciudad = filterCiudad?.value?.toLowerCase() || '';
 
         let visible = 0;
         cards.forEach((card) => {
@@ -194,13 +215,17 @@ import Layout from '../../layouts/Layout.astro';
           const cardTipo = card.dataset.tipo || '';
           const cardEsp = card.dataset.especialidades || '';
           const cardLoc = card.dataset.ubicacion || '';
+          const cardProv = card.dataset.provincia || '';
+          const cardCiudad = card.dataset.ciudad || '';
 
           const matchSearch = !search || name.includes(search) || cardEsp.includes(search);
           const matchTipo = !tipo || cardTipo === tipo;
           const matchEsp = !esp || cardEsp.includes(esp);
           const matchLoc = !loc || cardLoc.includes(loc);
+          const matchProv = !prov || cardProv.includes(prov);
+          const matchCiudad = !ciudad || cardCiudad.includes(ciudad);
 
-          const show = matchSearch && matchTipo && matchEsp && matchLoc;
+          const show = matchSearch && matchTipo && matchEsp && matchLoc && matchProv && matchCiudad;
           card.style.display = show ? '' : 'none';
           if (show) visible++;
         });
@@ -214,12 +239,16 @@ import Layout from '../../layouts/Layout.astro';
       filterTipo?.addEventListener('change', applyFilters);
       filterEsp?.addEventListener('change', applyFilters);
       filterLoc?.addEventListener('change', applyFilters);
+      filterProv?.addEventListener('change', applyFilters);
+      filterCiudad?.addEventListener('change', applyFilters);
 
       // Apply URL params
       const params = new URLSearchParams(window.location.search);
       if (params.get('tipo') && filterTipo) filterTipo.value = params.get('tipo')!;
       if (params.get('especialidad') && filterEsp) filterEsp.value = params.get('especialidad')!;
       if (params.get('ubicacion') && filterLoc) filterLoc.value = params.get('ubicacion')!;
+      if (params.get('provincia') && filterProv) filterProv.value = params.get('provincia')!.toLowerCase();
+      if (params.get('ciudad') && filterCiudad) filterCiudad.value = params.get('ciudad')!.toLowerCase();
       if (params.toString()) applyFilters();
     }
 
