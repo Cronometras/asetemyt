@@ -24,12 +24,25 @@ export const GET: APIRoute = async ({ request, locals }) => {
     results.firestore = { ok: false, detail: e.message || 'Error', ms: Date.now() - fsStart };
   }
 
-  // Stripe
+  // Stripe — use customers.list (works with restricted keys) instead of balance.retrieve (requires rak_balance_read)
   const stStart = Date.now();
   try {
-    const stripe = getStripe(env.STRIPE_SECRET_KEY || '');
-    await stripe.balance.retrieve();
-    results.stripe = { ok: true, detail: 'Conectado', ms: Date.now() - stStart };
+    const stripeKey = env.STRIPE_SECRET_KEY || '';
+    if (!stripeKey) throw new Error('STRIPE_SECRET_KEY no configurada');
+    const stripe = getStripe(stripeKey);
+    // Try balance first (most informative), fall back to customers.list
+    try {
+      await stripe.balance.retrieve();
+      results.stripe = { ok: true, detail: 'Conectado (full)', ms: Date.now() - stStart };
+    } catch (balanceErr: any) {
+      if (balanceErr.message?.includes('does not have the required permissions')) {
+        // Restricted key without balance read — try customers instead
+        await stripe.customers.list({ limit: 1 });
+        results.stripe = { ok: true, detail: 'Conectado (restricted key)', ms: Date.now() - stStart };
+      } else {
+        throw balanceErr;
+      }
+    }
   } catch (e: any) {
     results.stripe = { ok: false, detail: e.message || 'Error', ms: Date.now() - stStart };
   }
