@@ -23,12 +23,13 @@ import Layout from '../../layouts/Layout.astro';
     </div>
   </section>
   <script>
-    import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
+    import { initAdmin } from '../../lib/admin-auth';
     let allSubs: any[] = [];
-    onAuthStateChanged(auth, async (u) => {
-      if (!u) return showNotAuth();
-      try { const r = await authFetch('/api/admin/subscribers'); if (!r.ok) return showNotAuth(); allSubs = (await r.json()).subscribers; show(); } catch { showNotAuth(); }
-    });
+    (async () => {
+      const { ok, api } = await initAdmin();
+      if (!ok) return showNotAuth();
+      try { const r = await api('/api/admin/subscribers'); if (!r.ok) return showNotAuth(); allSubs = (await r.json()).subscribers; show(); } catch { showNotAuth(); }
+    })();
     function showNotAuth() { document.getElementById('loading')!.classList.add('hidden'); document.getElementById('notAuth')!.classList.remove('hidden'); }
     function show() { document.getElementById('loading')!.classList.add('hidden'); document.getElementById('panel')!.classList.remove('hidden'); render(); }
     function filter() {

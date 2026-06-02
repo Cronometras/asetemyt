@@ -59,22 +59,12 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
-    import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
+    import { initAdmin } from '../../lib/admin-auth';
 
-    async function checkAdmin() {
-      return new Promise<boolean>((resolve) => {
-        onAuthStateChanged(auth, async (user) => {
-          if (!user) { resolve(false); return; }
-          try {
-            const res = await authFetch('/api/admin/coupons');
-            resolve(res.ok);
-          } catch { resolve(false); }
-        });
-      });
-    }
+    let api = window.fetch.bind(window);
 
     async function loadPreview() {
-      const res = await authFetch('/api/newsletter/preview');
+      const res = await api('/api/newsletter/preview');
       if (!res.ok) throw new Error('Error loading preview');
       const data = await res.json();
 
@@ -148,7 +138,8 @@ import Layout from '../../layouts/Layout.astro';
 
     // Init
     (async () => {
-      const ok = await checkAdmin();
+      const { ok, api: adminApi } = await initAdmin();
+      api = adminApi;
       if (!ok) {
         document.getElementById('loading')!.classList.add('hidden');
         document.getElementById('notAuth')!.classList.remove('hidden');

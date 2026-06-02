@@ -28,16 +28,17 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
-    import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
+    import { initAdmin } from '../../lib/admin-auth';
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return showNotAuth();
+    (async () => {
+      const { ok, api } = await initAdmin();
+      if (!ok) return showNotAuth();
       try {
-        const res = await authFetch('/api/admin/system-status');
+        const res = await api('/api/admin/system-status');
         if (!res.ok) return showNotAuth();
         render(await res.json());
       } catch { showNotAuth(); }
-    });
+    })();
 
     function showNotAuth() {
       document.getElementById('loading')!.classList.add('hidden');

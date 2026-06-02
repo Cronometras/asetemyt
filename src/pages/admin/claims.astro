@@ -49,7 +49,7 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
-  import { onAuthStateChanged, auth, authFetch } from '../../lib/auth';
+  import { initAdmin } from '../../lib/admin-auth';
 
   const loading = document.getElementById('loading')!;
   const notAuth = document.getElementById('notAuth')!;
@@ -108,17 +108,20 @@ import Layout from '../../layouts/Layout.astro';
     `;
   }
 
-  onAuthStateChanged(auth, async (user) => {
+  let api = window.fetch.bind(window);
+
+  (async () => {
+    const { ok, api: adminApi } = await initAdmin();
+    api = adminApi;
     loading.classList.add('hidden');
-    if (!user) {
+    if (!ok) {
       notAuth.classList.remove('hidden');
       return;
     }
-
     adminPanel.classList.remove('hidden');
 
     try {
-      const resp = await authFetch('/api/admin/claim-action');
+      const resp = await api('/api/admin/claim-action');
       if (resp.status === 403) {
         notAuth.classList.remove('hidden');
         adminPanel.classList.add('hidden');
@@ -145,11 +148,11 @@ import Layout from '../../layouts/Layout.astro';
     } catch (err) {
       pendingList.innerHTML = '<p class="text-red-500 text-sm">Error cargando solicitudes.</p>';
     }
-  });
+  })();
 
   (window as any).handleClaim = async (claimId: string, action: string) => {
     try {
-      const resp = await authFetch('/api/admin/claim-action', {
+      const resp = await api('/api/admin/claim-action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ claimId, action }),

@@ -186,24 +186,13 @@ import Layout from '../../layouts/Layout.astro';
   </div>
 
   <script>
-    import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
+    import { initAdmin } from '../../lib/admin-auth';
 
     let allFichas: any[] = [];
-
-    async function checkAdmin() {
-      return new Promise<boolean>((resolve) => {
-        onAuthStateChanged(auth, async (user) => {
-          if (!user) { resolve(false); return; }
-          try {
-            const res = await authFetch('/api/admin/coupons');
-            resolve(res.ok);
-          } catch { resolve(false); }
-        });
-      });
-    }
+    let api = window.fetch.bind(window);
 
     async function loadFichas() {
-      const res = await authFetch('/api/admin/fichas');
+      const res = await api('/api/admin/fichas');
       if (!res.ok) throw new Error('Error loading');
       const data = await res.json();
       allFichas = data.fichas || [];
@@ -273,7 +262,7 @@ import Layout from '../../layouts/Layout.astro';
     async function toggleContactLock(slug: string, currentlyLocked: boolean) {
       const newUnlocked = currentlyLocked; // If locked, unlock it
       try {
-        const res = await authFetch('/api/admin/fichas', {
+        const res = await api('/api/admin/fichas', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ slug, updates: { contactoDesbloqueado: newUnlocked } }),
@@ -296,7 +285,7 @@ import Layout from '../../layouts/Layout.astro';
       statusEl.className = 'mt-2 text-xs font-medium text-amber-700';
 
       try {
-        const res = await authFetch('/api/admin/fichas', {
+        const res = await api('/api/admin/fichas', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action }),
@@ -407,7 +396,7 @@ import Layout from '../../layouts/Layout.astro';
 
     async function deleteFicha(slug: string) {
       try {
-        const res = await authFetch('/api/admin/fichas', {
+        const res = await api('/api/admin/fichas', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ slug }),
@@ -424,7 +413,8 @@ import Layout from '../../layouts/Layout.astro';
 
     // Init
     (async () => {
-      const ok = await checkAdmin();
+      const { ok, api: adminApi } = await initAdmin();
+      api = adminApi;
       if (!ok) {
         document.getElementById('loading')!.classList.add('hidden');
         document.getElementById('notAuth')!.classList.remove('hidden');
@@ -476,7 +466,7 @@ import Layout from '../../layouts/Layout.astro';
         try {
           if (editSlug) {
             // Edit mode — update existing
-            const res = await authFetch('/api/admin/fichas', {
+            const res = await api('/api/admin/fichas', {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ slug: editSlug, updates: data }),
@@ -491,7 +481,7 @@ import Layout from '../../layouts/Layout.astro';
           } else {
             // Create mode
             if (!data.slug) { showAlert('El slug es obligatorio', true); btn.disabled = false; btn.textContent = 'Guardar'; return; }
-            const res = await authFetch('/api/admin/fichas', {
+            const res = await api('/api/admin/fichas', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data),
@@ -539,7 +529,7 @@ import Layout from '../../layouts/Layout.astro';
         var btn = document.getElementById('btn-dupes') as HTMLButtonElement;
         btn.textContent = 'Buscando...'; btn.disabled = true;
         try {
-          var res = await authFetch('/api/admin/duplicates');
+          var res = await api('/api/admin/duplicates');
           var data = await res.json();
           if (!data.duplicates || !data.duplicates.length) { alert('No se encontraron duplicados en ' + data.totalScanned + ' fichas.'); return; }
           var msg = 'Posibles duplicados (' + data.duplicates.length + '):\n\n';

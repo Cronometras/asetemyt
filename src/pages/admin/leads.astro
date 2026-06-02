@@ -40,7 +40,7 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
-    import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
+    import { initAdmin } from '../../lib/admin-auth';
 
     const statusLabels: Record<string, string> = {
       new: 'Nuevo', sent: 'Enviado', contacted: 'Contactado', closed: 'Cerrado',
@@ -56,15 +56,18 @@ import Layout from '../../layouts/Layout.astro';
     };
 
     let currentFilter = '';
+    let api = window.fetch.bind(window);
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) return showNotAuth();
+    (async () => {
+      const { ok, api: adminApi } = await initAdmin();
+      api = adminApi;
+      if (!ok) return showNotAuth();
       try {
-        const res = await authFetch('/api/admin/leads');
+        const res = await api('/api/admin/leads');
         if (!res.ok) return showNotAuth();
         showLeads(await res.json());
       } catch { showNotAuth(); }
-    });
+    })();
 
     function showNotAuth() {
       document.getElementById('loading')!.classList.add('hidden');
@@ -134,14 +137,13 @@ import Layout from '../../layouts/Layout.astro';
     (window as any).updateLeadStatus = async (id: string, currentStatus: string) => {
       const newStatus = nextStatus[currentStatus] || 'new';
       try {
-        const res = await authFetch('/api/admin/leads', {
+        const res = await api('/api/admin/leads', {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, status: newStatus }),
         });
         if (res.ok) {
-          // Reload
-          const dataRes = await authFetch('/api/admin/leads' + (currentFilter ? '?status=' + currentFilter : ''));
+          const dataRes = await api('/api/admin/leads' + (currentFilter ? '?status=' + currentFilter : ''));
           if (dataRes.ok) {
             const data = await dataRes.json();
             document.getElementById('loading')!.classList.remove('hidden');
