@@ -74,6 +74,16 @@ import Layout from '../layouts/Layout.astro';
     alertEl.classList.remove('hidden');
   }
 
+  async function afterLogin() {
+    try {
+      const resp = await fetch('/api/admin/status');
+      const data = await resp.json();
+      window.location.href = data.admin ? '/admin' : '/mi-cuenta';
+    } catch {
+      window.location.href = '/mi-cuenta';
+    }
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.textContent = 'Creando cuenta...';
@@ -84,7 +94,7 @@ import Layout from '../layouts/Layout.astro';
         (document.getElementById('password') as HTMLInputElement).value,
         (document.getElementById('nombre') as HTMLInputElement).value
       );
-      window.location.href = '/mi-cuenta';
+      await afterLogin();
     } catch (err: any) {
       const msg = err.message?.includes('email-already-in-use')
         ? 'Este email ya está registrado. ¿Quieres iniciar sesión?'
@@ -98,7 +108,7 @@ import Layout from '../layouts/Layout.astro';
   googleBtn.addEventListener('click', async () => {
     try {
       await signInGoogle();
-      window.location.href = '/mi-cuenta';
+      await afterLogin();
     } catch (err: any) {
       showAlert(err.message);
     }

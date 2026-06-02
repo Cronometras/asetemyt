@@ -68,6 +68,17 @@ import Layout from '../layouts/Layout.astro';
     alertEl.classList.remove('hidden');
   }
 
+  async function afterLogin() {
+    // Check if admin — redirect directly to dashboard if so
+    try {
+      const resp = await fetch('/api/admin/status');
+      const data = await resp.json();
+      window.location.href = data.admin ? '/admin' : '/mi-cuenta';
+    } catch {
+      window.location.href = '/mi-cuenta';
+    }
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.textContent = 'Entrando...';
@@ -77,7 +88,7 @@ import Layout from '../layouts/Layout.astro';
         (document.getElementById('email') as HTMLInputElement).value,
         (document.getElementById('password') as HTMLInputElement).value
       );
-      window.location.href = '/mi-cuenta';
+      await afterLogin();
     } catch (err: any) {
       showAlert(err.message?.includes('invalid-credential') ? 'Email o contraseña incorrectos' : err.message);
       submitBtn.textContent = 'Entrar';
@@ -88,7 +99,7 @@ import Layout from '../layouts/Layout.astro';
   googleBtn.addEventListener('click', async () => {
     try {
       await signInGoogle();
-      window.location.href = '/mi-cuenta';
+      await afterLogin();
     } catch (err: any) {
       showAlert(err.message);
     }

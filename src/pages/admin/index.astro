@@ -74,12 +74,30 @@ import Layout from '../../layouts/Layout.astro';
       subs: 'violet',
     };
 
-    // Wait for Firebase auth to resolve (session from IndexedDB) before acting.
-    // Timeout after 8s as safety net — if authStateReady hangs, show error + retry.
+    // Dual-path auth: cookie first (fast, no IndexedDB), then Firebase as fallback.
     (async () => {
-      let resolved = false;
+      // Helper: read asetemyt_token cookie
+      function getTokenCookie() {
+        const m = document.cookie.match(/asetemyt_token=([^;]+)/);
+        return m ? m[1] : null;
+      }
 
-      // Safety timeout
+      // Try cookie-based auth first — bypasses IndexedDB entirely
+      const token = getTokenCookie();
+      if (token) {
+        try {
+          const res = await fetch('/api/admin/stats', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await res.json();
+            return showDashboard(data);
+          }
+        } catch {}
+      }
+
+      // Cookie didn't work — wait for Firebase Auth (may need IndexedDB)
+      let resolved = false;
       const timeout = setTimeout(() => {
         if (!resolved) {
           resolved = true;
@@ -89,7 +107,7 @@ import Layout from '../../layouts/Layout.astro';
 
       try {
         await auth.authStateReady();
-        if (resolved) return; // timeout already fired
+        if (resolved) return;
         resolved = true;
         clearTimeout(timeout);
 
