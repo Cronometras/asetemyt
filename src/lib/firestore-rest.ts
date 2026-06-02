@@ -103,6 +103,11 @@ export async function firestoreCreate(env: any, collection: string, docId: strin
   );
   if (!resp.ok) {
     const errText = await resp.text().catch(() => 'unknown');
+    // 409 ALREADY_EXISTS: document was created by a concurrent request — that's fine
+    if (resp.status === 409) {
+      console.warn(`firestoreCreate: ${collection}/${docId} already exists (concurrent create), continuing`);
+      return true;
+    }
     console.error(`firestoreCreate failed (${collection}/${docId}): ${resp.status} ${errText}`);
     throw new Error(`Firestore create failed: ${resp.status} ${errText.slice(0, 200)}`);
   }

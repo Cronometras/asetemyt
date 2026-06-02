@@ -17,16 +17,22 @@ export const GET: APIRoute = async ({ request, locals }) => {
       firestoreQuery(env, 'subscriptions_asetemyt', 'uid', 'EQUAL', { stringValue: user.user_id }),
     ]);
 
-    // Auto-create user doc if missing
+    // Auto-create user doc if missing (race-condition safe: firestoreCreate handles 409)
     if (!userDoc) {
-      await firestoreCreate(env, 'users_asetemyt', user.user_id, {
-        uid: { stringValue: user.user_id },
-        email: { stringValue: user.email || '' },
-        nombre: { stringValue: '' },
-        createdAt: { timestampValue: new Date().toISOString() },
-        stripeCustomerId: { stringValue: '' },
-        fichasReclamadas: { arrayValue: { values: [] } },
-      });
+      try {
+        await firestoreCreate(env, 'users_asetemyt', user.user_id, {
+          uid: { stringValue: user.user_id },
+          email: { stringValue: user.email || '' },
+          nombre: { stringValue: '' },
+          createdAt: { timestampValue: new Date().toISOString() },
+          stripeCustomerId: { stringValue: '' },
+          fichasReclamadas: { arrayValue: { values: [] } },
+        });
+        userDoc = { fichasReclamadas: [] };
+      } catch (e: any) {
+        console.warn('Auto-create user doc failed (non-fatal):', e.message);
+        // Continue without user doc — fichas will be looked up by ownerUid/email fallback
+      }
     }
 
     const fichasReclamadas: string[] = (userDoc?.fichasReclamadas || []);
