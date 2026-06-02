@@ -104,12 +104,19 @@ import Layout from '../layouts/Layout.astro';
     trialing: { label: 'Periodo de prueba', color: 'bg-blue-100 text-blue-700' },
   };
 
+  let authResolved = false;
+
   onAuthStateChanged(auth, async (user) => {
-    loading.classList.add('hidden');
+    // Firebase fires null on first tick while restoring session — ignore it
     if (!user) {
-      notAuth.classList.remove('hidden');
+      if (authResolved) {
+        loading.classList.add('hidden');
+        notAuth.classList.remove('hidden');
+      }
       return;
     }
+    authResolved = true;
+    loading.classList.add('hidden');
 
     userName.textContent = user.displayName || user.email || 'Usuario';
 

@@ -78,8 +78,15 @@ import Layout from '../../layouts/Layout.astro';
       subs: 'violet',
     };
 
+    let authResolved = false;
+
     onAuthStateChanged(auth, async (user) => {
-      if (!user) return showNotAuth();
+      // Firebase fires null on first tick while restoring session — ignore it
+      if (!user) {
+        if (authResolved) showNotAuth(); // only show error if auth already resolved to null
+        return;
+      }
+      authResolved = true;
 
       try {
         const res = await authFetch('/api/admin/stats');
@@ -94,11 +101,13 @@ import Layout from '../../layouts/Layout.astro';
 
     function showNotAuth() {
       document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('adminPanel')!.classList.add('hidden');
       document.getElementById('notAuth')!.classList.remove('hidden');
     }
 
     function showDashboard(data: any) {
       document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('notAuth')!.classList.add('hidden');
       document.getElementById('adminPanel')!.classList.remove('hidden');
       document.getElementById('lastUpdated')!.textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
