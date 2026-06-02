@@ -1,0 +1,83 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Estado del Sistema" description="Monitor de conectividad de servicios.">
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div id="loading" class="text-center py-20">
+      <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-steel-500 mt-4">Verificando servicios...</p>
+    </div>
+
+    <div id="notAuth" class="hidden text-center py-20">
+      <h2 class="text-2xl font-bold text-primary-900 mb-2">Acceso denegado</h2>
+      <a href="/login" class="inline-block mt-4 text-accent-600 font-semibold">Iniciar sesión →</a>
+    </div>
+
+    <div id="statusPanel" class="hidden">
+      <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-extrabold text-primary-900">Estado del Sistema</h1>
+        <a href="/admin" class="text-sm text-accent-600 hover:text-accent-700 font-semibold">← Panel</a>
+      </div>
+
+      <div id="overallStatus" class="mb-8"></div>
+      <div id="serviceCards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"></div>
+      <div id="envVars" class="bg-white rounded-xl shadow-md p-6 border border-steel-100"></div>
+    </div>
+  </section>
+
+  <script>
+    import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return showNotAuth();
+      try {
+        const res = await authFetch('/api/admin/system-status');
+        if (!res.ok) return showNotAuth();
+        render(await res.json());
+      } catch { showNotAuth(); }
+    });
+
+    function showNotAuth() {
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('notAuth')!.classList.remove('hidden');
+    }
+
+    function render(d: any) {
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('statusPanel')!.classList.remove('hidden');
+
+      document.getElementById('overallStatus')!.innerHTML = d.status === 'healthy'
+        ? '<div class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3"><div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div><span class="font-bold text-green-800">Todos los servicios operativos</span><span class="text-green-600 text-sm ml-auto">' + new Date(d.timestamp).toLocaleTimeString('es-ES') + '</span></div>'
+        : '<div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3"><div class="w-3 h-3 bg-red-500 rounded-full"></div><span class="font-bold text-red-800">Servicios degradados</span></div>';
+
+      const icons: Record<string, string> = {
+        firestore: '🗄️', stripe: '💳', resend: '📧'
+      };
+      document.getElementById('serviceCards')!.innerHTML = Object.entries(d.services).map(([name, s]: [string, any]) => `
+        <div class="bg-white rounded-xl shadow-md p-5 border ${s.ok ? 'border-green-300' : 'border-red-300'}">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-2xl">${icons[name] || '🔌'}</span>
+            <span class="text-xs font-bold ${s.ok ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'} px-2 py-0.5 rounded-full">${s.ok ? 'OK' : 'FAIL'}</span>
+          </div>
+          <h3 class="font-bold text-primary-800 capitalize">${name}</h3>
+          <p class="text-sm text-steel-500">${s.detail}</p>
+          <p class="text-xs text-steel-400 mt-1">${s.ms}ms</p>
+        </div>
+      `).join('');
+
+      document.getElementById('envVars')!.innerHTML = `
+        <h2 class="text-lg font-bold text-primary-800 mb-3">Variables de Entorno</h2>
+        <div class="grid grid-cols-2 gap-2">
+          ${Object.entries(d.envVars).map(([k, v]: [string, any]) => `
+            <div class="flex items-center gap-2 text-sm">
+              <div class="w-2 h-2 rounded-full ${v ? 'bg-green-500' : 'bg-red-500'}"></div>
+              <span class="text-steel-700 font-medium">${k}</span>
+              <span class="text-steel-400 ml-auto">${v ? '✓' : '✗'}</span>
+            </div>
+          `).join('')}
+        </div>`;
+    }
+  </script>
+</Layout>

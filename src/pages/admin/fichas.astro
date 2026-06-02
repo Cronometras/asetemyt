@@ -28,9 +28,9 @@ import Layout from '../../layouts/Layout.astro';
         </div>
         <div class="flex flex-wrap gap-3">
           <a href="/admin" class="text-sm text-accent-600 font-medium hover:text-accent-700">← Admin</a>
-          <button id="btn-create" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm">
-            + Nueva ficha
-          </button>
+          <button id="btn-csv" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-4 py-2 rounded-lg transition-colors text-sm">📥 CSV</button>
+          <button id="btn-dupes" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-4 py-2 rounded-lg transition-colors text-sm">🔍 Duplicados</button>
+          <button id="btn-create" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors text-sm">+ Nueva ficha</button>
         </div>
       </div>
 
@@ -510,6 +510,43 @@ import Layout from '../../layouts/Layout.astro';
           btn.disabled = false;
           btn.textContent = 'Guardar';
         }
+      });
+      // CSV Export
+      document.getElementById('btn-csv')!.addEventListener('click', () => {
+        if (!allFichas.length) return alert('No hay fichas para exportar.');
+        var hdrs = ['nombre','tipo','slug','especialidades','pais','ciudad','email','telefono','web','linkedin','verificado','seccion'];
+        var rows = allFichas.map(function(f) {
+          return hdrs.map(function(h) {
+            if (h === 'especialidades') return (f.especialidades || []).join('; ');
+            if (h === 'pais') return (f.ubicacion && f.ubicacion.pais) || '';
+            if (h === 'ciudad') return (f.ubicacion && f.ubicacion.ciudad) || '';
+            if (h === 'email') return (f.contacto && f.contacto.email) || '';
+            if (h === 'telefono') return (f.contacto && f.contacto.telefono) || '';
+            if (h === 'web') return (f.contacto && f.contacto.web) || '';
+            if (h === 'linkedin') return (f.contacto && f.contacto.linkedin) || '';
+            return f[h] || '';
+          });
+        });
+        var csvLines = [hdrs.join(',')];
+        rows.forEach(function(r) { csvLines.push(r.map(function(c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(',')); });
+        var csv = '\uFEFF' + csvLines.join('\n');
+        var blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'asetemyt-directorio.csv'; a.click();
+      });
+
+      // Duplicate detection
+      document.getElementById('btn-dupes')!.addEventListener('click', async () => {
+        var btn = document.getElementById('btn-dupes') as HTMLButtonElement;
+        btn.textContent = 'Buscando...'; btn.disabled = true;
+        try {
+          var res = await authFetch('/api/admin/duplicates');
+          var data = await res.json();
+          if (!data.duplicates || !data.duplicates.length) { alert('No se encontraron duplicados en ' + data.totalScanned + ' fichas.'); return; }
+          var msg = 'Posibles duplicados (' + data.duplicates.length + '):\n\n';
+          data.duplicates.forEach(function(d: any) { msg += '[' + d.type + '] ' + d.a.nombre + ' vs ' + d.b.nombre + '\n  ' + d.a.slug + ' | ' + d.b.slug + '\n\n'; });
+          alert(msg);
+        } catch(e) { alert('Error al detectar duplicados.'); }
+        finally { btn.textContent = '🔍 Duplicados'; btn.disabled = false; }
       });
     })();
   </script>
