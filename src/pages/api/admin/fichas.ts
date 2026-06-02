@@ -66,10 +66,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const collection = seccion === 'software' ? COLLECTION_SOFTWARE : COLLECTION_CONSULTORES;
 
+    // Ensure seccion is always set (required for correct stats on home page)
+    const resolvedSeccion = seccion === 'software' ? 'software' : 'consultores';
+
     const data = {
       nombre: nombre.trim(),
       slug: slug.trim().toLowerCase(),
       tipo: tipo || 'consultor',
+      seccion: resolvedSeccion,
       especialidades: especialidades || [],
       descripcion: descripcion || '',
       servicios: servicios || [],

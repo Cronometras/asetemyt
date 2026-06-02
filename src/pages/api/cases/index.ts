@@ -1,14 +1,9 @@
 import type { APIRoute } from 'astro';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { firestoreQuery, firestoreCreate, findListingBySlug } from '../../../lib/firestore-rest';
 
-if (!getApps().length) {
-  const sa = JSON.parse(process.env.FIREBASE_SA || '{}');
-  initializeApp({ credential: cert(sa) });
-}
-const adminDb = getFirestore();
+export const POST: APIRoute = async ({ request, locals }) => {
+  const env = (locals as any).runtime?.env || {};
 
-export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
     const { slug, title, description, results, industry, method, authorUid } = body;
@@ -18,33 +13,28 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Verify the entry exists and is verified
-    const [consultSnap, softSnap] = await Promise.all([
-      adminDb.collection('directorio_consultores_asetemyt').where('slug', '==', slug).limit(1).get(),
-      adminDb.collection('directorio_software_asetemyt').where('slug', '==', slug).limit(1).get(),
-    ]);
-
-    const doc = !consultSnap.empty ? consultSnap.docs[0] : !softSnap.empty ? softSnap.docs[0] : null;
-    if (!doc) {
+    const found = await findListingBySlug(env, slug);
+    if (!found) {
       return new Response(JSON.stringify({ error: 'Ficha no encontrada.' }), { status: 404 });
     }
 
-    if (!doc.data().verificado) {
+    if (!found.listing.verificado) {
       return new Response(JSON.stringify({ error: 'Solo fichas verificadas pueden publicar casos de estudio.' }), { status: 403 });
     }
 
-    const caseStudy = {
-      slug,
-      title: title.trim().substring(0, 200),
-      description: description.trim().substring(0, 2000),
-      results: (results || '').trim().substring(0, 1000),
-      industry: (industry || '').trim().substring(0, 100),
-      method: (method || '').trim().substring(0, 100),
-      authorUid: authorUid || null,
-      status: 'published',
-      createdAt: new Date().toISOString(),
-    };
+    const docId = `${slug}_${Date.now()}`;
 
-    await adminDb.collection('casos_estudio_asetemyt').add(caseStudy);
+    await firestoreCreate(env, 'casos_estudio_asetemyt', docId, {
+      slug: { stringValue: slug },
+      title: { stringValue: title.trim().substring(0, 200) },
+      description: { stringValue: description.trim().substring(0, 2000) },
+      results: { stringValue: (results || '').trim().substring(0, 1000) },
+      industry: { stringValue: (industry || '').trim().substring(0, 100) },
+      method: { stringValue: (method || '').trim().substring(0, 100) },
+      authorUid: { stringValue: authorUid || '' },
+      status: { stringValue: 'published' },
+      createdAt: { timestampValue: new Date().toISOString() },
+    });
 
     return new Response(JSON.stringify({ success: true, message: 'Caso de estudio publicado.' }), { status: 201 });
   } catch (err: any) {
@@ -53,21 +43,22 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
+  const env = (locals as any).runtime?.env || {};
+
   try {
     const slug = url.searchParams.get('slug');
     if (!slug) {
       return new Response(JSON.stringify({ error: 'slug requerido.' }), { status: 400 });
     }
 
-    const snap = await adminDb.collection('casos_estudio_asetemyt')
-      .where('slug', '==', slug)
-      .where('status', '==', 'published')
-      .orderBy('createdAt', 'desc')
-      .limit(10)
-      .get();
+    // Query by slug, filter by status and sort in-memory (avoids composite index)
+    const allDocs = await firestoreQuery(env, 'casos_estudio_asetemyt', 'slug', 'EQUAL', { stringValue: slug });
+    const cases = allDocs
+      .filter((c: any) => c.status === 'published')
+      .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+      .slice(0, 10);
 
-    const cases = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     return new Response(JSON.stringify({ cases }), { status: 200 });
   } catch (err: any) {
     console.error('Cases fetch error:', err);

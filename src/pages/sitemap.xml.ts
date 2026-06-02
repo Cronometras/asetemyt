@@ -1,7 +1,5 @@
 import type { APIRoute } from 'astro';
- import { getDirectoryEntries } from '../lib/firebase';
-  import { readFileSync } from 'fs';
-  import { join } from 'path';
+import { getDirectoryEntries } from '../lib/firebase';
 
 export const GET: APIRoute = async () => {
   let entries: any[] = [];
@@ -62,16 +60,18 @@ export const GET: APIRoute = async () => {
     }
   }
 
-  // Glossary pages
+  // Glossary pages — fetch from public URL (Cloudflare Workers compatible)
   let glossaryPages: any[] = [];
   try {
-    const glossaryData = readFileSync(join(process.cwd(), 'public', 'data', 'glossary.json'), 'utf-8');
-    const glossaryTerms = JSON.parse(glossaryData);
-    glossaryPages = glossaryTerms.map((t: any) => ({
-      url: `/glosario/${t.slug}`,
-      priority: '0.6',
-      changefreq: 'monthly',
-    }));
+    const glossaryResp = await fetch('https://asetemyt.com/data/glossary.json');
+    if (glossaryResp.ok) {
+      const glossaryTerms = await glossaryResp.json();
+      glossaryPages = glossaryTerms.map((t: any) => ({
+        url: `/glosario/${t.slug}`,
+        priority: '0.6',
+        changefreq: 'monthly',
+      }));
+    }
   } catch {}
 
   const allPages = [...staticPages, ...directoryPages, ...landingPages, ...glossaryPages];

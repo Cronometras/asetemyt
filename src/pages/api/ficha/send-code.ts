@@ -56,11 +56,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // Store in Firestore — delete any previous code for this email first
   const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
   try {
-    const existing = await firestoreQuery(env, 'verification_codes_asetemyt', 'email', 'EQUAL', email);
+    const existing = await firestoreQuery(env, 'verification_codes_asetemyt', 'email', 'EQUAL', { stringValue: email });
     for (const d of existing) {
-      if (d.name) {
-        const id = d.name.split('/').pop();
-        await firestoreDelete(env, 'verification_codes_asetemyt', id);
+      if (d.id) {
+        await firestoreDelete(env, 'verification_codes_asetemyt', d.id);
       }
     }
   } catch (_) { /* ignore cleanup errors */ }

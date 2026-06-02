@@ -4,22 +4,18 @@ import {
   getFirestore,
   collection,
   getDocs,
-  getDoc,
-  doc,
-  addDoc,
   query,
-  where,
   orderBy,
-  limit,
 } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || 'AIzaSyCVYS2LxwErdPuotup7fC5_qM8p2mXkcK0',
-  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || 'asetemyt-ec205.firebaseapp.com',
-  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || 'asetemyt-ec205',
-  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || 'asetemyt-ec205.firebasestorage.app',
-  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '267270254597',
-  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || '1:267270254597:web:aa61aef2c4c9ee77d26c6c',
+  // All values injected via PUBLIC_ env vars at build time (Cloudflare Pages / Astro)
+  apiKey: import.meta.env.PUBLIC_FIREBASE_API_KEY || '',
+  authDomain: import.meta.env.PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+  projectId: import.meta.env.PUBLIC_FIREBASE_PROJECT_ID || '',
+  storageBucket: import.meta.env.PUBLIC_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: import.meta.env.PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: import.meta.env.PUBLIC_FIREBASE_APP_ID || '',
 };
 
 export const app = initializeApp(firebaseConfig);
@@ -29,7 +25,6 @@ export const db = getFirestore(app);
 export const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
 export const COLLECTION_SOFTWARE = 'directorio_software_asetemyt';
 export const PENDING_CONSULTORES = 'pending_consultores_asetemyt';
-export const PENDING_SOFTWARE = 'pending_software_asetemyt';
 
 // --- i18n ---
 
@@ -44,7 +39,7 @@ export const translations = {
     totalEntries: 'Total Fichas',
     companies: 'Empresas',
     consultants: 'Consultores',
-    freelancers: 'Freelancers',
+    freelancers: 'Consultores',
     specialties: 'Especialidades',
     latestArticles: 'Últimos Artículos',
     viewAll: 'Ver todos',
@@ -64,7 +59,7 @@ export const translations = {
     noLocation: 'Sin ubicación',
     noType: 'Sin tipo',
     directoryTitle: 'Directorio de Cronometraje Industrial',
-    directoryDesc: 'Consultores, empresas y freelancers especializados en ingeniería de métodos y tiempos.',
+    directoryDesc: 'Consultores y empresas especializados en ingeniería de métodos y tiempos.',
     heroTitle1: 'Cronometraje Industrial',
     heroTitle2: 'y Métodos y Tiempos',
     heroDesc: 'Encuentra técnicos, consultores y empresas especializadas en ingeniería de métodos, cronometraje industrial, análisis de tiempos y optimización de procesos productivos.',
@@ -79,7 +74,7 @@ export const translations = {
     selectType: 'Seleccionar tipo',
     empresa: 'Empresa',
     consultor: 'Consultor',
-    freelancer: 'Freelancer',
+    freelancer: 'Consultor',
     specialtiesRequired: 'Especialidades',
     description: 'Descripción',
     descriptionPlaceholder: 'Describe tu empresa, experiencia y servicios principales...',
@@ -102,10 +97,6 @@ export const translations = {
     errorMsg: 'Error al enviar',
     ctaTitle: '¿Eres especialista en cronometraje?',
     ctaDesc: 'Añade tu perfil o empresa al directorio y conecta con empresas que buscan tus servicios.',
-    // Tipo labels
-    empresa: 'Empresa',
-    consultor: 'Consultor',
-    freelancer: 'Freelancer',
     sinTipo: 'Sin tipo',
     // Especialidades labels
     cronometraje: 'Cronometraje',
@@ -177,7 +168,6 @@ export const translations = {
     servicesLabel: 'Servicios',
     locationLabel: 'Ubicación',
     contactLabel: 'Contacto',
-    linkedin: 'LinkedIn',
     ownerQuestion: '¿Eres el propietario de esta ficha?',
     ownerDesc: 'Verifícala para editar los datos y mostrar el badge de confianza. 50€/año.',
     claimFicha: 'Reclamar esta ficha →',
@@ -200,7 +190,7 @@ export const translations = {
     totalEntries: 'Total Entries',
     companies: 'Companies',
     consultants: 'Consultants',
-    freelancers: 'Freelancers',
+    freelancers: 'Consultores',
     specialties: 'Specialties',
     latestArticles: 'Latest Articles',
     viewAll: 'View all',
@@ -220,7 +210,7 @@ export const translations = {
     noLocation: 'No location',
     noType: 'No type',
     directoryTitle: 'Industrial Time Study Directory',
-    directoryDesc: 'Consultants, companies and freelancers specialized in methods and time engineering.',
+    directoryDesc: 'Consultants and companies specialized in methods and time engineering.',
     heroTitle1: 'Industrial Time Study',
     heroTitle2: '& Methods Engineering',
     heroDesc: 'Find technicians, consultants and companies specialized in methods engineering, industrial time study, time analysis and production process optimization.',
@@ -235,7 +225,7 @@ export const translations = {
     selectType: 'Select type',
     empresa: 'Company',
     consultor: 'Consultant',
-    freelancer: 'Freelancer',
+    freelancer: 'Consultant',
     specialtiesRequired: 'Specialties',
     description: 'Description',
     descriptionPlaceholder: 'Describe your company, experience and main services...',
@@ -258,10 +248,6 @@ export const translations = {
     errorMsg: 'Error submitting',
     ctaTitle: 'Are you a time study specialist?',
     ctaDesc: 'Add your profile or company to the directory and connect with companies looking for your services.',
-    // Tipo labels
-    empresa: 'Company',
-    consultor: 'Consultant',
-    freelancer: 'Freelancer',
     sinTipo: 'No type',
     // Especialidades labels
     cronometraje: 'Time Study',
@@ -333,7 +319,6 @@ export const translations = {
     servicesLabel: 'Services',
     locationLabel: 'Location',
     contactLabel: 'Contact',
-    linkedin: 'LinkedIn',
     ownerQuestion: 'Are you the owner of this listing?',
     ownerDesc: 'Verify it to edit data and show the trust badge. €50/year.',
     claimFicha: 'Claim this listing →',
@@ -363,36 +348,6 @@ export function getLang(): Lang {
 export function t(key: string, lang?: Lang): string {
   const l = lang || getLang();
   return (translations[l] as any)?.[key] || (translations.es as any)?.[key] || key;
-}
-
-// --- Articles ---
-
-export async function getArticles(maxResults = 50, lang?: string) {
-  let qRef: any = query(
-    collection(db, 'articulos_asetemyt'),
-    where('status', '==', 'published'),
-    orderBy('publishedAt', 'desc'),
-    limit(maxResults)
-  );
-  const snapshot = await getDocs(qRef);
-  let articles = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
-  if (lang) {
-    articles = articles.filter((a) => !a.lang || a.lang === lang);
-  }
-  return articles;
-}
-
-export async function getArticleBySlug(slug: string) {
-  const q = query(
-    collection(db, 'articulos_asetemyt'),
-    where('slug', '==', slug),
-    where('status', '==', 'published'),
-    limit(1)
-  );
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) return null;
-  const d = snapshot.docs[0];
-  return { id: d.id, ...d.data() } as any;
 }
 
 // --- Directory (split: consultores + software) ---
@@ -468,58 +423,4 @@ export async function getDirectoryEntries(filters?: {
     getSoftwareEntries(filters),
   ]);
   return [...consultores, ...software];
-}
-
-export async function getDirectoryStats() {
-  const [consultoresSnap, softwareSnap] = await Promise.all([
-    getDocs(collection(db, COLLECTION_CONSULTORES)),
-    getDocs(collection(db, COLLECTION_SOFTWARE)),
-  ]);
-  const allEntries = [
-    ...consultoresSnap.docs.map((d) => d.data()),
-    ...softwareSnap.docs.map((d) => d.data()),
-  ];
-  return {
-    total: allEntries.length,
-    empresas: allEntries.filter((e) => e.tipo === 'empresa').length,
-    consultores: allEntries.filter((e) => e.tipo === 'consultor').length,
-    software: allEntries.filter((e) => e.seccion === 'software').length,
-  };
-}
-
-export async function getDirectoryEntryBySlug(slug: string) {
-  // Search both collections in parallel
-  const [consultoresSnap, softwareSnap] = await Promise.all([
-    getDocs(query(collection(db, COLLECTION_CONSULTORES), where('slug', '==', slug), limit(1))),
-    getDocs(query(collection(db, COLLECTION_SOFTWARE), where('slug', '==', slug), limit(1))),
-  ]);
-  if (!consultoresSnap.empty) {
-    const d = consultoresSnap.docs[0];
-    return { id: d.id, ...d.data(), _collection: COLLECTION_CONSULTORES } as any;
-  }
-  if (!softwareSnap.empty) {
-    const d = softwareSnap.docs[0];
-    return { id: d.id, ...d.data(), _collection: COLLECTION_SOFTWARE } as any;
-  }
-  return null;
-}
-
-/** Returns the correct directory collection for a seccion value */
-export function getCollectionForSeccion(seccion?: string): string {
-  return seccion === 'software' ? COLLECTION_SOFTWARE : COLLECTION_CONSULTORES;
-}
-
-/** Returns the correct pending collection for a seccion value */
-export function getPendingCollectionForSeccion(seccion?: string): string {
-  return seccion === 'software' ? PENDING_SOFTWARE : PENDING_CONSULTORES;
-}
-
-/** Add a pending entry to the correct pending collection */
-export async function addPendingEntry(data: any) {
-  const pendingCol = getPendingCollectionForSeccion(data.seccion);
-  return addDoc(collection(db, pendingCol), {
-    ...data,
-    createdAt: new Date(),
-    verificado: false,
-  });
 }

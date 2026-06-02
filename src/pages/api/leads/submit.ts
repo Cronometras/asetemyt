@@ -1,14 +1,14 @@
 import type { APIRoute } from 'astro';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { firestoreQuery, firestoreCreate, findListingBySlug } from '../../../lib/firestore-rest';
 
-if (!getApps().length) {
-  const sa = JSON.parse(process.env.FIREBASE_SA || '{}');
-  initializeApp({ credential: cert(sa) });
+/** Remove HTML tags from a string to prevent XSS */
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]*>/g, '');
 }
-const adminDb = getFirestore();
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
+  const env = (locals as any).runtime?.env || {};
+
   try {
     const body = await request.json();
     const { slug, targetName, contactName, contactEmail, contactPhone, company, serviceNeeded, message } = body;
@@ -18,45 +18,38 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // Verify the target entry exists
-    const [consultSnap, softSnap] = await Promise.all([
-      adminDb.collection('directorio_consultores_asetemyt').where('slug', '==', slug).limit(1).get(),
-      adminDb.collection('directorio_software_asetemyt').where('slug', '==', slug).limit(1).get(),
-    ]);
-
-    if (consultSnap.empty && softSnap.empty) {
+    const found = await findListingBySlug(env, slug);
+    if (!found) {
       return new Response(JSON.stringify({ error: 'Ficha no encontrada.' }), { status: 404 });
     }
 
     // Rate limit: max 5 requests per IP per hour
     const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
     const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
-    const recentLeads = await adminDb.collection('leads_asetemyt')
-      .where('ip', '==', ip)
-      .where('createdAt', '>', oneHourAgo)
-      .get();
 
-    if (recentLeads.size >= 5) {
+    const recentLeads = await firestoreQuery(env, 'leads_asetemyt', 'ip', 'EQUAL', { stringValue: ip });
+    const recentInWindow = recentLeads.filter((l: any) => l.createdAt > oneHourAgo);
+
+    if (recentInWindow.length >= 5) {
       return new Response(JSON.stringify({ error: 'Demasiadas solicitudes. Inténtalo más tarde.' }), { status: 429 });
     }
 
-    // Save lead
-    const lead = {
-      slug,
-      targetName: targetName || slug,
-      contactName: contactName.trim().substring(0, 100),
-      contactEmail: contactEmail.toLowerCase().trim().substring(0, 200),
-      contactPhone: (contactPhone || '').trim().substring(0, 30),
-      company: (company || '').trim().substring(0, 200),
-      serviceNeeded: (serviceNeeded || '').trim().substring(0, 300),
-      message: (message || '').trim().substring(0, 2000),
-      status: 'new', // new | sent | contacted | closed
-      ip,
-      createdAt: new Date().toISOString(),
-    };
+    // Save lead — strip HTML from all text fields
+    const docId = `${slug}_${Date.now()}`;
 
-    await adminDb.collection('leads_asetemyt').add(lead);
-
-    // TODO: Send notification email to the entry owner if they have email on file
+    await firestoreCreate(env, 'leads_asetemyt', docId, {
+      slug: { stringValue: slug },
+      targetName: { stringValue: stripHtml(targetName || slug) },
+      contactName: { stringValue: stripHtml(contactName.trim().substring(0, 100)) },
+      contactEmail: { stringValue: contactEmail.toLowerCase().trim().substring(0, 200) },
+      contactPhone: { stringValue: stripHtml((contactPhone || '').trim().substring(0, 30)) },
+      company: { stringValue: stripHtml((company || '').trim().substring(0, 200)) },
+      serviceNeeded: { stringValue: stripHtml((serviceNeeded || '').trim().substring(0, 300)) },
+      message: { stringValue: stripHtml((message || '').trim().substring(0, 2000)) },
+      status: { stringValue: 'new' },
+      ip: { stringValue: ip },
+      createdAt: { timestampValue: new Date().toISOString() },
+    });
 
     return new Response(JSON.stringify({
       success: true,

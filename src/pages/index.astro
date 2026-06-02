@@ -327,7 +327,7 @@
                   }
                   <div class="min-w-0">
                     <h3 class="font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">${entry.nombre || 'Sin nombre'}</h3>
-                    <span class="text-xs font-medium text-accent-600 uppercase">${entry.tipo === 'empresa' ? (lang === 'es' ? 'Empresa' : 'Company') : entry.tipo === 'consultor' ? (lang === 'es' ? 'Consultor' : 'Consultant') : (lang === 'es' ? 'Freelancer' : 'Freelancer')}</span>
+                    <span class="text-xs font-medium text-accent-600 uppercase">${entry.tipo === 'empresa' ? (lang === 'es' ? 'Empresa' : 'Company') : (lang === 'es' ? 'Consultor' : 'Consultant')}</span>
                     ${entry.ubicacion?.pais ? `<p class="text-sm text-steel-500 mt-1">📍 ${entry.ubicacion.ciudad ? entry.ubicacion.ciudad + ', ' : ''}${entry.ubicacion.pais}</p>` : ''}
                   </div>
                 </div>

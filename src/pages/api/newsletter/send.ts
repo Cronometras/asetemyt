@@ -172,32 +172,38 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let sent = 0;
     let errors = 0;
 
-    for (const sub of subscribers) {
-      try {
-        const resp = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'ASETEMYT Newsletter <newsletter@asetemyt.com>',
-            to: [sub.email],
-            subject: `📊 ASETEMYT — Reporte mensual ${monthName}`,
-            html: htmlContent,
-          }),
-        });
+    // Send in parallel batches of 10 to avoid Worker timeout
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < subscribers.length; i += BATCH_SIZE) {
+      const batch = subscribers.slice(i, i + BATCH_SIZE);
+      const results = await Promise.allSettled(
+        batch.map(async (sub) => {
+          const resp = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${resendKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from: 'ASETEMYT Newsletter <newsletter@asetemyt.com>',
+              to: [sub.email],
+              subject: `📊 ASETEMYT — Reporte mensual ${monthName}`,
+              html: htmlContent,
+            }),
+          });
+          if (!resp.ok) {
+            const errData = await resp.text();
+            throw new Error(`HTTP ${resp.status}: ${errData.slice(0, 200)}`);
+          }
+        })
+      );
 
-        if (resp.ok) {
-          sent++;
-        } else {
-          const errData = await resp.text();
-          console.error(`Error sending to ${sub.email}:`, errData);
+      for (const result of results) {
+        if (result.status === 'fulfilled') sent++;
+        else {
+          console.error(`Error sending to subscriber:`, result.reason?.message || result.reason);
           errors++;
         }
-      } catch (err) {
-        console.error(`Error sending to ${sub.email}:`, err);
-        errors++;
       }
     }
 

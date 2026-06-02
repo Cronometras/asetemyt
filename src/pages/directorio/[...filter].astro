@@ -108,7 +108,7 @@ if (type === 'country') {
   const countryName = capitalize(value);
   title = `Consultores de Cronometraje en ${countryName}`;
   h1 = `Profesionales del Cronometraje Industrial en ${countryName}`;
-  description = `Encuentra consultores, empresas y freelancers especializados en cronometraje industrial, MTM, MOST y Lean Manufacturing en ${countryName}.`;
+  description = `Encuentra consultores y empresas especializados en cronometraje industrial, MTM, MOST y Lean Manufacturing en ${countryName}.`;
   breadcrumbs.push({ name: countryName, url: `/directorio/pais/${value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}` });
 } else if (type === 'specialty') {
   const espName = espLabels[value] || capitalize(value);
@@ -130,7 +130,6 @@ if (type === 'country') {
 const tipoColors: Record<string, string> = {
   empresa: 'bg-blue-100 text-blue-700',
   consultor: 'bg-green-100 text-green-700',
-  freelance: 'bg-purple-100 text-purple-700',
 };
 ---
 
@@ -188,7 +187,7 @@ const tipoColors: Record<string, string> = {
               <div class="flex-1 min-w-0">
                 <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">{entry.nombre}</h3>
                 <span class={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1 ${tipoColors[entry.tipo] || 'bg-steel-100 text-steel-600'}`}>
-                  {entry.tipo === 'empresa' ? 'Empresa' : entry.tipo === 'consultor' ? 'Consultor' : 'Freelancer'}
+                  {entry.tipo === 'empresa' ? 'Empresa' : 'Consultor'}
                 </span>
               </div>
             </div>

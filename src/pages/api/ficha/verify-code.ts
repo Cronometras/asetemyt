@@ -2,7 +2,7 @@
 // Now supports coupon codes: free coupons skip Stripe, discount/trial modify the session
 
 import type { APIRoute } from 'astro';
-import { firestoreGet, firestoreDelete, firestoreCreate, firestoreUpdate, getAccessToken } from '../../../lib/firestore-rest';
+import { firestoreGet, firestoreDelete, firestoreUpdate, findListingBySlug } from '../../../lib/firestore-rest';
 import { getStripe } from '../../../lib/stripe-server';
 import { validateCoupon, incrementCouponUsage } from '../../../lib/coupons';
 
@@ -38,16 +38,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   // Increment attempts
-  const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
-  const token = await getAccessToken(env);
-  await fetch(
-    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/verification_codes_asetemyt/${docId}?updateMask.fieldPaths=attempts`,
-    {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: { attempts: { integerValue: String(attempts + 1) } } }),
-    }
-  );
+  await firestoreUpdate(env, 'verification_codes_asetemyt', docId, {
+    attempts: { integerValue: String(attempts + 1) },
+  });
 
   // Check expiration
   const expiresAt = new Date(doc.expiresAt);
@@ -76,31 +69,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // FREE coupon → skip Stripe entirely, verify directly
   if (couponData?.type === 'free') {
-    // Find the listing and mark as verified
-    const listing = await findListingBySlug(env, doc.slug);
-    if (listing) {
-      const listingId = listing.name?.split('/').pop();
-      const collection = listing.name?.includes('consultores') 
-        ? 'directorio_consultores_asetemyt' 
-        : 'directorio_software_asetemyt';
-      
-      await fetch(
-        `https://firestore.googleapis.com/v1/${listing.name}?updateMask.fieldPaths=verificado&updateMask.fieldPaths=ownerEmail&updateMask.fieldPaths=ownerUid&updateMask.fieldPaths=verifiedAt&updateMask.fieldPaths=verificationType`,
-        {
-          method: 'PATCH',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fields: {
-              verificado: { booleanValue: true },
-              ownerEmail: { stringValue: doc.email },
-              ownerUid: { stringValue: doc.uid || '' },
-              verifiedAt: { timestampValue: new Date().toISOString() },
-              verificationType: { stringValue: 'coupon_free' },
-              couponUsed: { stringValue: couponData.code },
-            },
-          }),
-        }
-      );
+    // Find the listing and mark as verified using the shared helper
+    const found = await findListingBySlug(env, doc.slug);
+    if (found) {
+      await firestoreUpdate(env, found.collection, found.listing.id, {
+        verificado: { booleanValue: true },
+        ownerEmail: { stringValue: doc.email },
+        ownerUid: { stringValue: doc.uid || '' },
+        verifiedAt: { timestampValue: new Date().toISOString() },
+        verificationType: { stringValue: 'coupon_free' },
+        couponUsed: { stringValue: couponData.code },
+      });
     }
 
     // Increment coupon usage
@@ -210,35 +189,3 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: 'Error creando sesión de pago: ' + (err.message || 'Error desconocido') }), { status: 500 });
   }
 };
-
-// Helper to find listing by slug in both collections
-async function findListingBySlug(env: any, slug: string): Promise<any> {
-  const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
-  const token = await getAccessToken(env);
-  
-  for (const collection of ['directorio_consultores_asetemyt', 'directorio_software_asetemyt']) {
-    const resp = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`,
-      {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          structuredQuery: {
-            from: [{ collectionId: collection }],
-            where: {
-              fieldFilter: {
-                field: { fieldPath: 'slug' },
-                op: 'EQUAL',
-                value: { stringValue: slug },
-              },
-            },
-            limit: 1,
-          },
-        }),
-      }
-    );
-    const data = await resp.json();
-    if (data[0]?.document) return data[0].document;
-  }
-  return null;
-}

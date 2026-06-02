@@ -18,7 +18,7 @@
 //   createdAt: string (ISO)
 //   createdBy: string (admin email)
 
-import { firestoreQuery, firestoreGet, firestoreUpdate } from './firestore-rest';
+import { firestoreQuery, firestoreGet, firestoreUpdate, toFirestoreValue } from './firestore-rest';
 
 export interface Coupon {
   code: string;
@@ -84,7 +84,7 @@ export async function incrementCouponUsage(env: any, code: string): Promise<void
     if (docId) {
       const current = Number(results[0].usedCount || 0);
       await firestoreUpdate(env, 'cupones_asetemyt', docId, {
-        usedCount: { integerValue: String(current + 1) },
+        usedCount: toFirestoreValue(current + 1),
       });
     }
   }

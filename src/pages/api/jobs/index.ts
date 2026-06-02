@@ -1,14 +1,14 @@
 import type { APIRoute } from 'astro';
-import { getFirestore } from 'firebase-admin/firestore';
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
+import { firestoreListAll, firestoreQuery, firestoreCreate } from '../../../lib/firestore-rest';
 
-if (!getApps().length) {
-  const sa = JSON.parse(process.env.FIREBASE_SA || '{}');
-  initializeApp({ credential: cert(sa) });
+/** Remove HTML tags from a string to prevent XSS */
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]*>/g, '');
 }
-const adminDb = getFirestore();
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
+  const env = (locals as any).runtime?.env || {};
+
   try {
     const body = await request.json();
     const { title, company, location, description, requirements, salary, type, contactEmail, contactUrl } = body;
@@ -17,31 +17,35 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(JSON.stringify({ error: 'Título, empresa, descripción y email son obligatorios.' }), { status: 400 });
     }
 
-    // Rate limit
+    // Rate limit: max 3 jobs per IP per day
     const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
     const oneDayAgo = new Date(Date.now() - 86400000).toISOString();
-    const recent = await adminDb.collection('jobs_asetemyt').where('ip', '==', ip).where('createdAt', '>', oneDayAgo).get();
-    if (recent.size >= 3) {
+
+    const recentFromIp = await firestoreQuery(env, 'jobs_asetemyt', 'ip', 'EQUAL', { stringValue: ip });
+    const recentToday = recentFromIp.filter((j: any) => j.createdAt > oneDayAgo);
+
+    if (recentToday.length >= 3) {
       return new Response(JSON.stringify({ error: 'Máximo 3 ofertas por día.' }), { status: 429 });
     }
 
-    const job = {
-      title: title.trim().substring(0, 200),
-      company: company.trim().substring(0, 200),
-      location: (location || '').trim().substring(0, 200),
-      description: description.trim().substring(0, 3000),
-      requirements: (requirements || '').trim().substring(0, 2000),
-      salary: (salary || '').trim().substring(0, 100),
-      type: type || 'full-time', // full-time, part-time, contract, freelance
-      contactEmail: contactEmail.toLowerCase().trim(),
-      contactUrl: (contactUrl || '').trim(),
-      status: 'active', // active | closed | expired
-      ip,
-      createdAt: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 90 * 86400000).toISOString(), // 90 days
-    };
+    // Save job
+    const docId = `${company.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`;
 
-    await adminDb.collection('jobs_asetemyt').add(job);
+    await firestoreCreate(env, 'jobs_asetemyt', docId, {
+      title: { stringValue: stripHtml(title.trim().substring(0, 200)) },
+      company: { stringValue: stripHtml(company.trim().substring(0, 200)) },
+      location: { stringValue: stripHtml((location || '').trim().substring(0, 200)) },
+      description: { stringValue: stripHtml(description.trim().substring(0, 3000)) },
+      requirements: { stringValue: stripHtml((requirements || '').trim().substring(0, 2000)) },
+      salary: { stringValue: (salary || '').trim().substring(0, 100) },
+      type: { stringValue: type || 'full-time' },
+      contactEmail: { stringValue: contactEmail.toLowerCase().trim() },
+      contactUrl: { stringValue: (contactUrl || '').trim() },
+      status: { stringValue: 'active' },
+      ip: { stringValue: ip },
+      createdAt: { timestampValue: new Date().toISOString() },
+      expiresAt: { timestampValue: new Date(Date.now() + 90 * 86400000).toISOString() },
+    });
 
     return new Response(JSON.stringify({ success: true, message: 'Oferta publicada correctamente.' }), { status: 201 });
   } catch (err: any) {
@@ -50,17 +54,24 @@ export const POST: APIRoute = async ({ request }) => {
   }
 };
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
+  const env = (locals as any).runtime?.env || {};
+
   try {
     const type = url.searchParams.get('type');
     const location = url.searchParams.get('location');
 
-    // Avoid composite index requirement: fetch all, filter in-memory
-    const snap = await adminDb.collection('jobs_asetemyt').orderBy('createdAt', 'desc').limit(100).get();
-    let jobs = snap.docs.map((d: any) => ({ id: d.id, ...d.data() }));
+    // Fetch all jobs, filter and sort in-memory (avoids composite index)
+    const allJobs = await firestoreListAll(env, 'jobs_asetemyt');
 
-    // Filter active only (avoid composite index on status+createdAt)
-    jobs = jobs.filter((j: any) => j.status === 'active');
+    // Filter active only
+    let jobs = allJobs.filter((j: any) => j.status === 'active');
+
+    // Sort by createdAt descending
+    jobs.sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+
+    // Limit to 100
+    jobs = jobs.slice(0, 100);
 
     // Apply optional filters
     if (type) jobs = jobs.filter((j: any) => j.type === type);

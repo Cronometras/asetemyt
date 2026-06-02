@@ -5,16 +5,6 @@ export function getStripe(secretKey: string): Stripe {
   return new Stripe(secretKey, { apiVersion: '2024-12-18.acacia' as any });
 }
 
-// Verify Stripe webhook signature
-export async function verifyStripeWebhook(
-  body: string,
-  signature: string,
-  secret: string
-): Promise<Stripe.Event> {
-  const stripe = getStripe(process.env.STRIPE_SECRET_KEY || '');
-  return stripe.webhooks.constructEvent(body, signature, secret);
-}
-
 // Create a Checkout Session for annual subscription (50€/year + IVA)
 export async function createCheckoutSession(
   stripe: Stripe,
