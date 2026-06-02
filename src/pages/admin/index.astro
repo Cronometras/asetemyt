@@ -10,11 +10,7 @@ import Layout from '../../layouts/Layout.astro';
       <p class="text-steel-500 mt-4">Verificando acceso...</p>
     </div>
 
-    <div id="notAuth" class="hidden text-center py-20">
-      <h2 class="text-2xl font-bold text-primary-900 mb-2">Acceso denegado</h2>
-      <p class="text-steel-500">No tienes permisos de administrador.</p>
-      <a href="/login" class="inline-block mt-4 text-accent-600 font-semibold">Iniciar sesión →</a>
-    </div>
+    <div id="notAuth" class="hidden text-center py-20"></div>
 
     <div id="adminPanel" class="hidden">
       <!-- Header -->
@@ -78,10 +74,25 @@ import Layout from '../../layouts/Layout.astro';
       subs: 'violet',
     };
 
-    // Wait for Firebase auth to resolve (session from IndexedDB) before acting
+    // Wait for Firebase auth to resolve (session from IndexedDB) before acting.
+    // Timeout after 8s as safety net — if authStateReady hangs, show error + retry.
     (async () => {
+      let resolved = false;
+
+      // Safety timeout
+      const timeout = setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          showError('La autenticación está tardando demasiado. Verifica tu conexión.');
+        }
+      }, 8000);
+
       try {
         await auth.authStateReady();
+        if (resolved) return; // timeout already fired
+        resolved = true;
+        clearTimeout(timeout);
+
         const user = auth.currentUser;
         if (!user) return showNotAuth();
 
@@ -91,14 +102,35 @@ import Layout from '../../layouts/Layout.astro';
         const data = await res.json();
         showDashboard(data);
       } catch {
-        showNotAuth();
+        if (!resolved) { resolved = true; clearTimeout(timeout); }
+        showError('Error al conectar con el servidor.');
       }
     })();
+
+    function showError(msg: string) {
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('adminPanel')!.classList.add('hidden');
+      const el = document.getElementById('notAuth')!;
+      el.classList.remove('hidden');
+      el.innerHTML = `
+        <h2 class="text-2xl font-bold text-primary-900 mb-2">⚠️ Error</h2>
+        <p class="text-steel-500 mb-4">${msg}</p>
+        <button onclick="location.reload()" class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-6 py-3 rounded-lg transition-colors">
+          Reintentar
+        </button>
+      `;
+    }
 
     function showNotAuth() {
       document.getElementById('loading')!.classList.add('hidden');
       document.getElementById('adminPanel')!.classList.add('hidden');
-      document.getElementById('notAuth')!.classList.remove('hidden');
+      const el = document.getElementById('notAuth')!;
+      el.classList.remove('hidden');
+      el.innerHTML = `
+        <h2 class="text-2xl font-bold text-primary-900 mb-2">Acceso denegado</h2>
+        <p class="text-steel-500 mb-4">No tienes permisos de administrador.</p>
+        <a href="/login" class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-6 py-3 rounded-lg transition-colors">Iniciar sesión</a>
+      `;
     }
 
     function showDashboard(data: any) {
