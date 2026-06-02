@@ -178,6 +178,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       `Reclamación de ficha: ${found.listing.nombre || slug}`,
       notifyHtml,
     ).catch((err) => console.error('Error notifying ficha email:', err));
+
+    // Notify admin
+    const adminNotifyHtml = `<div style="font-family:Arial,sans-serif;max-width:480px;padding:16px"><h2 style="color:#1a2332">🔔 Nueva solicitud de reclamación</h2><p><strong>Ficha:</strong> ${found.listing.nombre || slug} (/${slug})</p><p><strong>Solicitante:</strong> ${nombre} — ${email}</p>${mensaje ? `<p><strong>Mensaje:</strong> ${mensaje}</p>` : ''}<p style="margin-top:16px"><a href="https://asetemyt.com/admin/claims" style="background:#e8a838;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:700">Gestionar en el panel →</a></p></div>`;
+    sendWithFallback(['info@asetemyt.com'], `🔔 Reclamación: ${found.listing.nombre || slug}`, adminNotifyHtml)
+      .catch(() => {});
   }
 
   return new Response(JSON.stringify({ success: true, message: 'Código enviado' }), { status: 200 });

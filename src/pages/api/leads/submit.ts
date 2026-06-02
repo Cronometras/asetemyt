@@ -37,6 +37,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Save lead — strip HTML from all text fields
     const docId = `${slug}_${Date.now()}`;
 
+    // Fire-and-forget: notify admin via Resend
+    const resendKey = env.RESEND_API_KEY;
+    if (resendKey) {
+      const adminHtml = `<div style="font-family:Arial,sans-serif;max-width:480px;padding:16px"><h2 style="color:#1a2332">📬 Nueva solicitud de presupuesto</h2><p><strong>Ficha:</strong> ${targetName || slug}</p><p><strong>Solicitante:</strong> ${contactName} — ${contactEmail}${contactPhone ? ' — ' + contactPhone : ''}</p>${company ? `<p><strong>Empresa:</strong> ${company}</p>` : ''}${serviceNeeded ? `<p><strong>Servicio:</strong> ${serviceNeeded}</p>` : ''}${message ? `<p style="background:#f9fafb;padding:12px;border-radius:8px;margin-top:8px">${message}</p>` : ''}<p style="margin-top:16px"><a href="https://asetemyt.com/admin/leads" style="background:#e8a838;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:700">Ver en el panel →</a></p></div>`;
+      fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: 'ASETEMYT <noreply@asetemyt.com>', to: ['info@asetemyt.com'], subject: `📬 Lead: ${contactName} - ${targetName || slug}`, html: adminHtml }),
+      }).catch(() => {});
+    }
+
     await firestoreCreate(env, 'leads_asetemyt', docId, {
       slug: { stringValue: slug },
       targetName: { stringValue: stripHtml(targetName || slug) },

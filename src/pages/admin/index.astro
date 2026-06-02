@@ -3,8 +3,8 @@ export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 ---
 
-<Layout title="Admin — Panel de Control" description="Panel de administración de ASETEMYT.">
-  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<Layout title="Admin — Dashboard" description="Panel de administración de ASETEMYT.">
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div id="loading" class="text-center py-20">
       <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
       <p class="text-steel-500 mt-4">Verificando acceso...</p>
@@ -17,32 +17,44 @@ import Layout from '../../layouts/Layout.astro';
     </div>
 
     <div id="adminPanel" class="hidden">
-      <h1 class="text-3xl font-extrabold text-primary-900 mb-8">Panel de Administración</h1>
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-extrabold text-primary-900">Panel de Administración</h1>
+        <span class="text-sm text-steel-500 bg-steel-100 px-3 py-1 rounded-full" id="lastUpdated"></span>
+      </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <a href="/admin/fichas" class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all border border-steel-100 group">
-          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
-            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-          </div>
-          <h2 class="text-lg font-bold text-primary-800 mb-1">Gestión de Fichas</h2>
-          <p class="text-sm text-steel-500">Crear, editar y eliminar fichas del directorio.</p>
-        </a>
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10" id="statsCards"></div>
 
-        <a href="/admin/claims" class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all border border-steel-100 group">
-          <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-amber-200 transition-colors">
-            <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          </div>
-          <h2 class="text-lg font-bold text-primary-800 mb-1">Solicitudes de Verificación</h2>
-          <p class="text-sm text-steel-500">Aprobar o rechazar solicitudes de reclamación de fichas.</p>
-        </a>
+      <!-- Quick Actions + Trend -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-xl shadow-md p-6 border border-steel-100">
+          <h2 class="text-lg font-bold text-primary-800 mb-4">Acciones Rápidas</h2>
+          <div class="space-y-2" id="quickActions"></div>
+        </div>
+        <!-- Monthly Trend -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6 border border-steel-100">
+          <h2 class="text-lg font-bold text-primary-800 mb-4">Fichas Nuevas (últimos 6 meses)</h2>
+          <div id="trendChart" class="flex items-end gap-2 h-40"></div>
+        </div>
+      </div>
 
-        <a href="/admin/newsletter" class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-all border border-steel-100 group">
-          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
-            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+      <!-- Activity + Leads -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-xl shadow-md p-6 border border-steel-100">
+          <h2 class="text-lg font-bold text-primary-800 mb-4">Actividad Reciente</h2>
+          <div id="activityList" class="space-y-3"></div>
+        </div>
+        <!-- Leads Summary -->
+        <div class="bg-white rounded-xl shadow-md p-6 border border-steel-100">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-primary-800">Solicitudes de Presupuesto</h2>
+            <a href="/admin/leads" class="text-sm text-accent-600 hover:text-accent-700 font-semibold">Ver todas →</a>
           </div>
-          <h2 class="text-lg font-bold text-primary-800 mb-1">Newsletter Preview</h2>
-          <p class="text-sm text-steel-500">Previsualizar el newsletter antes de enviarlo.</p>
-        </a>
+          <div id="leadsSummary" class="space-y-3"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -50,28 +62,164 @@ import Layout from '../../layouts/Layout.astro';
   <script>
     import { auth, onAuthStateChanged, authFetch } from '../../lib/auth';
 
-    (async () => {
-      onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-          document.getElementById('loading')!.classList.add('hidden');
-          document.getElementById('notAuth')!.classList.remove('hidden');
-          return;
-        }
+    const icons = {
+      consultores: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>',
+      software: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>',
+      claims: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>',
+      leads: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>',
+      subs: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>',
+    };
 
+    const statColors = {
+      consultores: 'blue',
+      software: 'indigo',
+      claims: 'amber',
+      leads: 'emerald',
+      subs: 'violet',
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return showNotAuth();
+
+      try {
+        const res = await authFetch('/api/admin/stats');
+        if (!res.ok) return showNotAuth();
+
+        const data = await res.json();
+        showDashboard(data);
+      } catch {
+        showNotAuth();
+      }
+    });
+
+    function showNotAuth() {
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('notAuth')!.classList.remove('hidden');
+    }
+
+    function showDashboard(data: any) {
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('adminPanel')!.classList.remove('hidden');
+      document.getElementById('lastUpdated')!.textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+
+      renderStats(data);
+      renderQuickActions(data);
+      renderTrend(data);
+      renderActivity(data);
+      renderLeadsSummary(data);
+    }
+
+    function statCard(label: string, value: number, key: string, href: string) {
+      const c = statColors[key as keyof typeof statColors] || 'steel';
+      return `
+        <a href="${href}" class="bg-white rounded-xl shadow-md p-5 border-t-4 border-${c}-500 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-3xl font-extrabold text-primary-800 group-hover:text-${c}-600 transition-colors">${value}</p>
+              <p class="text-sm text-steel-500 mt-1">${label}</p>
+            </div>
+            <svg class="w-8 h-8 text-${c}-200 group-hover:text-${c}-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">${icons[key as keyof typeof icons]}</svg>
+          </div>
+        </a>`;
+    }
+
+    function renderStats(d: any) {
+      document.getElementById('statsCards')!.innerHTML =
+        statCard('Consultores', d.totals.consultores, 'consultores', '/admin/fichas') +
+        statCard('Software', d.totals.software, 'software', '/admin/fichas') +
+        statCard('Verificaciones pendientes', d.claims.pending, 'claims', '/admin/claims') +
+        statCard('Leads nuevos', d.leads.new, 'leads', '/admin/leads') +
+        statCard('Suscripciones activas', d.subscriptions.active, 'subs', '#');
+    }
+
+    function renderQuickActions(d: any) {
+      const actions = [
+        { href: '/admin/fichas', label: 'Gestionar Fichas', desc: 'Crear, editar o eliminar fichas', badge: `${d.totals.total} total` },
+        { href: '/admin/claims', label: 'Revisar Verificaciones', desc: 'Aprobar o rechazar solicitudes', badge: d.claims.pending > 0 ? `${d.claims.pending} pendientes` : 'Al día', urgent: d.claims.pending > 0 },
+        { href: '/admin/leads', label: 'Ver Leads', desc: 'Solicitudes de presupuesto recibidas', badge: d.leads.new > 0 ? `${d.leads.new} nuevos` : 'Sin novedades', urgent: d.leads.new > 0 },
+        { href: '/admin/newsletter', label: 'Newsletter', desc: 'Previsualizar el boletín mensual', badge: `${d.subscriptions.active} suscriptores` },
+      ];
+      document.getElementById('quickActions')!.innerHTML = actions.map(a => `
+        <a href="${a.href}" class="flex items-center justify-between p-3 rounded-lg hover:bg-steel-50 transition-colors group border border-transparent hover:border-steel-200">
+          <div>
+            <span class="font-semibold text-primary-800 group-hover:text-accent-600 transition-colors">${a.label}</span>
+            <p class="text-xs text-steel-500">${a.desc}</p>
+          </div>
+          <span class="text-xs font-semibold px-2 py-1 rounded-full ${a.urgent ? 'bg-red-100 text-red-700' : 'bg-steel-100 text-steel-600'}">${a.badge}</span>
+        </a>
+      `).join('');
+    }
+
+    function renderTrend(d: any) {
+      if (!d.monthlyTrend?.length) {
+        document.getElementById('trendChart')!.innerHTML = '<p class="text-steel-400 text-sm py-10 text-center w-full">Sin datos suficientes.</p>';
+        return;
+      }
+      const maxVal = Math.max(...d.monthlyTrend.map((m: any) => m.count), 1);
+      const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+      document.getElementById('trendChart')!.innerHTML = d.monthlyTrend.map((m: any) => {
+        const [y, mo] = m.month.split('-');
+        const label = months[parseInt(mo) - 1];
+        const height = Math.max((m.count / maxVal) * 100, 4);
+        return `<div class="flex-1 flex flex-col items-center gap-1">
+          <span class="text-xs font-bold text-primary-800">${m.count}</span>
+          <div class="w-full bg-accent-500 rounded-t hover:bg-accent-600 transition-colors" style="height:${height}%"></div>
+          <span class="text-xs text-steel-500">${label}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function renderActivity(d: any) {
+      if (!d.recentActivity?.length) {
+        document.getElementById('activityList')!.innerHTML = '<p class="text-sm text-steel-400 py-6 text-center">No hay actividad reciente.</p>';
+        return;
+      }
+      document.getElementById('activityList')!.innerHTML = d.recentActivity.map((a: any) => {
+        const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '—';
+        const statusBadge = a.estado === 'approved' ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Aprobada</span>'
+          : a.estado === 'rejected' ? '<span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Rechazada</span>'
+          : '<span class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Pendiente</span>';
+        return `<div class="flex items-center justify-between text-sm">
+          <div>
+            <span class="font-medium text-primary-800">${a.slug || a.id}</span>
+            <span class="text-steel-500 ml-2">${a.email || ''}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${statusBadge}
+            <span class="text-xs text-steel-400">${date}</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderLeadsSummary(d: any) {
+      // Fetch latest leads
+      (async () => {
         try {
-          const res = await authFetch('/api/admin/coupons');
-          if (res.ok) {
-            document.getElementById('loading')!.classList.add('hidden');
-            document.getElementById('adminPanel')!.classList.remove('hidden');
-          } else {
-            document.getElementById('loading')!.classList.add('hidden');
-            document.getElementById('notAuth')!.classList.remove('hidden');
+          const res = await authFetch('/api/admin/leads?limit=5');
+          if (!res.ok) throw new Error('Failed');
+          const leadsData = await res.json();
+          if (!leadsData.leads?.length) {
+            document.getElementById('leadsSummary')!.innerHTML = '<p class="text-sm text-steel-400 py-6 text-center">No hay leads todavía.</p>';
+            return;
           }
-        } catch {
-          document.getElementById('loading')!.classList.add('hidden');
-          document.getElementById('notAuth')!.classList.remove('hidden');
-        }
-      });
-    })();
+          document.getElementById('leadsSummary')!.innerHTML = leadsData.leads.map((l: any) => {
+            const date = l.createdAt ? new Date(l.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : '—';
+            const statusColors: Record<string, string> = { new: 'blue', sent: 'amber', contacted: 'green', closed: 'steel' };
+            const c = statusColors[l.status] || 'steel';
+            return `<div class="flex items-center justify-between text-sm py-2 border-b border-steel-100 last:border-0">
+              <div class="min-w-0 flex-1">
+                <p class="font-medium text-primary-800 truncate">${l.contactName || 'Sin nombre'}</p>
+                <p class="text-xs text-steel-500 truncate">${l.company || l.contactEmail || ''} · ${l.slug || ''}</p>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-xs bg-${c}-100 text-${c}-700 px-2 py-0.5 rounded-full">${l.status === 'new' ? 'Nuevo' : l.status === 'sent' ? 'Enviado' : l.status === 'contacted' ? 'Contactado' : 'Cerrado'}</span>
+                <span class="text-xs text-steel-400">${date}</span>
+              </div>
+            </div>`;
+          }).join('');
+        } catch { document.getElementById('leadsSummary')!.innerHTML = '<p class="text-sm text-steel-400 py-6 text-center">Error al cargar.</p>'; }
+      })();
+    }
   </script>
 </Layout>
