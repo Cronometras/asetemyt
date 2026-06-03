@@ -1,6 +1,6 @@
 // Client-side admin auth helper — shared across all admin pages.
-// Dual-path: cookie-first (instant, no IndexedDB), then Firebase authStateReady.
-import { auth, authFetch } from './auth';
+// Dual-path: cookie-first (instant, no IndexedDB, no Firebase Auth),
+// then Firebase authStateReady as lazy fallback.
 
 /** Check if the current user is an admin.
  *  Tries cookie token first, then Firebase authStateReady as fallback.
@@ -32,20 +32,18 @@ export async function initAdmin(): Promise<{
     } catch {}
   }
 
-  // Path 2: Firebase authStateReady (may need IndexedDB)
+  // Path 2: Firebase authStateReady (lazy import — avoids triggering
+  // auth initialization if PUBLIC_FIREBASE_* vars are missing)
   try {
+    const { auth, authFetch } = await import('./auth');
     await auth.authStateReady();
-  } catch {}
+    const user = auth.currentUser;
+    if (!user) return { ok: false, api: authFetch };
 
-  const user = auth.currentUser;
-  if (!user) return { ok: false, api: authFetch };
-
-  // Verify admin via API
-  try {
     const res = await authFetch('/api/admin/status');
     const data = await res.json();
     if (data.admin) return { ok: true, api: authFetch };
   } catch {}
 
-  return { ok: false, api: authFetch };
+  return { ok: false, api: window.fetch.bind(window) };
 }

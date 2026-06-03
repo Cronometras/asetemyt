@@ -222,23 +222,27 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
       // Init on load
       setLang(getLang());
 
-      // Auth state — update nav links
-      import { onAuthStateChanged, auth } from '../lib/auth';
-      const lang = () => (localStorage.getItem('asetemyt-lang') as Lang) || 'es';
+      // Auth state — update nav links (lazy import to avoid crash if Firebase config missing)
+      (async () => {
+        try {
+          const { onAuthStateChanged, auth } = await import('../lib/auth');
+          const lang = () => (localStorage.getItem('asetemyt-lang') as Lang) || 'es';
 
-      onAuthStateChanged(auth, (user) => {
-        const navAuth = document.getElementById('nav-auth');
-        const mobAuth = document.getElementById('mob-auth-link');
-        if (!navAuth || !mobAuth) return;
+          onAuthStateChanged(auth, (user) => {
+            const navAuth = document.getElementById('nav-auth');
+            const mobAuth = document.getElementById('mob-auth-link');
+            if (!navAuth || !mobAuth) return;
 
-        if (user) {
-          navAuth.innerHTML = `<a href="/mi-cuenta" class="hover:text-accent-400 transition-colors font-medium" data-nav="account">${navLabels[lang()]['account']}</a>`;
-          mobAuth.innerHTML = `<a href="/mi-cuenta" class="block py-2 hover:text-accent-400" data-nav="account">${navLabels[lang()]['account']}</a>`;
-        } else {
-          navAuth.innerHTML = `<a href="/login" class="hover:text-accent-400 transition-colors font-medium" data-nav="login">${navLabels[lang()]['login']}</a>`;
-          mobAuth.innerHTML = `<a href="/login" class="block py-2 hover:text-accent-400" data-nav="login">${navLabels[lang()]['login']}</a>`;
-        }
-      });
+            if (user) {
+              navAuth.innerHTML = `<a href="/mi-cuenta" class="hover:text-accent-400 transition-colors font-medium" data-nav="account">${navLabels[lang()]['account']}</a>`;
+              mobAuth.innerHTML = `<a href="/mi-cuenta" class="block py-2 hover:text-accent-400" data-nav="account">${navLabels[lang()]['account']}</a>`;
+            } else {
+              navAuth.innerHTML = `<a href="/login" class="hover:text-accent-400 transition-colors font-medium" data-nav="login">${navLabels[lang()]['login']}</a>`;
+              mobAuth.innerHTML = `<a href="/login" class="block py-2 hover:text-accent-400" data-nav="login">${navLabels[lang()]['login']}</a>`;
+            }
+          });
+        } catch {} // Firebase Auth not available — nav stays with default links
+      })();
     </script>
     <CookieConsent />
   </body>
