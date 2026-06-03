@@ -69,13 +69,35 @@ import Layout from '../layouts/Layout.astro';
   }
 
   async function afterLogin() {
-    // Check if admin — redirect directly to dashboard if so
-    try {
-      const resp = await fetch('/api/admin/status');
-      const data = await resp.json();
-      window.location.href = data.admin ? '/admin' : '/mi-cuenta';
-    } catch {
-      window.location.href = '/mi-cuenta';
+    // The asetemyt_token cookie is set in signIn() but may not have
+    // propagated to the next request yet (rare, but happens on slow
+    // browsers). Retry once with a short delay to be safe.
+    const checkAdmin = async () => {
+      const resp = await fetch('/api/admin/status', { credentials: 'same-origin' });
+      return { status: resp.status, data: await resp.json().catch(() => ({})) };
+    };
+
+    let result;
+    try { result = await checkAdmin(); } catch { result = { status: 0, data: {} }; }
+
+    // If first attempt says not admin, retry once after a short delay
+    // (handles cookie race condition right after signIn).
+    if (result.status === 200 && !result.data.admin) {
+      await new Promise(r => setTimeout(r, 300));
+      try { result = await checkAdmin(); } catch { /* keep previous result */ }
+    }
+
+    // Decision tree
+    if (result.status === 200 && result.data.admin) {
+      window.location.href = '/admin';
+    } else if (result.status === 200 && result.data.email) {
+      // Authenticated but not admin
+      showAlert('Sesión iniciada, pero tu cuenta no tiene permisos de administrador. Contacta con el titular si crees que es un error.', 'error');
+      setTimeout(() => { window.location.href = '/mi-cuenta'; }, 2500);
+    } else {
+      // Not authenticated at all
+      showAlert('Sesión iniciada, pero no se pudo verificar el estado. Redirigiendo...', 'error');
+      setTimeout(() => { window.location.href = '/mi-cuenta'; }, 2500);
     }
   }
 
