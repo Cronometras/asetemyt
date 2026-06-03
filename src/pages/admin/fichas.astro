@@ -54,6 +54,14 @@ import Layout from '../../layouts/Layout.astro';
         <p class="text-xs text-amber-600 mt-2">⚠️ Tras cambiar el estado, ejecuta <code class="bg-amber-100 px-1 rounded">cd ~/projects/asetemyt && git commit --allow-empty -m "rebuild" && git push</code> para que los cambios aparezcan.</p>
       </div>
 
+      <!-- Duplicate detection results (rendered by JS) -->
+      <div id="dupe-wrap" class="hidden mb-6">
+        <h3 class="font-bold text-primary-900 text-base mb-3">⚠️ Posibles duplicados</h3>
+        <p class="text-xs text-steel-500 mb-3">Revisa cada par y elimina la ficha duplicada. Esta acción no se puede deshacer.</p>
+        <div id="dupe-list" class="space-y-3"></div>
+        <div id="dupe-empty" class="hidden text-sm text-steel-500 italic">No hay más duplicados que revisar.</div>
+      </div>
+
       <!-- Search & Filters -->
       <div class="bg-white rounded-xl shadow-md p-4 mb-6 flex flex-wrap gap-3">
         <input type="text" id="search" placeholder="Buscar por nombre, slug, email..."
@@ -532,11 +540,78 @@ import Layout from '../../layouts/Layout.astro';
           var res = await api('/api/admin/duplicates');
           var data = await res.json();
           if (!data.duplicates || !data.duplicates.length) { alert('No se encontraron duplicados en ' + data.totalScanned + ' fichas.'); return; }
-          var msg = 'Posibles duplicados (' + data.duplicates.length + '):\n\n';
-          data.duplicates.forEach(function(d: any) { msg += '[' + d.type + '] ' + d.a.nombre + ' vs ' + d.b.nombre + '\n  ' + d.a.slug + ' | ' + d.b.slug + '\n\n'; });
-          alert(msg);
+          renderDuplicates(data.duplicates);
         } catch(e) { alert('Error al detectar duplicados.'); }
         finally { btn.textContent = '🔍 Duplicados'; btn.disabled = false; }
+      });
+
+      // Render duplicates with per-pair action buttons
+      function renderDuplicates(dups: any[]) {
+        const list = document.getElementById('dupe-list')!;
+        const empty = document.getElementById('dupe-empty')!;
+        const wrap = document.getElementById('dupe-wrap')!;
+        if (!dups.length) { wrap.classList.add('hidden'); return; }
+        wrap.classList.remove('hidden');
+        empty.classList.add('hidden');
+        list.innerHTML = dups.map(function(d: any, i: number) {
+          const esc = (s: string) => String(s || '').replace(/[<>&"']/g, (c: string) => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c] || c));
+          return `
+            <div class="border border-steel-200 rounded-lg p-4 bg-white" data-dupe-idx="${i}">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${d.type==='name'?'bg-amber-100 text-amber-800':'bg-blue-100 text-blue-800'}">${d.type==='name'?'Mismo nombre':'Misma web'}</span>
+                <span class="text-xs text-steel-500">vs</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="border border-steel-200 rounded p-3 bg-steel-50">
+                  <p class="text-sm font-semibold text-primary-800 break-words">${esc(d.a.nombre)}</p>
+                  <p class="text-xs text-steel-500 font-mono mt-1">/${esc(d.a.slug)}</p>
+                  ${d.a.web ? `<p class="text-xs text-steel-500 mt-1 truncate">${esc(d.a.web)}</p>` : ''}
+                  <div class="flex gap-2 mt-3">
+                    <a href="/directorio/${esc(d.a.slug)}" target="_blank" class="text-xs text-accent-600 hover:underline">Ver →</a>
+                    <button data-action="delete" data-slug="${esc(d.a.slug)}" data-keep="${esc(d.b.slug)}" class="text-xs text-red-600 hover:underline">Eliminar A</button>
+                  </div>
+                </div>
+                <div class="border border-steel-200 rounded p-3 bg-steel-50">
+                  <p class="text-sm font-semibold text-primary-800 break-words">${esc(d.b.nombre)}</p>
+                  <p class="text-xs text-steel-500 font-mono mt-1">/${esc(d.b.slug)}</p>
+                  ${d.b.web ? `<p class="text-xs text-steel-500 mt-1 truncate">${esc(d.b.web)}</p>` : ''}
+                  <div class="flex gap-2 mt-3">
+                    <a href="/directorio/${esc(d.b.slug)}" target="_blank" class="text-xs text-accent-600 hover:underline">Ver →</a>
+                    <button data-action="delete" data-slug="${esc(d.b.slug)}" data-keep="${esc(d.a.slug)}" class="text-xs text-red-600 hover:underline">Eliminar B</button>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      // Delegate delete actions
+      document.getElementById('dupe-list')!.addEventListener('click', async (ev) => {
+        const target = ev.target as HTMLElement;
+        if (target.tagName !== 'BUTTON') return;
+        const slug = target.dataset.slug!;
+        const keep = target.dataset.keep!;
+        if (!confirm(`¿Eliminar la ficha "${slug}"? Se conservará "${keep}".\n\nEsta acción no se puede deshacer.`)) return;
+        target.disabled = true; target.textContent = 'Eliminando...';
+        try {
+          const r = await api('/api/admin/fichas', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug })
+          });
+          if (!r.ok) {
+            const err = await r.json().catch(() => ({}));
+            alert('Error: ' + (err.error || r.statusText));
+            target.disabled = false; target.textContent = target.textContent.replace('Eliminando...', 'Eliminar');
+            return;
+          }
+          // Remove the card from the UI
+          const card = target.closest('[data-dupe-idx]')!;
+          card.remove();
+        } catch (e: any) {
+          alert('Error: ' + (e.message || e));
+          target.disabled = false;
+        }
       });
     })();
   </script>

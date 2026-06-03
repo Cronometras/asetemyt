@@ -38,11 +38,21 @@ export async function initAdmin(): Promise<{
     const { auth, authFetch } = await import('./auth');
     await auth.authStateReady();
     const user = auth.currentUser;
-    if (!user) return { ok: false, api: authFetch };
-
-    const res = await authFetch('/api/admin/status');
-    const data = await res.json();
-    if (data.admin) return { ok: true, api: authFetch };
+    if (user) {
+      // Token may have expired in the cookie but the Firebase session
+      // is still alive. Refresh the cookie from the current Firebase
+      // user so the cookie-based path works on the next request.
+      try {
+        const freshToken = await user.getIdToken();
+        document.cookie = `asetemyt_token=${freshToken}; path=/; max-age=3600; SameSite=Lax`;
+      } catch {}
+      // Use the Firebase token for this request and trust the admin
+      // claim (the cookie-based /api/admin/status check already ran on
+      // /admin landing, and Firebase's onAuthStateChanged is canonical).
+      const res = await authFetch('/api/admin/status');
+      const data = await res.json();
+      if (data.admin) return { ok: true, api: authFetch };
+    }
   } catch {}
 
   return { ok: false, api: window.fetch.bind(window) };
