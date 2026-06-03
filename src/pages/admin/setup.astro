@@ -1,0 +1,119 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Configuración inicial" description="Página de bootstrap para activar permisos de administrador.">
+  <section class="max-w-md mx-auto px-4 py-16">
+    <div class="bg-white rounded-2xl shadow-lg p-8">
+      <h1 class="text-2xl font-extrabold text-primary-900 mb-2">Configuración inicial</h1>
+      <p class="text-steel-500 text-sm mb-6">Esta página sirve para activar permisos de administrador la primera vez.</p>
+
+      <div id="loading" class="text-center py-4">
+        <div class="inline-block w-6 h-6 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-steel-500 text-sm mt-2">Verificando sesión...</p>
+      </div>
+
+      <div id="notLogged" class="hidden">
+        <p class="text-sm text-red-700 bg-red-50 p-3 rounded-lg">No has iniciado sesión. <a href="/login" class="font-semibold underline">Inicia sesión primero →</a></p>
+      </div>
+
+      <div id="alreadyAdmin" class="hidden">
+        <p class="text-sm text-green-700 bg-green-50 p-3 rounded-lg">✅ Tu cuenta ya tiene permisos de administrador.</p>
+        <a href="/admin" class="block mt-4 text-center bg-accent-500 hover:bg-accent-600 text-white font-bold py-3 rounded-lg">Ir al panel de administración →</a>
+      </div>
+
+      <div id="notAuthorized" class="hidden">
+        <p class="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg">⚠️ Tu email no está en la lista de bootstrap admins. Contacta con el titular si crees que es un error.</p>
+        <p class="text-xs text-steel-500 mt-2">Sesión iniciada como: <span id="currentEmail" class="font-mono"></span></p>
+      </div>
+
+      <div id="canBootstrap" class="hidden">
+        <p class="text-sm text-steel-600 mb-4">Sesión iniciada como: <span id="bootstrapEmail" class="font-mono font-semibold"></span></p>
+        <p class="text-sm text-steel-600 mb-4">Esta cuenta aún no está marcada como administrador. Pulsa el botón para activarla.</p>
+        <button id="btn-bootstrap" class="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-3 rounded-lg transition-colors">
+          Activar permisos de administrador
+        </button>
+        <div id="result" class="mt-4 text-sm"></div>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  (async () => {
+    const { ok, api } = await import('../../lib/admin-auth').then(m => m.initAdmin());
+    if (!ok) {
+      document.getElementById('loading')!.classList.add('hidden');
+      document.getElementById('notLogged')!.classList.remove('hidden');
+      return;
+    }
+
+    // Check current status
+    const statusResp = await api('/api/admin/status');
+    const status = await statusResp.json();
+
+    document.getElementById('loading')!.classList.add('hidden');
+
+    if (status.admin) {
+      document.getElementById('alreadyAdmin')!.classList.remove('hidden');
+      return;
+    }
+
+    // Not yet admin — try to bootstrap
+    const btn = document.getElementById('btn-bootstrap') as HTMLButtonElement;
+    const result = document.getElementById('result')!;
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true; btn.textContent = 'Activando...';
+      try {
+        const r = await api('/api/admin/ensure-admin', { method: 'POST' });
+        const data = await r.json();
+        if (r.ok && data.success) {
+          result.className = 'mt-4 text-sm text-green-700 bg-green-50 p-3 rounded-lg';
+          result.textContent = data.message;
+          if (!data.alreadyAdmin) {
+            setTimeout(() => { window.location.href = '/admin'; }, 1500);
+          }
+        } else {
+          result.className = 'mt-4 text-sm text-red-700 bg-red-50 p-3 rounded-lg';
+          result.textContent = data.error || 'Error desconocido';
+          btn.disabled = false; btn.textContent = 'Reintentar';
+        }
+      } catch (e: any) {
+        result.className = 'mt-4 text-sm text-red-700 bg-red-50 p-3 rounded-lg';
+        result.textContent = 'Error: ' + (e.message || e);
+        btn.disabled = false; btn.textContent = 'Reintentar';
+      }
+    });
+
+    // Try the bootstrap call automatically to see if email is authorized
+    try {
+      const probe = await api('/api/admin/ensure-admin', { method: 'POST' });
+      const probeData = await probe.json();
+      if (probe.status === 403) {
+        // Not in bootstrap list
+        document.getElementById('notAuthorized')!.classList.remove('hidden');
+        (document.getElementById('currentEmail') as HTMLElement).textContent = status.email || '?';
+        return;
+      }
+      if (probe.ok && probeData.success) {
+        if (probeData.alreadyAdmin) {
+          document.getElementById('alreadyAdmin')!.classList.remove('hidden');
+        } else {
+          // Just bootstrapped! Redirect to /admin
+          result.className = 'mt-4 text-sm text-green-700 bg-green-50 p-3 rounded-lg';
+          result.textContent = probeData.message;
+          setTimeout(() => { window.location.href = '/admin'; }, 1500);
+          document.getElementById('canBootstrap')!.classList.remove('hidden');
+          (document.getElementById('bootstrapEmail') as HTMLElement).textContent = status.email || '?';
+          btn.style.display = 'none';
+        }
+        return;
+      }
+    } catch {}
+
+    // Default: show the button
+    document.getElementById('canBootstrap')!.classList.remove('hidden');
+    (document.getElementById('bootstrapEmail') as HTMLElement).textContent = status.email || '?';
+  })();
+</script>
