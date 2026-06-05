@@ -14,13 +14,13 @@
 // /api/admin/outreach/send with the final content.
 
 import type { APIRoute } from 'astro';
-import { getAuthUser } from '../../../lib/auth-server';
-import { isAdmin } from '../../../lib/admin';
+import { getAuthUser } from '../../../../lib/auth-server';
+import { isAdmin } from '../../../../lib/admin';
 import {
   findListingBySlug,
   firestoreListAll,
   firestoreCreate,
-} from '../../../lib/firestore-rest';
+} from '../../../../lib/firestore-rest';
 
 const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
 const COLLECTION_SOFTWARE = 'directorio_software_asetemyt';

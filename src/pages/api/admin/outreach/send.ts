@@ -16,13 +16,13 @@
 // Returns: { success, outreachId, fichaEmail, sentAt, messageId? }
 
 import type { APIRoute } from 'astro';
-import { getAuthUser } from '../../../lib/auth-server';
-import { isAdmin } from '../../../lib/admin';
+import { getAuthUser } from '../../../../lib/auth-server';
+import { isAdmin } from '../../../../lib/admin';
 import {
   findListingBySlug,
   firestoreGet,
   firestoreUpdate,
-} from '../../../lib/firestore-rest';
+} from '../../../../lib/firestore-rest';
 
 const OUTREACH_COLLECTION = 'outreach_asetemyt';
 

@@ -11,10 +11,10 @@
 // Returns: { outreachs: [...] } with all fields including emailsPrevios summary.
 
 import type { APIRoute } from 'astro';
-import { getAuthUser } from '../../../lib/auth-server';
-import { isAdmin } from '../../../lib/admin';
-import { firestoreListAll } from '../../../lib/firestore-rest';
-import { getCached, invalidate } from '../../../lib/cache';
+import { getAuthUser } from '../../../../lib/auth-server';
+import { isAdmin } from '../../../../lib/admin';
+import { firestoreListAll } from '../../../../lib/firestore-rest';
+import { getCached, invalidate } from '../../../../lib/cache';
 
 const OUTREACH_COLLECTION = 'outreach_asetemyt';
 const ADMIN_CACHE_TTL = 60;

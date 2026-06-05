@@ -20,9 +20,9 @@
 //   - Run the himalaya CLI
 
 import type { APIRoute } from 'astro';
-import { getAuthUser } from '../../../lib/auth-server';
-import { isAdmin } from '../../../lib/admin';
-import { firestoreCreate } from '../../../lib/firestore-rest';
+import { getAuthUser } from '../../../../lib/auth-server';
+import { isAdmin } from '../../../../lib/admin';
+import { firestoreCreate } from '../../../../lib/firestore-rest';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
