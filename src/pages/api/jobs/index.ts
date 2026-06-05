@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { firestoreListAll, firestoreQuery, firestoreCreate } from '../../../lib/firestore-rest';
+import { getCached, invalidate, CACHE_KEYS } from '../../../lib/cache';
 
 /** Remove HTML tags from a string to prevent XSS */
 function stripHtml(s: string): string {
@@ -47,6 +48,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       expiresAt: { timestampValue: new Date(Date.now() + 90 * 86400000).toISOString() },
     });
 
+    // Invalidate the public active-jobs cache so the new offer shows up immediately
+    await invalidate(env, [CACHE_KEYS.jobsActive]);
+
     return new Response(JSON.stringify({ success: true, message: 'Oferta publicada correctamente.' }), { status: 201 });
   } catch (err: any) {
     console.error('Job submit error:', err);
@@ -61,23 +65,34 @@ export const GET: APIRoute = async ({ url, locals }) => {
     const type = url.searchParams.get('type');
     const location = url.searchParams.get('location');
 
-    // Fetch all jobs, filter and sort in-memory (avoids composite index)
-    const allJobs = await firestoreListAll(env, 'jobs_asetemyt');
+    // Cache only the unfiltered, sorted, active-jobs list. Filtering by
+    // type/location happens in-memory after the cache hit. This means a
+    // single cache key serves every visitor regardless of URL params,
+    // and we get cache hits even with combinations of filters.
+    let jobs = await getCached(
+      env,
+      CACHE_KEYS.jobsActive,
+      async () => {
+        const all = await firestoreListAll(env, 'jobs_asetemyt');
+        return all
+          .filter((j: any) => j.status === 'active')
+          .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+          .slice(0, 100);
+      },
+      3600 // 1h TTL — jobs are time-sensitive, refresh more often than 24h
+    );
 
-    // Filter active only
-    let jobs = allJobs.filter((j: any) => j.status === 'active');
-
-    // Sort by createdAt descending
-    jobs.sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-
-    // Limit to 100
-    jobs = jobs.slice(0, 100);
-
-    // Apply optional filters
+    // Apply optional filters (post-cache — they're cheap)
     if (type) jobs = jobs.filter((j: any) => j.type === type);
     if (location) jobs = jobs.filter((j: any) => j.location?.toLowerCase().includes(location.toLowerCase()));
 
-    return new Response(JSON.stringify({ jobs }), { status: 200 });
+    return new Response(JSON.stringify({ jobs }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=300, stale-while-revalidate=3300',
+      },
+    });
   } catch (err: any) {
     console.error('Jobs fetch error:', err);
     return new Response(JSON.stringify({ error: 'Error interno.', details: err.message }), { status: 500 });

@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { firestoreCreate, findListingBySlug } from '../../../lib/firestore-rest';
+import { invalidate, CACHE_KEYS } from '../../../lib/cache';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -45,5 +46,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   });
 
   if (!ok) return new Response(JSON.stringify({ error: 'Error creando solicitud' }), { status: 500 });
+
+  // A new claim was created. Listings cache doesn't strictly need to be
+  // invalidated (the claim doesn't change the listing data), but the home
+  // page may show a "pending claims" counter — purge the affected keys.
+  await invalidate(env, [
+    CACHE_KEYS.directorioConsultores,
+    CACHE_KEYS.directorioSoftware,
+  ]);
+
   return new Response(JSON.stringify({ success: true, message: 'Solicitud enviada. Revisaremos tu petición.' }), { status: 200 });
 };

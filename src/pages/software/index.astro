@@ -30,16 +30,22 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
-    import { db, t, getLang, type Lang, COLLECTION_SOFTWARE } from '../../lib/firebase';
-    import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+    import { t, getLang, type Lang } from '../../lib/firebase';
+    // NOTE: previously used `db, COLLECTION_SOFTWARE, getDocs, query, orderBy`
+    // here to read software directly from Firestore. Replaced with fetch to
+    // /api/directorio/software, cached in Cloudflare KV (24h TTL).
 
     let lang: Lang = getLang();
 
     async function load() {
       const tr = (k: string) => t(k, lang);
 
-      const softwareSnap = await getDocs(query(collection(db, COLLECTION_SOFTWARE), orderBy('createdAt', 'desc')));
-      let software = softwareSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
+      // Cache-first: hit /api/directorio/software (server-side KV cache, 24h TTL).
+      // Replaces the previous client-side getDocs() that pulled all software
+      // listings from Firestore on every page load.
+      const resp = await fetch('/api/directorio/software');
+      const data = await resp.json();
+      let software = (data.software || []) as any[];
 
       // Sort: destacado first
       software.sort((a, b) => (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0));

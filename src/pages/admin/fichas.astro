@@ -56,8 +56,18 @@ import Layout from '../../layouts/Layout.astro';
 
       <!-- Duplicate detection results (rendered by JS) -->
       <div id="dupe-wrap" class="hidden mb-6">
-        <h3 class="font-bold text-primary-900 text-base mb-3">⚠️ Posibles duplicados</h3>
-        <p class="text-xs text-steel-500 mb-3">Revisa cada par y elimina la ficha duplicada. Esta acción no se puede deshacer.</p>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+          <div>
+            <h3 class="font-bold text-primary-900 text-base">⚠️ Posibles duplicados</h3>
+            <p class="text-xs text-steel-500 mt-1">Revisa cada par y elimina la ficha duplicada. Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="dupe-selected-count" class="text-xs font-semibold text-steel-600">0 seleccionadas</span>
+            <button id="btn-dupe-select-all" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors">☑ Seleccionar todas</button>
+            <button id="btn-dupe-deselect-all" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors">☐ Deseleccionar todas</button>
+            <button id="btn-dupe-delete-selected" disabled class="bg-red-600 hover:bg-red-700 disabled:bg-steel-300 disabled:cursor-not-allowed text-white font-semibold px-3 py-1.5 rounded-lg text-xs transition-colors">🗑 Eliminar seleccionadas</button>
+          </div>
+        </div>
         <div id="dupe-list" class="space-y-3"></div>
         <div id="dupe-empty" class="hidden text-sm text-steel-500 italic">No hay más duplicados que revisar.</div>
       </div>
@@ -545,7 +555,7 @@ import Layout from '../../layouts/Layout.astro';
         finally { btn.textContent = '🔍 Duplicados'; btn.disabled = false; }
       });
 
-      // Render duplicates with per-pair action buttons
+      // Render duplicates with checkboxes for bulk actions
       function renderDuplicates(dups: any[]) {
         const list = document.getElementById('dupe-list')!;
         const empty = document.getElementById('dupe-empty')!;
@@ -562,55 +572,107 @@ import Layout from '../../layouts/Layout.astro';
                 <span class="text-xs text-steel-500">vs</span>
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="border border-steel-200 rounded p-3 bg-steel-50">
-                  <p class="text-sm font-semibold text-primary-800 break-words">${esc(d.a.nombre)}</p>
-                  <p class="text-xs text-steel-500 font-mono mt-1">/${esc(d.a.slug)}</p>
-                  ${d.a.web ? `<p class="text-xs text-steel-500 mt-1 truncate">${esc(d.a.web)}</p>` : ''}
-                  <div class="flex gap-2 mt-3">
-                    <a href="/directorio/${esc(d.a.slug)}" target="_blank" class="text-xs text-accent-600 hover:underline">Ver →</a>
-                    <button data-action="delete" data-slug="${esc(d.a.slug)}" data-keep="${esc(d.b.slug)}" class="text-xs text-red-600 hover:underline">Eliminar A</button>
+                <label class="border border-steel-200 rounded p-3 bg-steel-50 cursor-pointer hover:bg-steel-100 transition-colors block">
+                  <div class="flex items-start gap-2">
+                    <input type="checkbox" class="dupe-check mt-1 w-4 h-4 text-red-600 rounded border-steel-300 focus:ring-red-500 flex-shrink-0" data-slug="${esc(d.a.slug)}" data-keep="${esc(d.b.slug)}" />
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-semibold text-primary-800 break-words">${esc(d.a.nombre)}</p>
+                      <p class="text-xs text-steel-500 font-mono mt-1">/${esc(d.a.slug)}</p>
+                      ${d.a.web ? `<p class="text-xs text-steel-500 mt-1 truncate">${esc(d.a.web)}</p>` : ''}
+                      <div class="flex gap-3 mt-3">
+                        <a href="/directorio/${esc(d.a.slug)}" target="_blank" onclick="event.stopPropagation()" class="text-xs text-accent-600 hover:underline">Ver →</a>
+                        <span class="text-xs text-red-600 font-medium">Marcar para eliminar</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div class="border border-steel-200 rounded p-3 bg-steel-50">
-                  <p class="text-sm font-semibold text-primary-800 break-words">${esc(d.b.nombre)}</p>
-                  <p class="text-xs text-steel-500 font-mono mt-1">/${esc(d.b.slug)}</p>
-                  ${d.b.web ? `<p class="text-xs text-steel-500 mt-1 truncate">${esc(d.b.web)}</p>` : ''}
-                  <div class="flex gap-2 mt-3">
-                    <a href="/directorio/${esc(d.b.slug)}" target="_blank" class="text-xs text-accent-600 hover:underline">Ver →</a>
-                    <button data-action="delete" data-slug="${esc(d.b.slug)}" data-keep="${esc(d.a.slug)}" class="text-xs text-red-600 hover:underline">Eliminar B</button>
+                </label>
+                <label class="border border-steel-200 rounded p-3 bg-steel-50 cursor-pointer hover:bg-steel-100 transition-colors block">
+                  <div class="flex items-start gap-2">
+                    <input type="checkbox" class="dupe-check mt-1 w-4 h-4 text-red-600 rounded border-steel-300 focus:ring-red-500 flex-shrink-0" data-slug="${esc(d.b.slug)}" data-keep="${esc(d.a.slug)}" />
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-semibold text-primary-800 break-words">${esc(d.b.nombre)}</p>
+                      <p class="text-xs text-steel-500 font-mono mt-1">/${esc(d.b.slug)}</p>
+                      ${d.b.web ? `<p class="text-xs text-steel-500 mt-1 truncate">${esc(d.b.web)}</p>` : ''}
+                      <div class="flex gap-3 mt-3">
+                        <a href="/directorio/${esc(d.b.slug)}" target="_blank" onclick="event.stopPropagation()" class="text-xs text-accent-600 hover:underline">Ver →</a>
+                        <span class="text-xs text-red-600 font-medium">Marcar para eliminar</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </label>
               </div>
             </div>`;
         }).join('');
+        updateSelectedCount();
       }
 
-      // Delegate delete actions
-      document.getElementById('dupe-list')!.addEventListener('click', async (ev) => {
+      function updateSelectedCount() {
+        const checks = document.querySelectorAll<HTMLInputElement>('.dupe-check');
+        const selected = Array.from(checks).filter(c => c.checked);
+        const countEl = document.getElementById('dupe-selected-count')!;
+        const btn = document.getElementById('btn-dupe-delete-selected') as HTMLButtonElement;
+        countEl.textContent = `${selected.length} seleccionada${selected.length === 1 ? '' : 's'}`;
+        btn.disabled = selected.length === 0;
+      }
+
+      // Update count when individual checkboxes change
+      document.getElementById('dupe-list')!.addEventListener('change', (ev) => {
         const target = ev.target as HTMLElement;
-        if (target.tagName !== 'BUTTON') return;
-        const slug = target.dataset.slug!;
-        const keep = target.dataset.keep!;
-        if (!confirm(`¿Eliminar la ficha "${slug}"? Se conservará "${keep}".\n\nEsta acción no se puede deshacer.`)) return;
-        target.disabled = true; target.textContent = 'Eliminando...';
-        try {
-          const r = await api('/api/admin/fichas', {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug })
-          });
-          if (!r.ok) {
-            const err = await r.json().catch(() => ({}));
-            alert('Error: ' + (err.error || r.statusText));
-            target.disabled = false; target.textContent = target.textContent.replace('Eliminando...', 'Eliminar');
-            return;
+        if (target.classList && target.classList.contains('dupe-check')) {
+          updateSelectedCount();
+        }
+      });
+
+      // Select all / Deselect all
+      document.getElementById('btn-dupe-select-all')!.addEventListener('click', () => {
+        document.querySelectorAll<HTMLInputElement>('.dupe-check').forEach(c => { c.checked = true; });
+        updateSelectedCount();
+      });
+      document.getElementById('btn-dupe-deselect-all')!.addEventListener('click', () => {
+        document.querySelectorAll<HTMLInputElement>('.dupe-check').forEach(c => { c.checked = false; });
+        updateSelectedCount();
+      });
+
+      // Bulk delete selected duplicates (per pair, keep the unchecked one)
+      document.getElementById('btn-dupe-delete-selected')!.addEventListener('click', async () => {
+        const checks = Array.from(document.querySelectorAll<HTMLInputElement>('.dupe-check')).filter(c => c.checked);
+        if (!checks.length) return;
+        const slugs = checks.map(c => c.dataset.slug!);
+        if (!confirm(`¿Eliminar ${slugs.length} ficha${slugs.length === 1 ? '' : 's'} marcada${slugs.length === 1 ? '' : 's'}?\n\nEn cada par se conservará la ficha no marcada.\n\nEsta acción no se puede deshacer.`)) return;
+        const btn = document.getElementById('btn-dupe-delete-selected') as HTMLButtonElement;
+        btn.disabled = true; btn.textContent = '⏳ Eliminando...';
+        let ok = 0; let fail = 0; const errors: string[] = [];
+        for (const slug of slugs) {
+          try {
+            const r = await api('/api/admin/fichas', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ slug })
+            });
+            if (r.ok) ok++; else { fail++; const err = await r.json().catch(() => ({})); errors.push(`${slug}: ${err.error || r.statusText}`); }
+          } catch (e: any) { fail++; errors.push(`${slug}: ${e.message || e}`); }
+        }
+        // Remove all cards that had a successful deletion
+        checks.forEach(c => {
+          const slug = c.dataset.slug!;
+          if (!errors.some(e => e.startsWith(slug + ':'))) {
+            const card = c.closest('[data-dupe-idx]');
+            if (card) card.remove();
+          } else {
+            c.checked = false; // uncheck failed ones
           }
-          // Remove the card from the UI
-          const card = target.closest('[data-dupe-idx]')!;
-          card.remove();
-        } catch (e: any) {
-          alert('Error: ' + (e.message || e));
-          target.disabled = false;
+        });
+        updateSelectedCount();
+        btn.textContent = '🗑 Eliminar seleccionadas';
+        const msg = fail === 0
+          ? `✅ ${ok} ficha${ok === 1 ? '' : 's'} eliminada${ok === 1 ? '' : 's'}.`
+          : `⚠️ ${ok} eliminada${ok === 1 ? '' : 's'}, ${fail} fallida${fail === 1 ? '' : 's'}.\n\n${errors.join('\n')}`;
+        if (fail > 0) alert(msg); else alert(msg);
+        // If dupe list is now empty, hide the wrap
+        const list = document.getElementById('dupe-list')!;
+        if (!list.children.length) {
+          document.getElementById('dupe-wrap')!.classList.add('hidden');
+          document.getElementById('dupe-empty')!.classList.remove('hidden');
         }
       });
     })();

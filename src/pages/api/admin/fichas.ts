@@ -1,4 +1,4 @@
-// /api/admin/fichas — Admin CRUD for directory listings
+// GET /api/admin/fichas — Admin CRUD for directory listings
 // GET    → List all fichas (both collections)
 // POST   → Create a new ficha directly (skip pending)
 // PATCH  → Update any ficha (admin override)
@@ -17,9 +17,23 @@ import {
   findListingBySlug,
   toFirestoreValue,
 } from '../../../lib/firestore-rest';
+import { invalidate, getCached, CACHE_KEYS } from '../../../lib/cache';
 
 const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
 const COLLECTION_SOFTWARE = 'directorio_software_asetemyt';
+
+// Admin cache TTL: short (60s) so the admin sees fresh-ish data, but
+// the underlying Firestore read quota is protected when the admin
+// refreshes the page / re-opens the panel / re-runs duplicate detection.
+const ADMIN_CACHE_TTL = 60;
+
+const ADMIN_CACHE_KEYS = {
+  adminFichas: 'cache:admin:fichas:v1',
+  adminDuplicates: 'cache:admin:duplicates:v1',
+  adminStats: 'cache:admin:stats:v1',
+  adminLeads: 'cache:admin:leads:v1',
+  adminCoupons: 'cache:admin:coupons:v1',
+} as const;
 
 // GET — List all fichas
 export const GET: APIRoute = async ({ request, locals }) => {
@@ -31,15 +45,21 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    const [consultores, software] = await Promise.all([
-      firestoreListAll(env, COLLECTION_CONSULTORES),
-      firestoreListAll(env, COLLECTION_SOFTWARE),
-    ]);
-
-    const all = [
-      ...consultores.map((c: any) => ({ ...c, _collection: 'consultores' })),
-      ...software.map((s: any) => ({ ...s, _collection: 'software' })),
-    ].sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    const all = await getCached(
+      env,
+      ADMIN_CACHE_KEYS.adminFichas,
+      async () => {
+        const [consultores, software] = await Promise.all([
+          firestoreListAll(env, COLLECTION_CONSULTORES),
+          firestoreListAll(env, COLLECTION_SOFTWARE),
+        ]);
+        return [
+          ...consultores.map((c: any) => ({ ...c, _collection: 'consultores' })),
+          ...software.map((s: any) => ({ ...s, _collection: 'software' })),
+        ].sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      },
+      ADMIN_CACHE_TTL
+    );
 
     return new Response(JSON.stringify({ fichas: all }), { status: 200 });
   } catch (err: any) {
@@ -89,6 +109,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     await firestoreCreate(env, collection, data.slug, toFirestoreValue(data));
 
+    // Invalidate public listings + admin cache so the new ficha shows up immediately
+    await invalidate(env, [CACHE_KEYS.directorioConsultores, CACHE_KEYS.directorioSoftware, ADMIN_CACHE_KEYS.adminFichas]);
+
     return new Response(JSON.stringify({ success: true, slug: data.slug }), { status: 201 });
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
@@ -129,6 +152,13 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
     if (!ok) {
       return new Response(JSON.stringify({ error: 'Error actualizando ficha' }), { status: 500 });
     }
+
+    // Invalidate listings (and reviews for that slug — name/description may have changed)
+    await invalidate(env, [
+      found.collection === COLLECTION_SOFTWARE ? CACHE_KEYS.directorioSoftware : CACHE_KEYS.directorioConsultores,
+      `${CACHE_KEYS.reviewsAll}:${slug}`,
+      ADMIN_CACHE_KEYS.adminFichas,
+    ]);
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
   } catch (err: any) {
@@ -193,6 +223,9 @@ export const PUT: APIRoute = async ({ request, locals }) => {
     // Execute batch (uses Firestore commit — few HTTP requests instead of 180+)
     const updated = await firestoreBatchUpdate(env, batchUpdates);
 
+    // Bulk operation changed many fichas at once — purge both listings caches + admin cache
+    await invalidate(env, [CACHE_KEYS.directorioConsultores, CACHE_KEYS.directorioSoftware, ADMIN_CACHE_KEYS.adminFichas]);
+
     return new Response(JSON.stringify({
       success: true,
       action,
@@ -229,6 +262,13 @@ export const DELETE: APIRoute = async ({ request, locals }) => {
     if (!ok) {
       return new Response(JSON.stringify({ error: 'Error eliminando ficha' }), { status: 500 });
     }
+
+    // Invalidate listings + reviews for that slug
+    await invalidate(env, [
+      found.collection === COLLECTION_SOFTWARE ? CACHE_KEYS.directorioSoftware : CACHE_KEYS.directorioConsultores,
+      `${CACHE_KEYS.reviewsAll}:${slug}`,
+      ADMIN_CACHE_KEYS.adminFichas,
+    ]);
 
     return new Response(JSON.stringify({ success: true }), { status: 200 });
   } catch (err: any) {

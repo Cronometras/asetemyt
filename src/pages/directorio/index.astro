@@ -30,16 +30,25 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
-    import { db, t, getLang, type Lang, COLLECTION_CONSULTORES } from '../../lib/firebase';
-    import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+    import { t, getLang, type Lang } from '../../lib/firebase';
+    // NOTE: previously used `db, COLLECTION_CONSULTORES, getDocs, query, orderBy`
+    // here to read consultores directly from Firestore. That was replaced
+    // with a fetch to /api/directorio/consultores, which is cached in
+    // Cloudflare KV (24h TTL, invalidated on mutations). This brought the
+    // Firestore reads from ~974/page-load to ~1/day.
 
     let lang: Lang = getLang();
 
     async function load() {
       const tr = (k: string) => t(k, lang);
 
-      const consultoresSnap = await getDocs(query(collection(db, COLLECTION_CONSULTORES), orderBy('createdAt', 'desc')));
-      let consultores = consultoresSnap.docs.map((d) => ({ id: d.id, ...d.data() })) as any[];
+      // Cache-first: hit /api/directorio/consultores (server-side KV cache, 24h TTL).
+      // Replaces the previous client-side getDocs() which read every listing
+      // from Firestore on every page load — that was responsible for the
+      // 27k reads/day spike we saw before adding Cloudflare KV.
+      const resp = await fetch('/api/directorio/consultores');
+      const data = await resp.json();
+      let consultores = (data.consultores || []) as any[];
 
       // Sort: destacado first
       consultores.sort((a, b) => (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0));
