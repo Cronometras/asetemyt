@@ -237,6 +237,7 @@ import Layout from '../../layouts/Layout.astro';
     function renderQuickActions(d: any) {
       const actions = [
         { href: '/admin/fichas', label: 'Gestionar Fichas', desc: 'Crear, editar, eliminar, exportar CSV', badge: `${d.totals.total} total` },
+        { href: '/admin/outreach', label: '📬 Outreach', desc: 'Emails personalizados a fichas — 1er, 2º, 3er contacto', badge: 'Nuevo' },
         { href: '/admin/claims', label: 'Revisar Verificaciones', desc: 'Aprobar o rechazar solicitudes', badge: d.claims.pending > 0 ? `${d.claims.pending} pendientes` : 'Al día', urgent: d.claims.pending > 0 },
         { href: '/admin/leads', label: 'Ver Leads', desc: 'Solicitudes de presupuesto recibidas', badge: d.leads.new > 0 ? `${d.leads.new} nuevos` : 'Sin novedades', urgent: d.leads.new > 0 },
         { href: '/admin/subscribers', label: 'Suscriptores', desc: 'Gestionar altas y bajas del newsletter', badge: `${d.subscriptions.active} activos` },

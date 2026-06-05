@@ -1,0 +1,256 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Outreach" description="Gestión de outreach: seguimiento de emails enviados a fichas, contacto #, respuestas.">
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div id="loading" class="text-center py-20">
+      <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-steel-500 mt-4">Cargando panel de outreach...</p>
+    </div>
+
+    <div id="notAuth" class="hidden text-center py-20">
+      <h2 class="text-2xl font-bold text-primary-900 mb-2">Acceso denegado</h2>
+      <p class="text-steel-500">No tienes permisos de administrador.</p>
+      <a href="/login" class="inline-block mt-4 text-accent-600 font-semibold">Iniciar sesión →</a>
+    </div>
+
+    <div id="outreachPanel" class="hidden">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-3xl font-extrabold text-primary-900">📬 Outreach</h1>
+          <p class="text-steel-500 mt-1 text-sm" id="statsLine"></p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a href="/admin" class="text-sm text-accent-600 font-medium hover:text-accent-700">← Panel</a>
+          <button id="btn-check-now" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+            🔄 Comprobar respuestas ahora
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="border-b border-steel-200 mb-6">
+        <nav class="flex flex-wrap gap-1 -mb-px">
+          <button data-tab="contacted" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-accent-500 text-accent-600">
+            Contactadas (<span id="count-contacted">0</span>)
+          </button>
+          <button data-tab="drafts" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-steel-500 hover:text-steel-700">
+            Borradores (<span id="count-drafts">0</span>)
+          </button>
+          <button data-tab="replied" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-steel-500 hover:text-steel-700">
+            Respondidas (<span id="count-replied">0</span>)
+          </button>
+          <button data-tab="failed" class="tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-steel-500 hover:text-steel-700">
+            Fallidos (<span id="count-failed">0</span>)
+          </button>
+        </nav>
+      </div>
+
+      <!-- How to use -->
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-900">
+        <p class="font-semibold mb-2">💡 Cómo usar el outreach</p>
+        <p>El flujo de outreach (seleccionar fichas → redactar emails personalizados → enviar) lo conduzco yo (el agente) en conversación contigo, llamando a la API. Aquí ves el resultado:</p>
+        <ul class="list-disc list-inside mt-2 space-y-1 text-blue-800">
+          <li><strong>Contactadas:</strong> fichas con al menos 1 outreach enviado, agrupadas por nº de contacto (1, 2, 3…)</li>
+          <li><strong>Borradores:</strong> emails redactados pero aún no enviados</li>
+          <li><strong>Respondidas:</strong> outreachs donde el contacto ya respondió al info@asetemyt.com</li>
+          <li><strong>Fallidos:</strong> envíos que Resend rechazó</li>
+        </ul>
+        <p class="mt-2 text-xs">Cron diario a las 9:00 hora España: <code class="bg-blue-100 px-1 rounded">~/.hermes/scripts/check_outreach_replies.py</code></p>
+      </div>
+
+      <!-- Tab content -->
+      <div id="tab-content" class="space-y-3"></div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  import { initAdmin } from '../../lib/admin-auth';
+
+  let api = window.fetch.bind(window);
+  let outreachs: any[] = [];
+  let activeTab: 'contacted' | 'drafts' | 'replied' | 'failed' = 'contacted';
+
+  (async () => {
+    const { ok, api: adminApi } = await initAdmin();
+    api = adminApi;
+    if (!ok) return showNotAuth();
+    try {
+      const res = await api('/api/admin/outreach/list?limit=500');
+      if (!res.ok) return showNotAuth();
+      const data = await res.json();
+      outreachs = data.outreachs || [];
+      showPanel();
+    } catch (e) {
+      console.error(e);
+      showNotAuth();
+    }
+  })();
+
+  function showNotAuth() {
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('notAuth')!.classList.remove('hidden');
+  }
+
+  function showPanel() {
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('outreachPanel')!.classList.remove('hidden');
+    updateStats();
+    setupTabs();
+    render();
+  }
+
+  function updateStats() {
+    const contacted = outreachs.filter((o) => o.status === 'sent' && !o.replied);
+    const drafts = outreachs.filter((o) => o.status === 'draft');
+    const replied = outreachs.filter((o) => o.replied);
+    const failed = outreachs.filter((o) => o.status === 'failed');
+
+    document.getElementById('count-contacted')!.textContent = String(contacted.length);
+    document.getElementById('count-drafts')!.textContent = String(drafts.length);
+    document.getElementById('count-replied')!.textContent = String(replied.length);
+    document.getElementById('count-failed')!.textContent = String(failed.length);
+
+    // Stats line
+    const totalSent = outreachs.filter((o) => o.status === 'sent').length;
+    const replyRate = totalSent > 0 ? Math.round((replied.length / totalSent) * 100) : 0;
+    document.getElementById('statsLine')!.textContent =
+      `${totalSent} outreachs enviados · ${replied.length} respuestas · ${replyRate}% reply rate`;
+  }
+
+  function setupTabs() {
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach((b) => {
+          b.className = 'tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-transparent text-steel-500 hover:text-steel-700';
+        });
+        (btn as HTMLElement).className = 'tab-btn px-4 py-2 text-sm font-semibold border-b-2 border-accent-500 text-accent-600';
+        activeTab = ((btn as HTMLElement).dataset.tab as any) || 'contacted';
+        render();
+      });
+    });
+
+    document.getElementById('btn-check-now')!.addEventListener('click', async () => {
+      const btn = document.getElementById('btn-check-now') as HTMLButtonElement;
+      btn.disabled = true;
+      btn.textContent = '⏳ Comprobando...';
+      try {
+        const res = await api('/api/admin/outreach/check-replies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ days: 14 }),
+        });
+        const data = await res.json();
+        alert(`✅ ${data.message}\n\nSi quieres ejecutarlo ahora en el servidor, corre:\n${data.command}`);
+      } catch (e: any) {
+        alert('Error: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔄 Comprobar respuestas ahora';
+      }
+    });
+  }
+
+  function render() {
+    const target = document.getElementById('tab-content')!;
+    let list: any[] = [];
+    if (activeTab === 'contacted') {
+      list = outreachs.filter((o) => o.status === 'sent' && !o.replied);
+    } else if (activeTab === 'drafts') {
+      list = outreachs.filter((o) => o.status === 'draft');
+    } else if (activeTab === 'replied') {
+      list = outreachs.filter((o) => o.replied);
+    } else if (activeTab === 'failed') {
+      list = outreachs.filter((o) => o.status === 'failed');
+    }
+
+    if (!list.length) {
+      target.innerHTML = `<div class="bg-white rounded-xl shadow-md p-12 text-center border border-steel-100"><p class="text-steel-400">No hay outreachs en esta categoría.</p></div>`;
+      return;
+    }
+
+    target.innerHTML = list.map(renderOutreach).join('');
+  }
+
+  function renderOutreach(o: any): string {
+    const sentDate = o.sentAt ? new Date(o.sentAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    const isSent = o.status === 'sent';
+    const isReplied = o.replied;
+    const isFailed = o.status === 'failed';
+    const isDraft = o.status === 'draft';
+
+    const statusBadge = isDraft
+      ? '<span class="text-xs font-semibold bg-steel-100 text-steel-700 px-2.5 py-1 rounded-full">📝 Borrador</span>'
+      : isFailed
+        ? '<span class="text-xs font-semibold bg-red-100 text-red-700 px-2.5 py-1 rounded-full">✗ Fallido</span>'
+        : isReplied
+          ? '<span class="text-xs font-semibold bg-green-100 text-green-700 px-2.5 py-1 rounded-full">✓ Respondida</span>'
+          : '<span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">📤 Enviado</span>';
+
+    const contactBadge = `<span class="text-xs font-semibold bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full">#${o.contactoNumero}</span>`;
+
+    return `
+    <div class="bg-white rounded-xl shadow-md border border-steel-100 overflow-hidden">
+      <div class="p-5">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              ${contactBadge}
+              ${statusBadge}
+            </div>
+            <h3 class="font-bold text-primary-800 truncate">${escapeHtml(o.fichaNombre || o.slug)}</h3>
+            <p class="text-sm text-steel-500">
+              <a href="mailto:${escapeHtml(o.fichaEmail)}" class="text-accent-600 hover:underline">${escapeHtml(o.fichaEmail)}</a>
+              · <a href="/directorio/${escapeHtml(o.slug)}" target="_blank" class="text-accent-600 hover:underline">ver ficha →</a>
+            </p>
+          </div>
+          <div class="text-xs text-steel-400 text-right">
+            <div>${isDraft ? 'Creado' : 'Enviado'}: <strong class="text-steel-600">${sentDate}</strong></div>
+            ${o.sentBy ? `<div class="mt-1">por ${escapeHtml(o.sentBy)}</div>` : ''}
+          </div>
+        </div>
+
+        ${o.subject ? `
+        <p class="text-sm mb-1"><span class="text-steel-500 font-medium">Asunto:</span> <span class="text-steel-700">${escapeHtml(o.subject)}</span></p>
+        ` : ''}
+
+        ${o.bodySnippet ? `
+        <details class="mt-2">
+          <summary class="text-xs text-accent-600 cursor-pointer hover:underline">Ver cuerpo del email</summary>
+          <pre class="mt-2 text-xs text-steel-600 bg-steel-50 rounded-lg p-3 whitespace-pre-wrap font-sans">${escapeHtml(o.body)}</pre>
+        </details>
+        ` : ''}
+
+        ${isReplied ? `
+        <div class="mt-3 bg-green-50 border border-green-200 rounded-lg p-3 text-sm">
+          <p class="font-semibold text-green-800 mb-1">✓ Respuesta detectada</p>
+          <p class="text-green-700 text-xs">De: <a href="mailto:${escapeHtml(o.lastReplyFrom || '')}" class="underline">${escapeHtml(o.lastReplyFrom || '')}</a></p>
+          ${o.lastReplySubject ? `<p class="text-green-700 text-xs">Asunto: ${escapeHtml(o.lastReplySubject)}</p>` : ''}
+          ${o.repliedAt ? `<p class="text-green-700 text-xs">Respondido: ${new Date(o.repliedAt).toLocaleDateString('es-ES')}</p>` : ''}
+        </div>
+        ` : ''}
+
+        ${isFailed && o.failureReason ? `
+        <div class="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
+          <p class="font-semibold text-red-800 mb-1">✗ Envío fallido</p>
+          <p class="text-red-700 text-xs font-mono">${escapeHtml(o.failureReason)}</p>
+        </div>
+        ` : ''}
+      </div>
+    </div>`;
+  }
+
+  function escapeHtml(s: string): string {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+</script>
