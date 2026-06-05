@@ -385,14 +385,12 @@ function applyFilters(entries: any[], filters?: {
 }
 
 /**
- * Get consultores entries only — fetches from the cached public API endpoint
- * instead of querying Firestore directly. This is the same data the home page
- * uses, but routed through /api/directorio/consultores so the underlying
- * Firestore reads hit the Cloudflare KV cache (24h TTL) instead of running
- * a fresh getDocs() on every call.
- *
- * Returns the unfiltered list; filtering (tipo / especialidad / ubicacion / lang)
- * is applied client-side from the cached payload.
+ * Get consultores entries only — queries Firestore directly.
+ * Called from getStaticPaths (build-time) and from other server contexts.
+ * The home page and other public-facing pages should NOT call this
+ * function; they should fetch /api/directorio/consultores instead, which
+ * is served from a Cloudflare KV cache (24h TTL) and only burns 1 Firestore
+ * read per cache rebuild instead of N reads per visitor.
  */
 export async function getConsultoresEntries(filters?: {
   tipo?: string;
@@ -400,21 +398,16 @@ export async function getConsultoresEntries(filters?: {
   ubicacion?: string;
   lang?: string;
 }) {
-  try {
-    const resp = await fetch('/api/directorio/consultores');
-    if (!resp.ok) return [];
-    const data = await resp.json();
-    const entries = (data.consultores || []) as any[];
-    return applyFilters(entries, filters);
-  } catch (e) {
-    console.error('getConsultoresEntries (cached) error:', e);
-    return [];
-  }
+  const snapshot = await getDocs(
+    query(collection(db, COLLECTION_CONSULTORES), orderBy('createdAt', 'desc'))
+  );
+  const entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
+  return applyFilters(entries, filters);
 }
 
 /**
- * Get software entries only — fetches from the cached public API endpoint
- * (24h KV cache). See note on getConsultoresEntries above.
+ * Get software entries only — queries Firestore directly.
+ * See note on getConsultoresEntries about when to use the cached public API.
  */
 export async function getSoftwareEntries(filters?: {
   tipo?: string;
@@ -422,16 +415,11 @@ export async function getSoftwareEntries(filters?: {
   ubicacion?: string;
   lang?: string;
 }) {
-  try {
-    const resp = await fetch('/api/directorio/software');
-    if (!resp.ok) return [];
-    const data = await resp.json();
-    const entries = (data.software || []) as any[];
-    return applyFilters(entries, filters);
-  } catch (e) {
-    console.error('getSoftwareEntries (cached) error:', e);
-    return [];
-  }
+  const snapshot = await getDocs(
+    query(collection(db, COLLECTION_SOFTWARE), orderBy('createdAt', 'desc'))
+  );
+  const entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
+  return applyFilters(entries, filters);
 }
 
 /** Get all directory entries from both collections (for getStaticPaths and slug lookup) */
