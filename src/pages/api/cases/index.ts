@@ -1,5 +1,12 @@
+// GET /api/cases — List published case studies for a slug (public).
+// Cached per-slug (24h TTL) — case studies are write-rare, read-often.
+// Cache is invalidated when a new case is published via POST in this same file.
 import type { APIRoute } from 'astro';
 import { firestoreQuery, firestoreCreate, findListingBySlug } from '../../../lib/firestore-rest';
+import { getCached, invalidate } from '../../../lib/cache';
+
+const CASES_CACHE_KEY_PREFIX = 'cache:cases:slug:v1';
+const CASES_CACHE_TTL = 86400; // 24h
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -36,6 +43,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       createdAt: { timestampValue: new Date().toISOString() },
     });
 
+    // Invalidate the per-slug cases cache so the new case shows up immediately.
+    await invalidate(env, [`${CASES_CACHE_KEY_PREFIX}:${slug}`]);
+
     return new Response(JSON.stringify({ success: true, message: 'Caso de estudio publicado.' }), { status: 201 });
   } catch (err: any) {
     console.error('Case study submit error:', err);
@@ -52,12 +62,20 @@ export const GET: APIRoute = async ({ url, locals }) => {
       return new Response(JSON.stringify({ error: 'slug requerido.' }), { status: 400 });
     }
 
-    // Query by slug, filter by status and sort in-memory (avoids composite index)
-    const allDocs = await firestoreQuery(env, 'casos_estudio_asetemyt', 'slug', 'EQUAL', { stringValue: slug });
-    const cases = allDocs
-      .filter((c: any) => c.status === 'published')
-      .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
-      .slice(0, 10);
+    // Cache the per-slug published case list. Cached for 24h, invalidated
+    // by POST in this same file.
+    const cases = await getCached(
+      env,
+      `${CASES_CACHE_KEY_PREFIX}:${slug}`,
+      async () => {
+        const allDocs = await firestoreQuery(env, 'casos_estudio_asetemyt', 'slug', 'EQUAL', { stringValue: slug });
+        return allDocs
+          .filter((c: any) => c.status === 'published')
+          .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+          .slice(0, 10);
+      },
+      CASES_CACHE_TTL
+    );
 
     return new Response(JSON.stringify({ cases }), { status: 200 });
   } catch (err: any) {

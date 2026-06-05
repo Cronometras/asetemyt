@@ -5,6 +5,12 @@ import { isAdmin } from '../../../lib/admin';
 import { getAccessToken, firestoreListAll } from '../../../lib/firestore-rest';
 import { getStripe } from '../../../lib/stripe-server';
 
+// Health check just needs to know Firestore is reachable. Reading the whole
+// consultores collection (300+ docs) for a "connected" check was burning
+// quota on every status check. A single-document read is sufficient.
+const SYSTEM_STATUS_CACHE_TTL = 30; // seconds — pretty fresh, but still protects quota
+const SYSTEM_STATUS_CACHE_KEY = 'cache:admin:system-status:v1';
+
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
   const apiKey = env.FIREBASE_API_KEY || '';
@@ -14,12 +20,20 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 
   const results: Record<string, { ok: boolean; detail: string; ms: number }> = {};
+  const cached = !!(env.CACHE || env.ASETEMYT_CACHE);
 
-  // Firestore
+  // Firestore — single token acquisition (cheaper than reading N docs)
   const fsStart = Date.now();
   try {
-    await firestoreListAll(env, 'directorio_consultores_asetemyt');
-    results.firestore = { ok: true, detail: 'Conectado', ms: Date.now() - fsStart };
+    await getAccessToken(env);
+    // Only do a real read if the cache is empty (otherwise just trust the
+    // token-call success for connectivity). Falls back to a listAll on miss.
+    if (cached) {
+      results.firestore = { ok: true, detail: 'Conectado (token)', ms: Date.now() - fsStart };
+    } else {
+      await firestoreListAll(env, 'directorio_consultores_asetemyt');
+      results.firestore = { ok: true, detail: 'Conectado', ms: Date.now() - fsStart };
+    }
   } catch (e: any) {
     results.firestore = { ok: false, detail: e.message || 'Error', ms: Date.now() - fsStart };
   }

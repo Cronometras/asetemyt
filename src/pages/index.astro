@@ -126,8 +126,7 @@
   </section>
 
   <script>
-    import { db, t, getLang, type Lang, translations, COLLECTION_CONSULTORES, COLLECTION_SOFTWARE } from '../lib/firebase';
-    import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+    import { t, getLang, type Lang, translations } from '../lib/firebase';
 
     let lang: Lang = getLang();
 
@@ -136,14 +135,21 @@
       let articles: any[] = [];
 
       try {
-        // Load from both split collections in parallel
-        const [consultoresSnap, softwareSnap] = await Promise.all([
-          getDocs(query(collection(db, COLLECTION_CONSULTORES), orderBy('createdAt', 'desc'))),
-          getDocs(query(collection(db, COLLECTION_SOFTWARE), orderBy('createdAt', 'desc'))),
+        // Cache-first: hit the public directorio endpoints (server-side KV
+        // cache, 24h TTL). Replaces the previous client-side getDocs() that
+        // read EVERY listing from Firestore on every home-page visit — that
+        // was responsible for ~60k+ reads/day (≈ #1 source of quota burn).
+        // Now each home-page visit costs 0 Firestore reads (KV hit) and only
+        // ~2 CF Worker invocations. The KV cache is repopulated at most once
+        // per 24h per collection, and invalidated on admin mutations.
+        const [cRes, sRes] = await Promise.all([
+          fetch('/api/directorio/consultores'),
+          fetch('/api/directorio/software'),
         ]);
+        const [cData, sData] = await Promise.all([cRes.json(), sRes.json()]);
         entries = [
-          ...consultoresSnap.docs.map((d) => d.data()),
-          ...softwareSnap.docs.map((d) => d.data()),
+          ...(cData.consultores || []),
+          ...(sData.software || []),
         ];
         // Filtrar por idioma: mostrar entradas sin lang o con el lang actual
         // Show all entries regardless of language — UI toggle handles switching

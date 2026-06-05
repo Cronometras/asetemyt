@@ -4,6 +4,14 @@ import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
 import { firestoreQuery, firestoreUpdate, toFirestoreValue } from '../../../lib/firestore-rest';
+import { getCached } from '../../../lib/cache';
+
+// Admin cache TTL: short (60s) — admin sees fresh data on manual refresh.
+// Critical here: the original code ran 3 separate firestoreQuery calls
+// (active / canceled / past_due) per refresh. With 60s cache, that's
+// 3 reads per minute-per-admin at most, not 3 × visits.
+const ADMIN_CACHE_TTL = 60;
+const ADMIN_CACHE_KEY_SUBSCRIBERS = 'cache:admin:subscribers:v1';
 
 export const GET: APIRoute = async ({ request, url, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -15,21 +23,31 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     const status = url.searchParams.get('status') || '';
     const search = url.searchParams.get('search') || '';
 
-    let subs = await firestoreQuery(env, 'newsletter_subscribers', 'status', 'EQUAL', { stringValue: 'active' });
-    // Also get non-active
-    const inactive = await firestoreQuery(env, 'newsletter_subscribers', 'status', 'EQUAL', { stringValue: 'canceled' });
-    const pastDue = await firestoreQuery(env, 'newsletter_subscribers', 'status', 'EQUAL', { stringValue: 'past_due' });
-    subs = [...subs, ...inactive, ...pastDue];
+    const subs = await getCached(
+      env,
+      ADMIN_CACHE_KEY_SUBSCRIBERS,
+      async () => {
+        // Single cached payload contains all statuses — filtering happens
+        // after the cache hit (cheap in-memory work).
+        const [active, canceled, pastDue] = await Promise.all([
+          firestoreQuery(env, 'newsletter_subscribers', 'status', 'EQUAL', { stringValue: 'active' }),
+          firestoreQuery(env, 'newsletter_subscribers', 'status', 'EQUAL', { stringValue: 'canceled' }),
+          firestoreQuery(env, 'newsletter_subscribers', 'status', 'EQUAL', { stringValue: 'past_due' }),
+        ]);
+        return [...active, ...canceled, ...pastDue]
+          .sort((a: any, b: any) => (b.subscribedAt || '').localeCompare(a.subscribedAt || ''));
+      },
+      ADMIN_CACHE_TTL
+    );
 
-    subs.sort((a: any, b: any) => (b.subscribedAt || '').localeCompare(a.subscribedAt || ''));
-
-    if (status) subs = subs.filter((s: any) => s.status === status);
+    let filtered = subs;
+    if (status) filtered = filtered.filter((s: any) => s.status === status);
     if (search) {
       const q = search.toLowerCase();
-      subs = subs.filter((s: any) => (s.email || '').toLowerCase().includes(q) || (s.company || '').toLowerCase().includes(q));
+      filtered = filtered.filter((s: any) => (s.email || '').toLowerCase().includes(q) || (s.company || '').toLowerCase().includes(q));
     }
 
-    return new Response(JSON.stringify({ subscribers: subs }), { status: 200 });
+    return new Response(JSON.stringify({ subscribers: filtered }), { status: 200 });
   } catch (e: any) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }

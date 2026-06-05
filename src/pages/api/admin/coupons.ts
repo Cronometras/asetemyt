@@ -8,6 +8,12 @@ import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
 import { firestoreQuery, firestoreCreate, firestoreUpdate, firestoreDelete, firestoreListAll } from '../../../lib/firestore-rest';
+import { getCached } from '../../../lib/cache';
+
+// Admin cache TTL: short (60s) — admin sees fresh data on manual refresh,
+// but re-opening the panel doesn't burn the whole coupon list from Firestore.
+const ADMIN_CACHE_TTL = 60;
+const ADMIN_CACHE_KEY_COUPONS = 'cache:admin:coupons:v1';
 
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -18,22 +24,29 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    const coupons = await firestoreListAll(env, 'cupones_asetemyt');
-    const parsed = coupons.map((c: any) => ({
-      id: c.id,
-      code: c.code || '',
-      type: c.type || 'free',
-      value: Number(c.value || 0),
-      maxUses: Number(c.maxUses || 0),
-      usedCount: Number(c.usedCount || 0),
-      expiresAt: c.expiresAt || null,
-      activo: c.activo ?? true,
-      descripcion: c.descripcion || '',
-      createdAt: c.createdAt || '',
-      createdBy: c.createdBy || '',
-    })).sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+    const coupons = await getCached(
+      env,
+      ADMIN_CACHE_KEY_COUPONS,
+      async () => {
+        const raw = await firestoreListAll(env, 'cupones_asetemyt');
+        return raw.map((c: any) => ({
+          id: c.id,
+          code: c.code || '',
+          type: c.type || 'free',
+          value: Number(c.value || 0),
+          maxUses: Number(c.maxUses || 0),
+          usedCount: Number(c.usedCount || 0),
+          expiresAt: c.expiresAt || null,
+          activo: c.activo ?? true,
+          descripcion: c.descripcion || '',
+          createdAt: c.createdAt || '',
+          createdBy: c.createdBy || '',
+        })).sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      },
+      ADMIN_CACHE_TTL
+    );
 
-    return new Response(JSON.stringify({ coupons: parsed }), { status: 200 });
+    return new Response(JSON.stringify({ coupons }), { status: 200 });
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }

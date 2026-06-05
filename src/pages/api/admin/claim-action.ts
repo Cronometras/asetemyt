@@ -4,6 +4,12 @@ import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
 import { firestoreGet, firestoreUpdate, firestoreQuery } from '../../../lib/firestore-rest';
+import { getCached } from '../../../lib/cache';
+
+// Admin cache TTL: short (60s) — admin sees fresh-ish data on refresh, but
+// re-opening the claims panel doesn't re-run 2 full queries per click.
+const ADMIN_CACHE_TTL = 60;
+const ADMIN_CACHE_KEY_CLAIMS = 'cache:admin:claims:v1';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -41,11 +47,19 @@ export const GET: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify({ error: 'Acceso denegado' }), { status: 403 });
   }
 
-  // Fetch pending AND approved claims
-  const [pendingClaims, approvedClaims] = await Promise.all([
-    firestoreQuery(env, 'claims_asetemyt', 'estado', 'EQUAL', { stringValue: 'pending' }),
-    firestoreQuery(env, 'claims_asetemyt', 'estado', 'EQUAL', { stringValue: 'approved' }),
-  ]);
+  // Single cached payload for both statuses.
+  const result = await getCached(
+    env,
+    ADMIN_CACHE_KEY_CLAIMS,
+    async () => {
+      const [pendingClaims, approvedClaims] = await Promise.all([
+        firestoreQuery(env, 'claims_asetemyt', 'estado', 'EQUAL', { stringValue: 'pending' }),
+        firestoreQuery(env, 'claims_asetemyt', 'estado', 'EQUAL', { stringValue: 'approved' }),
+      ]);
+      return { pending: pendingClaims, approved: approvedClaims };
+    },
+    ADMIN_CACHE_TTL
+  );
 
-  return new Response(JSON.stringify({ pending: pendingClaims, approved: approvedClaims }), { status: 200 });
+  return new Response(JSON.stringify(result), { status: 200 });
 };

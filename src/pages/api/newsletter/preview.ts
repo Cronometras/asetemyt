@@ -1,8 +1,15 @@
 // GET /api/newsletter/preview — Generate newsletter HTML for admin preview (no send)
+// Cached 5min: admin typically re-opens the panel a few times to iterate
+// on the preview, but the data (last-30-days entries + active subscribers)
+// is fine on a 5-min cooldown.
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
 import { firestoreQuery } from '../../../lib/firestore-rest';
+import { getCached } from '../../../lib/cache';
+
+const NEWSLETTER_PREVIEW_CACHE_TTL = 300; // 5 min
+const NEWSLETTER_PREVIEW_CACHE_KEY = 'cache:admin:newsletter-preview:v1';
 
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -13,22 +20,33 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    // Get new software entries from the last 30 days
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const allSoftware = await firestoreQuery(env, 'directorio_software_asetemyt', 'createdAt', 'GREATER_THAN', { timestampValue: thirtyDaysAgo });
+    const data = await getCached(
+      env,
+      NEWSLETTER_PREVIEW_CACHE_KEY,
+      async () => {
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const [allSoftware, recentConsultores, subscribers] = await Promise.all([
+          firestoreQuery(env, 'directorio_software_asetemyt', 'createdAt', 'GREATER_THAN', { timestampValue: thirtyDaysAgo }),
+          firestoreQuery(env, 'directorio_consultores_asetemyt', 'createdAt', 'GREATER_THAN', { timestampValue: thirtyDaysAgo }),
+          firestoreQuery(env, 'newsletter_subscribers', 'status', 'EQUAL', { stringValue: 'active' }),
+        ]);
 
-    const recentSoftware = allSoftware.filter((s: any) => {
-      const created = new Date(s.createdAt || 0);
-      return created > new Date(thirtyDaysAgo);
-    });
+        const recentSoftware = allSoftware.filter((s: any) => {
+          const created = new Date(s.createdAt || 0);
+          return created > new Date(thirtyDaysAgo);
+        });
 
-    // Also get new consultores
-    const recentConsultores = await firestoreQuery(env, 'directorio_consultores_asetemyt', 'createdAt', 'GREATER_THAN', { timestampValue: thirtyDaysAgo });
+        return {
+          recentSoftware,
+          recentConsultores,
+          subscribers,
+          monthName: new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+        };
+      },
+      NEWSLETTER_PREVIEW_CACHE_TTL
+    );
 
-    // Get subscriber count
-    const subscribers = await firestoreQuery(env, 'newsletter_subscribers', 'status', 'EQUAL', { stringValue: 'active' });
-
-    const monthName = new Date().toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
+    const { recentSoftware, recentConsultores, subscribers, monthName } = data;
 
     const softwareCards = recentSoftware.length > 0
       ? recentSoftware.map((s: any) => `

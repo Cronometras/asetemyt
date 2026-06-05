@@ -4,6 +4,13 @@ import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
 import { firestoreListAll, firestoreUpdate, toFirestoreValue } from '../../../lib/firestore-rest';
+import { getCached } from '../../../lib/cache';
+
+// Admin cache TTL: short (60s) so the admin sees fresh-ish data on a manual
+// refresh, but re-opening the panel or a back-button navigation does NOT
+// burn N Firestore reads per click.
+const ADMIN_CACHE_TTL = 60;
+const ADMIN_CACHE_KEY_LEADS = 'cache:admin:leads:v1';
 
 export const GET: APIRoute = async ({ request, url, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -17,17 +24,25 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     const statusFilter = url.searchParams.get('status') || '';
     const limit = parseInt(url.searchParams.get('limit') || '50');
 
-    const allLeads = await firestoreListAll(env, 'leads_asetemyt');
+    // Cache the unfiltered, sorted leads list keyed by status+limit. A different
+    // (status, limit) pair → different cache key, so the same data isn't
+    // served under mismatched filter combinations. Caching the full list
+    // (not just the first 50) means status-filtered queries still hit
+    // the cache without a second Firestore read.
+    const cacheKey = `${ADMIN_CACHE_KEY_LEADS}:${statusFilter || 'all'}:${limit}`;
+    const leads = await getCached(
+      env,
+      cacheKey,
+      async () => {
+        const all = await firestoreListAll(env, 'leads_asetemyt');
+        return all
+          .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+          .slice(0, limit);
+      },
+      ADMIN_CACHE_TTL
+    );
 
-    // Sort by createdAt descending
-    allLeads.sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''));
-
-    let filtered = allLeads;
-    if (statusFilter) {
-      filtered = allLeads.filter((l: any) => l.status === statusFilter);
-    }
-
-    return new Response(JSON.stringify({ leads: filtered.slice(0, limit) }), { status: 200 });
+    return new Response(JSON.stringify({ leads }), { status: 200 });
   } catch (err: any) {
     console.error('Admin leads error:', err);
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });

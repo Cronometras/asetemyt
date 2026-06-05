@@ -384,32 +384,54 @@ function applyFilters(entries: any[], filters?: {
   return result;
 }
 
-/** Get consultores entries only */
+/**
+ * Get consultores entries only — fetches from the cached public API endpoint
+ * instead of querying Firestore directly. This is the same data the home page
+ * uses, but routed through /api/directorio/consultores so the underlying
+ * Firestore reads hit the Cloudflare KV cache (24h TTL) instead of running
+ * a fresh getDocs() on every call.
+ *
+ * Returns the unfiltered list; filtering (tipo / especialidad / ubicacion / lang)
+ * is applied client-side from the cached payload.
+ */
 export async function getConsultoresEntries(filters?: {
   tipo?: string;
   especialidad?: string;
   ubicacion?: string;
   lang?: string;
 }) {
-  const snapshot = await getDocs(
-    query(collection(db, COLLECTION_CONSULTORES), orderBy('createdAt', 'desc'))
-  );
-  const entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
-  return applyFilters(entries, filters);
+  try {
+    const resp = await fetch('/api/directorio/consultores');
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    const entries = (data.consultores || []) as any[];
+    return applyFilters(entries, filters);
+  } catch (e) {
+    console.error('getConsultoresEntries (cached) error:', e);
+    return [];
+  }
 }
 
-/** Get software entries only */
+/**
+ * Get software entries only — fetches from the cached public API endpoint
+ * (24h KV cache). See note on getConsultoresEntries above.
+ */
 export async function getSoftwareEntries(filters?: {
   tipo?: string;
   especialidad?: string;
   ubicacion?: string;
   lang?: string;
 }) {
-  const snapshot = await getDocs(
-    query(collection(db, COLLECTION_SOFTWARE), orderBy('createdAt', 'desc'))
-  );
-  const entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
-  return applyFilters(entries, filters);
+  try {
+    const resp = await fetch('/api/directorio/software');
+    if (!resp.ok) return [];
+    const data = await resp.json();
+    const entries = (data.software || []) as any[];
+    return applyFilters(entries, filters);
+  } catch (e) {
+    console.error('getSoftwareEntries (cached) error:', e);
+    return [];
+  }
 }
 
 /** Get all directory entries from both collections (for getStaticPaths and slug lookup) */

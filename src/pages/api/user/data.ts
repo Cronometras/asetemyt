@@ -38,12 +38,22 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const fichasReclamadas: string[] = (userDoc?.fichasReclamadas || []);
     const fichasMap = new Map<string, any>();
 
-    // 2. Look up each claimed slug (parallel)
+    // 2. Look up each claimed slug (parallel) — uses findListingBySlug which
+    // does 2 firestoreQuery calls per slug. We batch them in parallel and
+    // skip already-resolved entries via a slug→found cache map to avoid
+    // re-querying the same slug if it appears twice (race-safe de-dup).
     if (fichasReclamadas.length > 0) {
+      const slugCache = new Map<string, { listing: any; collection: string } | null>();
+      const uniqueSlugs = Array.from(new Set(fichasReclamadas.filter(s => s?.trim()))) as string[];
+
       const results = await Promise.all(
-        fichasReclamadas.filter(s => s?.trim()).map(slug =>
-          findListingBySlug(env, slug)
-        )
+        uniqueSlugs.map(async (slug) => {
+          const cached = slugCache.get(slug);
+          if (cached !== undefined) return cached;
+          const found = await findListingBySlug(env, slug);
+          slugCache.set(slug, found);
+          return found;
+        })
       );
       for (const found of results) {
         if (!found) continue;
