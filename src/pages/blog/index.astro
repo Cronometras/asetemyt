@@ -1,18 +1,117 @@
 ---
 export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+
+const SITE = 'https://asetemyt.com';
+
+let articles: any[] = [];
+const articlesFile = join(process.cwd(), 'public', 'data', 'articles.json');
+if (existsSync(articlesFile)) {
+  try {
+    articles = (JSON.parse(readFileSync(articlesFile, 'utf-8')) as any[])
+      .filter((a) => a.status !== 'draft')
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  } catch (e) {
+    console.error('blog/index: failed to read articles.json', e);
+  }
+}
+
+const recent = articles.slice(0, 6);
+
+const blogSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  '@id': `${SITE}/blog`,
+  name: 'Blog de ASETEMYT — Cronometraje Industrial',
+  description: 'Artículos, guías y análisis sobre cronometraje industrial, MTM, MOST, OEE y optimización de procesos.',
+  url: `${SITE}/blog`,
+  inLanguage: 'es-ES',
+  publisher: { '@id': `${SITE}#organization` },
+  blogPost: articles.slice(0, 20).map((a: any) => ({
+    '@type': 'BlogPosting',
+    headline: a.title,
+    url: `${SITE}/blog/${a.slug}`,
+    datePublished: a.publishedAt,
+    dateModified: a.updatedAt || a.publishedAt,
+    author: { '@type': 'Person', name: a.author || 'Equipo ASETEMYT' },
+  })),
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE}/blog` },
+  ],
+};
 ---
 
-<Layout title="Blog — Cronometraje Industrial" description="Artículos, guías y novedades sobre cronometraje industrial, ingeniería de métodos y tiempos, MTM, MOST y optimización de procesos.">
+<Layout
+  title="Blog de Cronometraje Industrial — Guías, MTM, MOST y Lean | ASETEMYT"
+  description="Artículos, guías y análisis sobre cronometraje industrial, ingeniería de métodos y tiempos, MTM, MOST, OEE, Lean Manufacturing y optimización de procesos."
+  canonical={`${SITE}/blog`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(blogSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="mb-10">
+    <header class="mb-10">
+      <nav aria-label="Migas" class="text-sm text-steel-500 mb-3">
+        <ol class="flex flex-wrap items-center gap-2">
+          <li><a href="/" class="hover:text-blue-600">Inicio</a></li>
+          <li aria-hidden="true">/</li>
+          <li class="text-primary-800 font-semibold">Blog</li>
+        </ol>
+      </nav>
       <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">
         Blog — Cronometraje Industrial
       </h1>
-      <p class="text-steel-500 text-lg">
-        Artículos, guías y novedades sobre ingeniería de métodos y tiempos.
+      <p class="text-steel-500 text-lg max-w-3xl">
+        Artículos, guías y novedades sobre ingeniería de métodos y tiempos: MTM, MOST,
+        Work Sampling, OEE y optimización de procesos industriales. Aprende a aplicar
+        las técnicas de cronometraje y mejora continua en tu planta.
       </p>
-    </div>
+    </header>
+
+    <!-- Static SSR articles (fallback for crawlers) -->
+    {recent.length > 0 && (
+      <section aria-labelledby="recientes-h2" class="mb-12">
+        <h2 id="recientes-h2" class="text-2xl font-bold text-primary-800 mb-4">Artículos recientes</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {recent.map((a: any) => (
+            <a
+              href={`/blog/${a.slug}`}
+              class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group"
+            >
+              {a.coverImage && (
+                <img
+                  src={a.coverImage}
+                  alt={a.title}
+                  class="w-full h-44 object-cover rounded-lg mb-4"
+                  width="400"
+                  height="176"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div class="flex items-center gap-2 text-xs text-steel-500 mb-2">
+                <time datetime={new Date(a.publishedAt).toISOString()}>
+                  {new Date(a.publishedAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </time>
+                {a.category && (<><span aria-hidden="true">·</span><span class="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{a.category}</span></>)}
+              </div>
+              <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">
+                {a.title}
+              </h3>
+              <p class="text-steel-500 text-sm line-clamp-3">{a.excerpt}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
     <!-- Search Bar -->
     <div class="mb-8">
@@ -87,10 +186,37 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
+  // SEO: filter and search URLs are duplicate content traps
+  (function injectNoindexForFilters() {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('q') || url.searchParams.get('tag') || url.searchParams.get('category')) {
+      const meta = document.createElement('meta');
+      meta.name = 'robots';
+      meta.content = 'noindex, follow';
+      document.head.appendChild(meta);
+    }
+  })();
+
   let allArticles: any[] = [];
   let filteredArticles: any[] = [];
   let currentPage = 1;
   const ARTICLES_PER_PAGE = 9;
+
+  function getPageFromURL(): number {
+    const url = new URL(window.location.href);
+    const p = parseInt(url.searchParams.get('pagina') || '1', 10);
+    return Number.isFinite(p) && p > 0 ? p : 1;
+  }
+
+  function setPageInURL(page: number) {
+    const url = new URL(window.location.href);
+    if (page === 1) {
+      url.searchParams.delete('pagina');
+    } else {
+      url.searchParams.set('pagina', String(page));
+    }
+    history.replaceState(null, '', url.toString());
+  }
 
   function formatDate(dateStr: string | null): string {
     if (!dateStr) return '';
@@ -243,6 +369,7 @@ import Layout from '../../layouts/Layout.astro';
 
   function goToPage(page: number) {
     currentPage = page;
+    setPageInURL(page);
     renderPage();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -311,5 +438,7 @@ import Layout from '../../layouts/Layout.astro';
     });
   });
 
+  // Initial page from URL (?pagina=N)
+  currentPage = getPageFromURL();
   loadArticles();
 </script>

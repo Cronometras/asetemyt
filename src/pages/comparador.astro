@@ -1,63 +1,153 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+
+const SITE = 'https://asetemyt.com';
+
+interface Sw {
+  name: string;
+  slug: string;
+  methods?: string[];
+  platform?: string;
+  pricing?: string;
+  targetSize?: string;
+  features?: string[];
+  freeTrial?: boolean;
+  videoSupport?: boolean;
+}
+
+let allSoftware: Sw[] = [];
+const file = join(process.cwd(), 'public', 'data', 'software-comparison.json');
+if (existsSync(file)) {
+  try {
+    const json = JSON.parse(readFileSync(file, 'utf-8'));
+    allSoftware = (json.software || []).slice().sort((a: any, b: any) => a.name.localeCompare(b.name));
+  } catch (e) {
+    console.error('comparador: failed to read software-comparison.json', e);
+  }
+}
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: 'Comparador', item: `${SITE}/comparador` },
+  ],
+};
+
+const itemListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Comparador de software de cronometraje industrial',
+  itemListElement: allSoftware.slice(0, 30).map((s, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: s.name,
+    url: `${SITE}/directorio/${s.slug}`,
+  })),
+};
+
+const softwareApps = allSoftware.slice(0, 20).map((s) => ({
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: s.name,
+  url: `${SITE}/directorio/${s.slug}`,
+  applicationCategory: 'BusinessApplication',
+  applicationSubCategory: 'Industrial Engineering',
+  operatingSystem: s.platform || 'Web',
+  description: (s.features || []).slice(0, 3).join(' · '),
+  offers: { '@type': 'Offer', price: s.pricing || 'Contactar', priceCurrency: 'EUR' },
+  featureList: s.features || [],
+}));
 ---
 
-<Layout title="Comparador de Software de Cronometraje Industrial" description="Compara herramientas de software para cronometraje industrial, MTM, MOST, balanceo de líneas y Lean Manufacturing. Encuentra la mejor solución para tu empresa.">
+<Layout
+  title="Comparador de Software de Cronometraje Industrial | ASETEMYT"
+  description="Compara herramientas de software para cronometraje industrial, MTM, MOST, balanceo de líneas, OEE y Lean Manufacturing. Encuentra la mejor solución para tu empresa."
+  canonical={`${SITE}/comparador`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+  {softwareApps.map((sa) => (
+    <script type="application/ld+json" set:html={JSON.stringify(sa)} />
+  ))}
+
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="mb-10">
-      <nav class="mb-4 text-sm text-steel-500">
-        <a href="/" class="hover:text-accent-600" data-field="home">Inicio</a>
-        <span class="mx-2">/</span>
-        <span data-field="navCompare">Comparador</span>
+      <nav aria-label="Migas" class="mb-4 text-sm text-steel-500">
+        <ol class="flex flex-wrap items-center gap-2">
+          <li><a href="/" class="hover:text-accent-600">Inicio</a></li>
+          <li aria-hidden="true">/</li>
+          <li class="text-primary-800 font-semibold">Comparador</li>
+        </ol>
       </nav>
       <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3" data-field="compareTitle">Comparador de Software de Cronometraje</h1>
-      <p class="text-steel-500 text-lg" data-field="compareDesc">Selecciona hasta 3 herramientas y compara funciones, precios y plataforma.</p>
+      <p class="text-steel-500 text-lg max-w-3xl" data-field="compareDesc">
+        Selecciona hasta 3 herramientas y compara funciones, precios, plataforma e idioma.
+        Catálogo con {allSoftware.length} soluciones verificadas de software industrial.
+      </p>
     </div>
 
-    <!-- Selector -->
-    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" id="selector-grid">
-        <div>
-          <label class="block text-sm font-medium text-steel-700 mb-1" data-field="tool1">Herramienta 1</label>
-          <select id="select-1" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-            <option value="" data-field="selectTool">Seleccionar...</option>
-          </select>
+    {allSoftware.length > 0 && (
+      <section aria-labelledby="catalogo-sw" class="mb-10">
+        <h2 id="catalogo-sw" class="text-2xl font-bold text-primary-800 mb-4">Catálogo de software</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {allSoftware.map((s) => (
+            <a
+              href={`/directorio/${s.slug}`}
+              class="block bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-5 border border-steel-100 group"
+            >
+              <h3 class="font-bold text-primary-800 text-lg mb-2 group-hover:text-accent-600">{s.name}</h3>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                {(s.methods || []).map((m) => (
+                  <span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded font-medium">{m}</span>
+                ))}
+              </div>
+              <div class="space-y-1.5 text-sm text-steel-600 mb-3">
+                <p><span class="font-medium text-steel-700">Plataforma:</span> {s.platform || '—'}</p>
+                <p><span class="font-medium text-steel-700">Precio:</span> {s.pricing || 'Contactar'}</p>
+                <p><span class="font-medium text-steel-700">Tamaño objetivo:</span> {s.targetSize || '—'}</p>
+              </div>
+              {s.features?.length ? <p class="text-xs text-steel-500 line-clamp-2">{s.features.slice(0, 4).join(' · ')}</p> : null}
+            </a>
+          ))}
         </div>
-        <div>
-          <label class="block text-sm font-medium text-steel-700 mb-1" data-field="tool2">Herramienta 2</label>
-          <select id="select-2" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-            <option value="" data-field="selectTool">Seleccionar...</option>
-          </select>
+      </section>
+    )}
+
+    <details class="bg-white rounded-xl shadow-md p-6 mb-8">
+      <summary class="cursor-pointer font-semibold text-primary-800">¿Necesitas comparar dos o tres herramientas en detalle?</summary>
+      <div class="mt-4">
+        <div class="selector-grid grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Herramienta 1</label>
+            <select id="select-1" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Herramienta 2</label>
+            <select id="select-2" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-steel-700 mb-1">Herramienta 3 (opcional)</label>
+            <select id="select-3" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-steel-700 mb-1" data-field="tool3">Herramienta 3 (opcional)</label>
-          <select id="select-3" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-            <option value="" data-field="selectTool">Seleccionar...</option>
-          </select>
+        <div class="flex flex-wrap gap-3">
+          <button id="compare-btn" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors">Comparar</button>
+          <button id="clear-btn" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-6 py-2.5 rounded-lg transition-colors">Limpiar</button>
         </div>
       </div>
-      <div class="flex flex-wrap gap-3">
-        <button id="compare-btn" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors">
-          <span data-field="compareBtn">Comparar</span>
-        </button>
-        <button id="clear-btn" class="bg-steel-100 hover:bg-steel-200 text-steel-700 font-semibold px-6 py-2.5 rounded-lg transition-colors">
-          <span data-field="clearBtn">Limpiar</span>
-        </button>
-      </div>
-    </div>
+    </details>
 
-    <!-- Quick filters -->
-    <div class="flex flex-wrap gap-2 mb-6">
-      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="all" data-field="allTools">Todos</button>
-      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="cronometraje" data-field="cronometrajeFilter">Cronometraje</button>
-      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="mtm">MTM</button>
-      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="most">MOST</button>
-      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="oee">OEE</button>
-      <button class="filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer" data-filter="lean">Lean</button>
-    </div>
-
-    <!-- Comparison Table -->
     <div id="comparison-result" class="hidden mb-8">
       <div class="overflow-x-auto">
         <table class="w-full bg-white rounded-xl shadow-md overflow-hidden">
@@ -66,148 +156,56 @@ import Layout from '../layouts/Layout.astro';
         </table>
       </div>
     </div>
-
-    <!-- Software cards (all) -->
-    <div id="software-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div class="text-center py-10 col-span-full">
-        <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    </div>
   </section>
 
-  <script>
-    import { t, getLang, type Lang } from '../lib/firebase';
+  <script define:vars={{ software: allSoftware }}>
+    let allSoftware = software;
 
-    let lang: Lang = getLang();
-    let allSoftware: any[] = [];
-
-    function tr(key: string): string {
-      return t(key, lang);
-    }
-
-    function updateLabels() {
-      document.querySelectorAll('[data-field]').forEach((el) => {
-        const key = (el as HTMLElement).dataset.field!;
-        const label = tr(key);
-        if (label && label !== key) el.textContent = label;
-      });
-    }
-
-    async function loadSoftware() {
-      try {
-        const res = await fetch('/data/software-comparison.json');
-        if (!res.ok) return;
-        const data = await res.json();
-        allSoftware = data.software.sort((a: any, b: any) => a.name.localeCompare(b.name));
-
-        // Populate selects
-        const opts = allSoftware.map((s: any) => `<option value="${s.slug}">${s.name}</option>`).join('');
-        ['select-1', 'select-2', 'select-3'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.innerHTML = `<option value="">${tr('selectTool')}</option>` + opts;
-        });
-
-        renderGrid(allSoftware);
-        setupFilters();
-      } catch (e) {
-        console.error('Error loading software data:', e);
-      }
-    }
-
-    function renderGrid(software: any[]) {
-      const grid = document.getElementById('software-grid')!;
-      if (software.length === 0) {
-        grid.innerHTML = `<p class="text-center text-steel-400 py-10 col-span-full">${tr('noSoftwareFound')}</p>`;
-        return;
-      }
-
-      grid.innerHTML = software.map((s: any) => `
-        <div class="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition-all border border-steel-100">
-          <h3 class="font-bold text-primary-800 text-lg mb-2">${s.name}</h3>
-          <div class="flex flex-wrap gap-1.5 mb-3">
-            ${(s.methods || []).map((m: string) => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded font-medium">${m}</span>`).join('')}
-          </div>
-          <div class="space-y-1.5 text-sm text-steel-600 mb-3">
-            <p><span class="font-medium text-steel-700">${tr('platform')}:</span> ${s.platform || '—'}</p>
-            <p><span class="font-medium text-steel-700">${tr('pricing')}:</span> ${s.pricing || 'Contactar'}</p>
-            <p><span class="font-medium text-steel-700">${tr('target')}:</span> ${s.targetSize || '—'}</p>
-          </div>
-          ${s.features?.length ? `<p class="text-xs text-steel-500 line-clamp-2">${s.features.slice(0, 4).join(' · ')}</p>` : ''}
-          ${s.freeTrial ? `<span class="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">${tr('trialAvail')}</span>` : ''}
-          ${s.videoSupport ? `<span class="inline-block mt-2 ml-1 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">${tr('videoAvail')}</span>` : ''}
-        </div>
-      `).join('');
-    }
-
-    function setupFilters() {
-      document.querySelectorAll('.filter-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-          const filter = (chip as HTMLElement).dataset.filter;
-          document.querySelectorAll('.filter-chip').forEach(c => {
-            c.className = c === chip
-              ? 'filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-accent-500 text-white cursor-pointer'
-              : 'filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer';
-          });
-
-          if (filter === 'all') {
-            renderGrid(allSoftware);
-          } else {
-            const filtered = allSoftware.filter(s =>
-              (s.methods || []).some((m: string) => m.toLowerCase().includes(filter)) ||
-              (s.features || []).some((f: string) => f.toLowerCase().includes(filter))
-            );
-            renderGrid(filtered);
-          }
-        });
-      });
-
-      // Compare button
-      document.getElementById('compare-btn')?.addEventListener('click', compareSelected);
-      document.getElementById('clear-btn')?.addEventListener('click', () => {
-        ['select-1', 'select-2', 'select-3'].forEach(id => {
-          const el = document.getElementById(id) as HTMLSelectElement;
-          if (el) el.value = '';
-        });
-        document.getElementById('comparison-result')?.classList.add('hidden');
+    function populateSelects() {
+      const opts = allSoftware.map((s) => `<option value="${s.slug}">${s.name}</option>`).join('');
+      ['select-1', 'select-2', 'select-3'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '<option value="">Seleccionar...</option>' + opts;
       });
     }
 
     function compareSelected() {
       const slugs = ['select-1', 'select-2', 'select-3']
-        .map(id => (document.getElementById(id) as HTMLSelectElement)?.value)
+        .map((id) => document.getElementById(id)?.value)
         .filter(Boolean);
 
       if (slugs.length < 2) {
-        alert(tr('selectAtLeast'));
+        alert('Selecciona al menos 2 herramientas para comparar.');
         return;
       }
 
-      const selected = slugs.map(s => allSoftware.find(sw => sw.slug === s)).filter(Boolean);
-      const resultEl = document.getElementById('comparison-result')!;
-      const thead = document.getElementById('comp-thead')!;
-      const tbody = document.getElementById('comp-tbody')!;
+      const selected = slugs.map((s) => allSoftware.find((sw) => sw.slug === s)).filter(Boolean);
+      const thead = document.getElementById('comp-thead');
+      const tbody = document.getElementById('comp-tbody');
+      const resultEl = document.getElementById('comparison-result');
+      if (!thead || !tbody || !resultEl) return;
 
       const headerColors = ['bg-accent-500', 'bg-primary-600', 'bg-green-600'];
 
       thead.innerHTML = `<tr>
-        <th class="text-left p-4 bg-steel-50 text-steel-700 font-semibold text-sm min-w-[140px]">${tr('characteristic')}</th>
-        ${selected.map((s: any, i: number) => `<th class="p-4 ${headerColors[i]} text-white font-bold text-sm text-center">${s.name}</th>`).join('')}
+        <th class="text-left p-4 bg-steel-50 text-steel-700 font-semibold text-sm min-w-[140px]">Característica</th>
+        ${selected.map((s, i) => `<th class="p-4 ${headerColors[i]} text-white font-bold text-sm text-center">${s.name}</th>`).join('')}
       </tr>`;
 
       const rows = [
-        { label: tr('platform'), key: 'platform' },
-        { label: tr('pricing'), key: 'pricing' },
-        { label: tr('target'), key: 'targetSize' },
-        { label: tr('languages'), key: 'languages', format: (v: any) => v?.join(', ') || '—' },
-        { label: tr('trial'), key: 'freeTrial' },
-        { label: tr('video'), key: 'videoSupport', format: (v: any) => v ? tr('yes') : tr('no') },
-        { label: tr('apiInt'), key: 'apiIntegration', format: (v: any) => v ? tr('yes') : tr('no') },
+        { label: 'Plataforma', key: 'platform' },
+        { label: 'Precio', key: 'pricing' },
+        { label: 'Tamaño objetivo', key: 'targetSize' },
+        { label: 'Idiomas', key: 'languages', format: (v) => v?.join(', ') || '—' },
+        { label: 'Prueba gratuita', key: 'freeTrial' },
+        { label: 'Soporte vídeo', key: 'videoSupport', format: (v) => v ? 'Sí' : 'No' },
+        { label: 'API', key: 'apiIntegration', format: (v) => v ? 'Sí' : 'No' },
       ];
 
-      tbody.innerHTML = rows.map(row => `
+      tbody.innerHTML = rows.map((row) => `
         <tr class="border-t border-steel-100">
           <td class="p-4 font-medium text-steel-700 text-sm">${row.label}</td>
-          ${(selected as any[]).map(s => {
+          ${selected.map((s) => {
             let val = s[row.key];
             if (row.format) val = row.format(val);
             return `<td class="p-4 text-center text-sm text-steel-600">${val || '—'}</td>`;
@@ -215,12 +213,12 @@ import Layout from '../layouts/Layout.astro';
         </tr>
       `).join('') + `
         <tr class="border-t border-steel-100">
-          <td class="p-4 font-medium text-steel-700 text-sm">${tr('methods')}</td>
-          ${(selected as any[]).map(s => `<td class="p-4 text-center text-sm"><div class="flex flex-wrap gap-1 justify-center">${(s.methods||[]).map((m: string) => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded">${m}</span>`).join('')}</div></td>`).join('')}
+          <td class="p-4 font-medium text-steel-700 text-sm">Métodos</td>
+          ${selected.map((s) => `<td class="p-4 text-center text-sm"><div class="flex flex-wrap gap-1 justify-center">${(s.methods||[]).map((m) => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded">${m}</span>`).join('')}</div></td>`).join('')}
         </tr>
         <tr class="border-t border-steel-100">
-          <td class="p-4 font-medium text-steel-700 text-sm">${tr('keyFeatures')}</td>
-          ${(selected as any[]).map(s => `<td class="p-4 text-sm"><ul class="text-xs text-steel-600 space-y-1">${(s.features||[]).map((f: string) => `<li class="flex items-start gap-1"><span class="text-accent-500 mt-0.5">•</span>${f}</li>`).join('')}</ul></td>`).join('')}
+          <td class="p-4 font-medium text-steel-700 text-sm">Funciones clave</td>
+          ${selected.map((s) => `<td class="p-4 text-sm"><ul class="text-xs text-steel-600 space-y-1">${(s.features||[]).map((f) => `<li class="flex items-start gap-1"><span class="text-accent-500 mt-0.5">•</span>${f}</li>`).join('')}</ul></td>`).join('')}
         </tr>
       `;
 
@@ -228,13 +226,14 @@ import Layout from '../layouts/Layout.astro';
       resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    window.addEventListener('langChange', ((e: CustomEvent) => {
-      lang = e.detail;
-      updateLabels();
-      // Re-render dynamic content
-      loadSoftware();
-    }) as EventListener);
-
-    loadSoftware();
+    populateSelects();
+    document.getElementById('compare-btn')?.addEventListener('click', compareSelected);
+    document.getElementById('clear-btn')?.addEventListener('click', () => {
+      ['select-1', 'select-2', 'select-3'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      document.getElementById('comparison-result')?.classList.add('hidden');
+    });
   </script>
 </Layout>

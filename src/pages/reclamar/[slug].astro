@@ -16,7 +16,11 @@ const { entry } = Astro.props;
 if (!entry) return Astro.redirect('/directorio');
 ---
 
-<Layout title={`Reclamar ${entry.nombre}`} description={`Verifica y reclama la ficha de ${entry.nombre} en ASETEMYT.`}>
+<Layout
+  title={`Reclamar ${entry.nombre} | ASETEMYT`}
+  description={`Verifica y reclama la ficha de ${entry.nombre} en ASETEMYT.`}
+  noindex={true}
+>
   <section class="max-w-xl mx-auto px-4 py-12">
     <a href={`/directorio/${entry.slug}`} class="text-accent-600 hover:text-accent-700 text-sm font-medium mb-6 inline-block">← Volver a la ficha</a>
 

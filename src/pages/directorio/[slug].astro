@@ -1,13 +1,45 @@
 ---
-  export const prerender = true;
-  import Layout from '../../layouts/Layout.astro';
-  import ReviewsSection from '../../components/ReviewsSection.astro';
-  import RequestQuote from '../../components/RequestQuote.astro';
-  import Certificate from '../../components/Certificate.astro';
-  import PartnerBadge from '../../components/PartnerBadge.astro';
-  import CasesSection from '../../components/CasesSection.astro';
-  import ContactSection from '../../components/ContactSection.astro';
-  import { getDirectoryEntries } from '../../lib/firebase';
+export const prerender = true;
+import Layout from '../../layouts/Layout.astro';
+import ReviewsSection from '../../components/ReviewsSection.astro';
+import RequestQuote from '../../components/RequestQuote.astro';
+import Certificate from '../../components/Certificate.astro';
+import PartnerBadge from '../../components/PartnerBadge.astro';
+import CasesSection from '../../components/CasesSection.astro';
+import ContactSection from '../../components/ContactSection.astro';
+import { getDirectoryEntries } from '../../lib/firebase';
+
+const SITE = 'https://asetemyt.com';
+
+// ISO 3166-1 alpha-2 mapping for addressCountry in JSON-LD
+const COUNTRY_TO_ISO: Record<string, string> = {
+  'españa': 'ES', 'spain': 'ES',
+  'alemania': 'DE', 'germany': 'DE',
+  'méxico': 'MX', 'méjico': 'MX', 'mexico': 'MX',
+  'perú': 'PE', 'peru': 'PE',
+  'estados unidos': 'US', 'usa': 'US', 'us': 'US', 'united states': 'US',
+  'francia': 'FR', 'france': 'FR',
+  'italia': 'IT', 'italy': 'IT',
+  'portugal': 'PT',
+  'brasil': 'BR', 'brazil': 'BR',
+  'colombia': 'CO',
+  'argentina': 'AR',
+  'chile': 'CL',
+  'reino unido': 'GB', 'uk': 'GB', 'united kingdom': 'GB',
+  'china': 'CN',
+  'japón': 'JP', 'japan': 'JP',
+  'india': 'IN',
+};
+
+function toCountryISO(country?: string): string | undefined {
+  if (!country) return undefined;
+  const key = country.toLowerCase().trim();
+  return COUNTRY_TO_ISO[key] || undefined;
+}
+
+function toSlug(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
 
 export async function getStaticPaths() {
   let entries: any[] = [];
@@ -33,49 +65,203 @@ const tipoColors: Record<string, string> = {
   empresa: 'bg-blue-100 text-blue-700',
   consultor: 'bg-green-100 text-green-700',
 };
+
+const countryISO = toCountryISO(entry.ubicacion?.pais);
+const citySlug = entry.ubicacion?.ciudad ? toSlug(entry.ubicacion.ciudad) : undefined;
+const countrySlug = entry.ubicacion?.pais ? toSlug(entry.ubicacion.pais) : undefined;
+const canonical = `${SITE}/directorio/${entry.slug}`;
+
+// Build a rich address block (only emit if there is at least one component)
+const address: any = { '@type': 'PostalAddress' };
+if (entry.ubicacion?.direccion) address.streetAddress = entry.ubicacion.direccion;
+if (entry.ubicacion?.ciudad) address.addressLocality = entry.ubicacion.ciudad;
+if (entry.ubicacion?.provincia) address.addressRegion = entry.ubicacion.provincia;
+if (entry.ubicacion?.cp) address.postalCode = entry.ubicacion.cp;
+if (countryISO) address.addressCountry = countryISO;
+
+const hasAddress = Object.keys(address).length > 1;
+
+// areaServed: every country/city in `entry.area` or fall back to the entry's own location
+const areaServed: any[] = [];
+if (Array.isArray(entry.area)) {
+  for (const a of entry.area) {
+    if (a?.pais) {
+      const iso = toCountryISO(a.pais);
+      areaServed.push(iso ? { '@type': 'Country', name: a.pais } : { '@type': 'Place', name: a.pais });
+    }
+    if (a?.ciudad) areaServed.push({ '@type': 'City', name: a.ciudad });
+  }
+}
+if (areaServed.length === 0 && entry.ubicacion?.pais) {
+  areaServed.push({ '@type': 'Country', name: entry.ubicacion.pais });
+}
+
+// contactPoint
+const contactPoint: any = { '@type': 'ContactPoint', contactType: 'sales' };
+if (entry.contacto?.email) contactPoint.email = entry.contacto.email;
+if (entry.contacto?.telefono) contactPoint.telephone = entry.contacto.telefono;
+if (entry.contacto?.web) contactPoint.url = entry.contacto.web;
+const hasContactPoint = Object.keys(contactPoint).length > 2;
+
+// knowAbout / makesOffer / serviceType
+const SERVICE_TYPE_MAP: Record<string, string> = {
+  'mtm': 'Methods-Time Measurement',
+  'most': 'Maynard Operation Sequence Technique',
+  'work sampling': 'Work Sampling',
+  'cronometraje': 'Time Study',
+  'tiempos': 'Time Study',
+  'estandarización': 'Process Standardization',
+  'estandarizacion': 'Process Standardization',
+  'balanceo': 'Line Balancing',
+  'kaizen': 'Kaizen',
+  'estudio de métodos': 'Methods Engineering',
+  'métodos y tiempos': 'Methods Engineering',
+};
+const knowsAbout = (entry.especialidades || []).map((e: string) => {
+  const k = e.toLowerCase().trim();
+  return SERVICE_TYPE_MAP[k] || e;
+});
+
+// Build the main entity schema. The base type is Organization/Person, but we
+// upgrade to ProfessionalService for empresas (better local SEO).
+const baseType = entry.tipo === 'empresa' ? 'ProfessionalService' : 'Person';
+const mainSchema: any = {
+  '@context': 'https://schema.org',
+  '@type': baseType,
+  '@id': canonical,
+  name: entry.nombre,
+  url: canonical,
+  description: entry.descripcion || '',
+  image: entry.logo || `${SITE}/images/logo-asetemyt.webp`,
+  inLanguage: 'es-ES',
+};
+if (entry.eslogan) mainSchema.slogan = entry.eslogan;
+if (hasAddress) mainSchema.address = address;
+if (entry.ubicacion?.lat && entry.ubicacion?.lng) {
+  mainSchema.geo = {
+    '@type': 'GeoCoordinates',
+    latitude: Number(entry.ubicacion.lat),
+    longitude: Number(entry.ubicacion.lng),
+  };
+}
+if (areaServed.length > 0) mainSchema.areaServed = areaServed;
+if (hasContactPoint) mainSchema.contactPoint = contactPoint;
+if (knowsAbout.length > 0) mainSchema.knowsAbout = knowsAbout;
+if (entry.contacto?.web) mainSchema.sameAs = [entry.contacto.web];
+if (entry.fundacion) mainSchema.foundingDate = String(entry.fundacion);
+if (entry.empleados) mainSchema.numberOfEmployees = entry.empleados;
+if (entry.precio) mainSchema.priceRange = entry.precio;
+if (entry.servicios?.length) {
+  mainSchema.hasOfferCatalog = {
+    '@type': 'OfferCatalog',
+    name: 'Servicios',
+    itemListElement: entry.servicios.map((s: string) => ({
+      '@type': 'Offer',
+      itemOffered: { '@type': 'Service', name: s },
+    })),
+  };
+}
+
+// If reviews are pre-known at build time, include AggregateRating.
+// NOTE: ReviewsSection injects the schema client-side, but Googlebot doesn't
+// run client fetch reliably. Until `../../lib/reviews` exists, we leave
+// the AggregateRating for the client-side ReviewsSection to inject.
+let rating: any = null;
+try {
+  // Stub: replaced when a real reviews lib is available.
+  // const { getReviewsForEntry } = await import('../../lib/reviews');
+  // const revs = await getReviewsForEntry(entry.slug);
+  // if (revs && revs.length > 0) {
+  //   const sum = revs.reduce((acc: number, r: any) => acc + (r.rating || 0), 0);
+  //   rating = {
+  //     '@type': 'AggregateRating',
+  //     ratingValue: (sum / revs.length).toFixed(1),
+  //     bestRating: '5',
+  //     worstRating: '1',
+  //     ratingCount: revs.length,
+  //   };
+  //   mainSchema.aggregateRating = rating;
+  // }
+} catch {
+  // Reviews lib not available — ignore
+}
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: 'Directorio', item: `${SITE}/directorio` },
+    ...(countrySlug ? [{ '@type': 'ListItem', position: 3, name: entry.ubicacion.pais, item: `${SITE}/directorio/pais/${countrySlug}` }] : []),
+    ...(citySlug ? [{ '@type': 'ListItem', position: countrySlug ? 4 : 3, name: entry.ubicacion.ciudad, item: `${SITE}/directorio/ciudad/${citySlug}` }] : []),
+    { '@type': 'ListItem', position: countrySlug && citySlug ? 5 : countrySlug || citySlug ? 4 : 3, name: entry.nombre, item: canonical },
+  ],
+};
+
+// SameAs resolved at render: take entry's social links if any
+if (Array.isArray(entry.redes)) {
+  const valid = entry.redes.filter((r: string) => /^https?:\/\//.test(r));
+  if (valid.length) mainSchema.sameAs = [...(mainSchema.sameAs || []), ...valid];
+}
 ---
 
-<Layout title={entry.nombre} description={entry.descripcion}>
-  <!-- BreadcrumbList structured data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://asetemyt.com/" },
-        { "@type": "ListItem", "position": 2, "name": "Directorio", "item": "https://asetemyt.com/directorio" },
-        { "@type": "ListItem", "position": 3, "name": {JSON.stringify(entry.nombre)}, "item": {JSON.stringify(`https://asetemyt.com/directorio/${entry.slug}`)} }
-      ]
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": entry.tipo === 'empresa' ? "Organization" : "Person",
-      "name": {JSON.stringify(entry.nombre)},
-      "url": {JSON.stringify(`https://asetemyt.com/directorio/${entry.slug}`)},
-      "description": {JSON.stringify(entry.descripcion || '')}
-    }
-  </script>
+<Layout
+  title={`${entry.nombre} — ${entry.especialidades?.[0] || 'Cronometraje Industrial'} en ${entry.ubicacion?.ciudad || 'España'} | ASETEMYT`}
+  description={(entry.descripcion || '').slice(0, 160)}
+  canonical={canonical}
+  ogImage={entry.logo || 'https://asetemyt.com/images/og-default.webp'}
+  ogType="profile"
+>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(mainSchema)} />
+
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Breadcrumb -->
+    <nav aria-label="Migas" class="mb-6 text-sm text-gray-500">
+      <ol class="flex flex-wrap items-center gap-2">
+        <li><a href="/" class="hover:text-blue-600">Inicio</a></li>
+        <li aria-hidden="true">/</li>
+        <li><a href="/directorio" class="hover:text-blue-600">Directorio</a></li>
+        {countrySlug && (
+          <>
+            <li aria-hidden="true">/</li>
+            <li><a href={`/directorio/pais/${countrySlug}`} class="hover:text-blue-600">{entry.ubicacion.pais}</a></li>
+          </>
+        )}
+        {citySlug && (
+          <>
+            <li aria-hidden="true">/</li>
+            <li><a href={`/directorio/ciudad/${citySlug}`} class="hover:text-blue-600">{entry.ubicacion.ciudad}</a></li>
+          </>
+        )}
+        <li aria-hidden="true">/</li>
+        <li class="text-gray-700">{entry.nombre}</li>
+      </ol>
+    </nav>
+
     <nav class="mb-8">
       <a href="/directorio" onclick="event.preventDefault(); window.history.length > 1 ? window.history.back() : window.location.href='/directorio'" class="text-accent-600 hover:text-accent-700 text-sm font-medium flex items-center gap-1 cursor-pointer">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
         Volver
       </a>
     </nav>
 
-    <!-- Profile Header -->
     <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-8">
       <div class="bg-gradient-to-r from-primary-800 to-primary-900 p-8">
         <div class="flex items-center gap-6">
           {entry.logo ? (
-            <img src={entry.logo} alt={entry.nombre} class="w-24 h-24 rounded-xl object-cover shadow-lg border-2 border-white/20" />
+            <img
+              src={entry.logo}
+              alt={`Logo de ${entry.nombre}`}
+              class="w-24 h-24 rounded-xl object-cover shadow-lg border-2 border-white/20"
+              width="96"
+              height="96"
+              loading="eager"
+            />
           ) : (
-            <div class="w-24 h-24 rounded-xl bg-accent-500 flex items-center justify-center text-white font-bold text-3xl shadow-lg">
+            <div class="w-24 h-24 rounded-xl bg-accent-500 flex items-center justify-center text-white font-bold text-3xl shadow-lg" aria-hidden="true">
               {entry.nombre?.[0]?.toUpperCase() || '?'}
             </div>
           )}
@@ -84,7 +270,7 @@ const tipoColors: Record<string, string> = {
               <h1 class="text-3xl font-extrabold text-white">{entry.nombre}</h1>
               {entry.verificado && (
                 <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                   </svg>
                   Verificado
@@ -100,7 +286,6 @@ const tipoColors: Record<string, string> = {
       </div>
 
       <div class="p-8">
-        <!-- Description -->
         {entry.descripcion && (
           <div class="mb-8">
             <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="about">Acerca de</h2>
@@ -108,14 +293,13 @@ const tipoColors: Record<string, string> = {
           </div>
         )}
 
-        <!-- Especialidades -->
         {entry.especialidades?.length > 0 && (
           <div class="mb-8">
             <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="specialtiesLabel">Especialidades</h2>
             <div class="flex flex-wrap gap-2">
               {entry.especialidades.map((esp: string) => (
                 <a
-                  href={`/directorio?especialidad=${esp}`}
+                  href={`/directorio/especialidad/${toSlug(esp)}`}
                   class="bg-primary-50 text-primary-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors"
                 >
                   <span data-field={esp}>{esp.toUpperCase()}</span>
@@ -125,14 +309,13 @@ const tipoColors: Record<string, string> = {
           </div>
         )}
 
-        <!-- Servicios -->
         {entry.servicios?.length > 0 && (
           <div class="mb-8">
             <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="servicesLabel">Servicios</h2>
             <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
               {entry.servicios.map((servicio: string) => (
                 <li class="flex items-center gap-2 text-steel-600">
-                  <svg class="w-5 h-5 text-accent-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 text-accent-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
                   {servicio}
@@ -142,12 +325,11 @@ const tipoColors: Record<string, string> = {
           </div>
         )}
 
-        <!-- Ubicación -->
         {entry.ubicacion && (
           <div class="mb-8">
             <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="locationLabel">Ubicación</h2>
             <div class="flex items-start gap-3 text-steel-600">
-              <svg class="w-5 h-5 text-steel-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 text-steel-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -155,7 +337,7 @@ const tipoColors: Record<string, string> = {
                 {entry.ubicacion.direccion && <p>{entry.ubicacion.direccion}</p>}
                 <p class="flex flex-wrap items-center gap-1">
                   {entry.ubicacion.ciudad && (
-                    <a href={`/directorio?ciudad=${encodeURIComponent(entry.ubicacion.ciudad)}`}
+                    <a href={`/directorio/ciudad/${toSlug(entry.ubicacion.ciudad)}`}
                        class="text-accent-600 hover:text-accent-800 hover:underline font-medium transition-colors">
                       {entry.ubicacion.ciudad}
                     </a>
@@ -170,7 +352,10 @@ const tipoColors: Record<string, string> = {
                   {entry.ubicacion.pais && (
                     <>
                       <span class="text-steel-400">·</span>
-                      <span>{entry.ubicacion.pais}</span>
+                      <a
+                        href={`/directorio/pais/${toSlug(entry.ubicacion.pais)}`}
+                        class="text-accent-600 hover:text-accent-800 hover:underline font-medium transition-colors"
+                      >{entry.ubicacion.pais}</a>
                     </>
                   )}
                 </p>
@@ -179,7 +364,6 @@ const tipoColors: Record<string, string> = {
           </div>
         )}
 
-        <!-- Contacto — Astro island: SSR placeholder + client hydration -->
         <div>
           <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="contactLabel">Contacto</h2>
           <ContactSection slug={entry.slug} />
@@ -187,12 +371,11 @@ const tipoColors: Record<string, string> = {
       </div>
     </div>
 
-    <!-- Reclamar ficha CTA (not verified) -->
     {!entry.verificado && (
       <div class="mt-8 p-6 bg-gradient-to-r from-accent-50 to-accent-100 rounded-xl border border-accent-200">
         <div class="flex items-start gap-4">
           <div class="w-10 h-10 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
@@ -208,12 +391,11 @@ const tipoColors: Record<string, string> = {
       </div>
     )}
 
-    <!-- Editar ficha CTA (verified — shown to owner only via client-side check) -->
     {entry.verificado && (
       <div id="ownerEditCTA" class="hidden mt-8 p-6 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200">
         <div class="flex items-start gap-4">
           <div class="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </div>
@@ -229,39 +411,8 @@ const tipoColors: Record<string, string> = {
       </div>
     )}
   </section>
-  {/* AggregateRating schema.org — injected dynamically after reviews load */}
-  <script is:inline define:vars={{ entrySlug: entry.slug, entryName: entry.nombre }}>
-    (async function() {
-      try {
-        var res = await fetch('/api/reviews/get?slug=' + encodeURIComponent(entrySlug));
-        if (!res.ok) return;
-        var data = await res.json();
-        if (data.aggregateRating && data.aggregateRating.reviewCount > 0) {
-          var schema = {
-            "@context": "https://schema.org",
-            "@type": "LocalBusiness",
-            "name": entryName,
-            "url": "https://asetemyt.com/directorio/" + entrySlug,
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": String(data.aggregateRating.avgRating),
-              "bestRating": "5",
-              "worstRating": "1",
-              "ratingCount": String(data.aggregateRating.reviewCount)
-            }
-          };
-          var script = document.createElement('script');
-          script.type = 'application/ld+json';
-          script.textContent = JSON.stringify(schema);
-          document.head.appendChild(script);
-        }
-      } catch(e) { console.error('AggregateRating schema error:', e); }
-    })();
-  </script>
 
-  {/* Reviews */}
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-    {/* Lead Gen: Solicitar Presupuesto */}
     <div class="pb-4">
       <RequestQuote slug={entry.slug} entryName={entry.nombre} services={entry.servicios || []} />
     </div>
@@ -269,14 +420,12 @@ const tipoColors: Record<string, string> = {
     <CasesSection slug={entry.slug} entryName={entry.nombre} isOwner={false} />
   </section>
 
-  {/* Certificate for verified members */}
   {entry.verificado && (
     <section id="ownerCertSection" class="hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
       <Certificate entryName={entry.nombre} entrySlug={entry.slug} tipo={entry.tipo} />
     </section>
   )}
 
-  {/* i18n: translate data-field labels on ficha pages */}
   <script>
     import { t, getLang, type Lang } from '../../lib/firebase';
 
@@ -298,7 +447,6 @@ const tipoColors: Record<string, string> = {
     updateLabels();
   </script>
 
-  {/* Client-side: show edit CTA to the owner of this verified ficha */}
   {entry.verificado && (
     <script>
       import { onAuthStateChanged, auth, authFetch } from '../../lib/auth';

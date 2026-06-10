@@ -1,120 +1,366 @@
 ---
- export const prerender = true;
- import Layout from '../layouts/Layout.astro';
- import RoiCalculator from '../components/RoiCalculator.astro';
- ---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+import RoiCalculator from '../components/RoiCalculator.astro';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
+import { getDirectoryEntries } from '../lib/firebase';
+
+const SITE = 'https://asetemyt.com';
+
+let entries: any[] = [];
+let articles: any[] = [];
+
+try {
+  entries = await getDirectoryEntries();
+} catch (e) {
+  console.error('Home: failed to fetch directory entries', e);
+}
+
+try {
+  const file = join(process.cwd(), 'public', 'data', 'articles.json');
+  if (existsSync(file)) {
+    articles = (JSON.parse(readFileSync(file, 'utf-8')) as any[])
+      .filter((a) => a.status !== 'draft')
+      .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+      .slice(0, 6);
+  }
+} catch (e) {
+  console.error('Home: failed to read articles.json', e);
+}
+
+const consultants = entries.filter((e) => e.seccion !== 'software');
+const softwareEntries = entries.filter((e) => e.seccion === 'software');
+const stats = {
+  total: entries.length,
+  empresas: consultants.filter((e) => e.tipo === 'empresa').length,
+  consultores: consultants.filter((e) => e.tipo === 'consultor').length,
+  software: softwareEntries.length,
+};
+
+const featured = entries
+  .filter((e) => e.slug && e.destacado)
+  .slice(0, 6);
+if (featured.length < 6) {
+  const ids = new Set(featured.map((e) => e.slug));
+  for (const e of entries) {
+    if (featured.length >= 6) break;
+    if (!ids.has(e.slug) && e.slug) featured.push(e);
+  }
+}
+
+const latestArticles = articles.slice(0, 3);
+
+function toSlug(s: string): string {
+  return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${SITE}#website`,
+  name: 'ASETEMYT',
+  url: SITE,
+  description: 'Directorio de técnicos, consultores y empresas de cronometraje industrial e ingeniería de métodos y tiempos.',
+  inLanguage: 'es-ES',
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SITE}/directorio?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+  publisher: { '@id': `${SITE}#organization` },
+};
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '¿Qué es el cronometraje industrial?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'El cronometraje industrial es una técnica de ingeniería de métodos que consiste en medir el tiempo que un trabajador cualificado tarda en realizar una tarea específica, con el objetivo de determinar el tiempo estándar para esa operación.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '¿Qué es el sistema MTM?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'MTM (Methods-Time Measurement) es un sistema de predeterminación de tiempos que asigna tiempos estándar a movimientos básicos. MTM2 es una versión simplificada ideal para análisis más rápidos.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '¿Cómo puedo aparecer en el directorio ASETEMYT?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Para aparecer en el directorio ASETEMYT, accede a la sección "Añadir Empresa", completa el formulario con tus datos profesionales, especialidades y servicios. Tu ficha será revisada por nuestro equipo y publicada en un plazo de 24-48 horas. Es completamente gratuito.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '¿Qué servicios ofrecen los profesionales del directorio?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Los profesionales registrados en ASETEMYT ofrecen servicios de cronometraje industrial, análisis de métodos y tiempos (MTM, MOST), consultoría Lean Manufacturing, cálculo de OEE, diseño de sistemas de incentivos, auditorías ergonómicas y formación.',
+      },
+    },
+  ],
+};
+
+const itemListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'ASETEMYT — Profesionales destacados',
+  itemListElement: featured.slice(0, 10).map((e, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: e.nombre,
+    url: `${SITE}/directorio/${e.slug}`,
+  })),
+};
+---
 
 <Layout
-  title="Directorio de Cronometraje Industrial e Ingeniería de Métodos y Tiempos"
+  title="ASETEMYT — Directorio de Cronometraje Industrial e Ingeniería de Métodos y Tiempos"
   description="Encuentra técnicos, consultores y empresas especializadas en cronometraje industrial, time study, MTM2, MOST y optimización de procesos productivos. Añade tu perfil gratis."
+  canonical={SITE}
 >
-  <!-- Schema.org Organization + WebSite + FAQPage -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "ASETEMYT",
-      "url": "https://asetemyt.com",
-      "description": "Directorio de técnicos, consultores y empresas de cronometraje industrial e ingeniería de métodos y tiempos.",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://asetemyt.com/directorio?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "ASETEMYT",
-      "url": "https://asetemyt.com",
-      "logo": "https://asetemyt.com/images/logo-asetemyt.webp",
-      "description": "Directorio profesional especializado en cronometraje industrial, estudio de tiempos, ingeniería de métodos y optimización de procesos productivos.",
-      "sameAs": []
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "¿Qué es el cronometraje industrial?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "El cronometraje industrial es una técnica de ingeniería de métodos que consiste en medir el tiempo que un trabajador cualificado tarda en realizar una tarea específica, con el objetivo de determinar el tiempo estándar para esa operación. Se utiliza para establecer estándares de producción, diseñar sistemas de incentivos y optimizar procesos productivos."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Qué es el sistema MTM?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "MTM (Methods-Time Measurement) es un sistema de predeterminación de tiempos que asigna tiempos estándar a movimientos básicos (reaching, grasping, moving, etc.). MTM2 es una versión simplificada con mayor nivel de abstracción, ideal para análisis de procesos más rápidos. Se utiliza ampliamente en la planificación y evaluación de métodos de trabajo."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Cómo puedo aparecer en el directorio ASETEMYT?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Para aparecer en el directorio ASETEMYT, simplemente accede a la sección 'Añadir Empresa', completa el formulario con tus datos profesionales, especialidades y servicios. Tu ficha será revisada por nuestro equipo y publicada en un plazo de 24-48 horas. Es completamente gratuito."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "¿Qué servicios ofrecen los profesionales del directorio?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Los profesionales registrados en ASETEMYT ofrecen servicios de cronometraje industrial, análisis de métodos y tiempos (MTM, MOST), consultoría Lean Manufacturing, cálculo de OEE, diseño de sistemas de incentivos, auditorías ergonómicas, formación en ingeniería de métodos e implementación de software de productividad."
-          }
-        }
-      ]
-    }
-  </script>
+  <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
 
-  <div id="app">
-    <!-- Skeleton: Hero -->
-    <section class="bg-gradient-to-br from-primary-900 via-primary-800 to-steel-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-        <div class="h-5 w-40 bg-white/10 rounded animate-pulse mb-3"></div>
-        <div class="h-14 w-96 bg-white/10 rounded animate-pulse mb-2"></div>
-        <div class="h-14 w-72 bg-accent-500/20 rounded animate-pulse mb-6"></div>
-        <div class="h-6 w-[28rem] bg-white/5 rounded animate-pulse mb-8"></div>
-        <div class="flex gap-4">
-          <div class="h-12 w-52 bg-accent-500/30 rounded-lg animate-pulse"></div>
-          <div class="h-12 w-44 bg-white/10 rounded-lg animate-pulse"></div>
+  <!-- Hero -->
+  <section class="relative bg-gradient-to-br from-primary-900 via-primary-800 to-steel-800 text-white overflow-hidden">
+    <div class="absolute inset-0 opacity-10" aria-hidden="true">
+      <div class="absolute top-10 left-10 w-72 h-72 bg-accent-500 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-500 rounded-full blur-3xl"></div>
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+      <div class="max-w-3xl">
+        <p class="text-accent-400 font-semibold tracking-wide uppercase text-sm mb-3">Directorio industrial</p>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+          Cronometraje industrial
+          <span class="block text-accent-400">a un clic</span>
+        </h1>
+        <p class="text-lg md:text-xl text-steel-200 mb-8 leading-relaxed">
+          Conecta con los mejores profesionales, consultores y empresas especializadas
+          en MTM, MOST, OEE y Lean Manufacturing de España y Latinoamérica.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="/directorio" class="inline-flex items-center justify-center bg-accent-500 hover:bg-accent-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all hover:shadow-lg hover:shadow-accent-500/25">
+            Explorar directorio
+            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+          <a href="/anadir" class="inline-flex items-center justify-center border-2 border-steel-400 hover:border-accent-400 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all hover:bg-white/5" rel="nofollow">
+            Añadir mi empresa
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <a href="/directorio" class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-accent-500 hover:shadow-xl hover:-translate-y-1 transition-all group">
+        <p class="text-3xl md:text-4xl font-extrabold text-primary-800 group-hover:text-accent-600 transition-colors">{stats.total}</p>
+        <p class="text-steel-500 font-medium mt-1 group-hover:text-accent-500 transition-colors">Total profesionales</p>
+      </a>
+      <a href="/directorio?tipo=empresa" class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-primary-500 hover:shadow-xl hover:-translate-y-1 transition-all group">
+        <p class="text-3xl md:text-4xl font-extrabold text-primary-800 group-hover:text-primary-600 transition-colors">{stats.empresas}</p>
+        <p class="text-steel-500 font-medium mt-1 group-hover:text-primary-500 transition-colors">Empresas</p>
+      </a>
+      <a href="/directorio?tipo=consultor" class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-green-500 hover:shadow-xl hover:-translate-y-1 transition-all group">
+        <p class="text-3xl md:text-4xl font-extrabold text-primary-800 group-hover:text-green-600 transition-colors">{stats.consultores}</p>
+        <p class="text-steel-500 font-medium mt-1 group-hover:text-green-500 transition-colors">Consultores</p>
+      </a>
+      <a href="/software" class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-orange-500 hover:shadow-xl hover:-translate-y-1 transition-all group">
+        <p class="text-3xl md:text-4xl font-extrabold text-primary-800 group-hover:text-orange-600 transition-colors">{stats.software}</p>
+        <p class="text-steel-500 font-medium mt-1 group-hover:text-orange-500 transition-colors">Software</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Specialties -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-8">Especialidades</h2>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {[
+        { name: 'Cronometraje', icon: '⏱️', slug: 'cronometraje' },
+        { name: 'MTM', icon: '📋', slug: 'mtm' },
+        { name: 'MOST', icon: '⚡', slug: 'most' },
+        { name: 'OEE', icon: '📊', slug: 'oee' },
+        { name: 'Lean Manufacturing', icon: '🏭', slug: 'lean' },
+      ].map((cat) => (
+        <a
+          href={`/directorio/especialidad/${cat.slug}`}
+          class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-1 text-center group"
+        >
+          <span class="text-3xl mb-3 block" aria-hidden="true">{cat.icon}</span>
+          <h3 class="font-semibold text-primary-800 group-hover:text-accent-600 transition-colors">{cat.name}</h3>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- What is Time Study? (SEO content) -->
+  <section class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-6">¿Qué es el Cronometraje Industrial?</h2>
+        <div class="prose prose-lg text-steel-600 space-y-4 max-w-none">
+          <p>
+            El <strong>cronometraje industrial</strong> es una técnica fundamental de la
+            <strong>ingeniería de métodos y tiempos</strong> que consiste en medir con
+            precisión el tiempo que un operario cualificado tarda en ejecutar cada
+            elemento de una tarea definida. Su objetivo es establecer el
+            <strong>tiempo estándar</strong> necesario para realizar esa operación bajo
+            condiciones normales de trabajo.
+          </p>
+          <p>
+            Estas técnicas, junto con sistemas de predeterminación de tiempos como
+            <strong>MTM</strong>, <strong>MOST</strong> y <strong>Maynard</strong>, son la
+            base para la <strong>optimización de procesos productivos</strong>, el diseño
+            de <strong>sistemas de incentivos</strong> justos y la mejora continua en
+            entornos de fabricación, logística y servicios.
+          </p>
+          <p>
+            En <strong>ASETEMYT</strong> conectamos empresas que necesitan estos
+            servicios con los mejores <strong>consultores, técnicos y empresas
+            especializadas</strong> en cronometraje, estudio de tiempos y Lean
+            Manufacturing en España y Latinoamérica.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Listings (SSR) -->
+  {featured.length > 0 && (
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-2xl md:text-3xl font-bold text-primary-800">Profesionales destacados</h2>
+        <a href="/directorio" class="text-accent-600 hover:text-accent-700 font-semibold flex items-center gap-1">
+          Ver todos
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {featured.map((entry: any) => (
+          <a href={`/directorio/${entry.slug}`} class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group border border-steel-100">
+            <div class="flex items-start gap-4">
+              {entry.logo ? (
+                <img
+                  src={entry.logo}
+                  alt={`Logo de ${entry.nombre}`}
+                  class="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                  width="56"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <div class="w-14 h-14 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 font-bold text-xl flex-shrink-0" aria-hidden="true">
+                  {(entry.nombre || '?')[0].toUpperCase()}
+                </div>
+              )}
+              <div class="min-w-0">
+                <h3 class="font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">{entry.nombre}</h3>
+                <span class="text-xs font-medium text-accent-600 uppercase">{entry.tipo === 'empresa' ? 'Empresa' : 'Consultor'}</span>
+                {entry.ubicacion?.pais && (
+                  <p class="text-sm text-steel-500 mt-1 truncate">📍 {[entry.ubicacion.ciudad, entry.ubicacion.pais].filter(Boolean).join(', ')}</p>
+                )}
+              </div>
+            </div>
+            {entry.descripcion && <p class="text-sm text-steel-500 mt-3 line-clamp-2">{entry.descripcion}</p>}
+            {entry.especialidades?.length > 0 && (
+              <div class="flex flex-wrap gap-1.5 mt-3">
+                {entry.especialidades.slice(0, 3).map((esp: string) => (
+                  <span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded-full">{esp}</span>
+                ))}
+              </div>
+            )}
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- FAQ Section (SSR for SEO) -->
+  <section class="bg-white py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-8 text-center">Preguntas Frecuentes</h2>
+      <div class="space-y-4">
+        {[
+          { q: '¿Qué es el cronometraje industrial?', a: 'Es una técnica de ingeniería de métodos que mide el tiempo que un trabajador cualificado tarda en realizar una tarea específica, para determinar el tiempo estándar y optimizar la productividad.' },
+          { q: '¿Qué diferencia hay entre MTM y cronometraje?', a: 'El cronometraje mide tiempos observando operaciones en marcha. MTM (Methods-Time Measurement) predetermina tiempos asignando valores a movimientos básicos sin necesidad de observación directa, ideal para la planificación de nuevos métodos.' },
+          { q: '¿Cómo puedo contratar a un consultor del directorio?', a: 'Explora el directorio filtrando por especialidad y ubicación, y contacta directamente con el profesional que mejor se adapte a tus necesidades. Todos los perfiles incluyen información de contacto.' },
+          { q: '¿Es gratuito aparecer en ASETEMYT?', a: 'Sí, añadir tu perfil o empresa al directorio es completamente gratuito. Solo necesitas completar el formulario y nuestro equipo revisará tu solicitud antes de publicarla.' },
+        ].map((faq) => (
+          <details class="bg-steel-50 rounded-xl group">
+            <summary class="cursor-pointer p-5 font-semibold text-primary-800 flex items-center justify-between hover:text-accent-600 transition-colors">
+              {faq.q}
+              <svg class="w-5 h-5 text-steel-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </summary>
+            <p class="px-5 pb-5 text-steel-600">{faq.a}</p>
+          </details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Latest Articles (SSR) -->
+  {latestArticles.length > 0 && (
+    <section class="bg-white py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl md:text-3xl font-bold text-primary-800">Últimos artículos</h2>
+          <a href="/blog" class="text-accent-600 hover:text-accent-700 font-semibold flex items-center gap-1">
+            Ver todos
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {latestArticles.map((article: any) => (
+            <a href={`/blog/${article.slug}`} class="bg-steel-50 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group">
+              {article.coverImage && (
+                <img
+                  src={article.coverImage}
+                  alt={article.title}
+                  class="w-full h-48 object-cover"
+                  width="400"
+                  height="192"
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div class="p-5">
+                {(article.tags || []).slice(0, 2).length > 0 && (
+                  <div class="flex gap-2 mb-3">
+                    {(article.tags || []).slice(0, 2).map((tag: string) => (
+                      <span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full font-medium">{tag}</span>
+                    ))}
+                  </div>
+                )}
+                <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">{article.title}</h3>
+                <p class="text-steel-500 text-sm line-clamp-2">{article.excerpt}</p>
+                <p class="text-xs text-steel-400 mt-3">
+                  <time datetime={new Date(article.publishedAt).toISOString()}>
+                    {new Date(article.publishedAt).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </time>
+                </p>
+              </div>
+            </a>
+          ))}
         </div>
       </div>
     </section>
-    <!-- Skeleton: Stats -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {[1,2,3,4,5].map(() => (
-          <div class="bg-white rounded-xl shadow-lg p-6 text-center">
-            <div class="h-10 w-16 bg-steel-200 rounded animate-pulse mx-auto mb-2"></div>
-            <div class="h-4 w-20 bg-steel-100 rounded animate-pulse mx-auto"></div>
-          </div>
-        ))}
-      </div>
-    </section>
-    <!-- Skeleton: Specialties -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-      <div class="h-8 w-48 bg-steel-200 rounded animate-pulse mb-8"></div>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {[1,2,3,4,5].map(() => (
-          <div class="bg-white rounded-xl p-6 shadow-md text-center">
-            <div class="h-10 w-10 bg-steel-200 rounded animate-pulse mx-auto mb-3"></div>
-            <div class="h-5 w-24 bg-steel-100 rounded animate-pulse mx-auto"></div>
-          </div>
-        ))}
-      </div>
-    </section>
-    <!-- ROI Calculator — server-rendered, never wiped by JS -->
-  </div>
+  )}
 
+  <!-- ROI Calculator -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
     <div class="text-center mb-8">
       <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-3">Calcula tu Ahorro</h2>
@@ -125,297 +371,28 @@
     </div>
   </section>
 
-  <script>
-    import { t, getLang, type Lang, translations } from '../lib/firebase';
+  <!-- Newsletter CTA -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-gradient-to-r from-accent-500 to-accent-600 rounded-2xl p-6 md:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-4">
+      <div>
+        <h3 class="text-xl font-bold mb-1">📊 Newsletter ASETEMYT</h3>
+        <p class="text-white/80 text-sm">Recibe cada mes un reporte con el nuevo software especializado incorporado al directorio.</p>
+      </div>
+      <a href="/newsletter" class="inline-flex items-center bg-white text-accent-600 hover:bg-steel-100 px-6 py-2.5 rounded-lg font-semibold transition-colors text-sm whitespace-nowrap">
+        Suscribirse →
+      </a>
+    </div>
+  </section>
 
-    let lang: Lang = getLang();
-
-    async function load() {
-      let entries: any[] = [];
-      let articles: any[] = [];
-
-      try {
-        // Cache-first: hit the public directorio endpoints (server-side KV
-        // cache, 24h TTL). Replaces the previous client-side getDocs() that
-        // read EVERY listing from Firestore on every home-page visit — that
-        // was responsible for ~60k+ reads/day (≈ #1 source of quota burn).
-        // Now each home-page visit costs 0 Firestore reads (KV hit) and only
-        // ~2 CF Worker invocations. The KV cache is repopulated at most once
-        // per 24h per collection, and invalidated on admin mutations.
-        const [cRes, sRes] = await Promise.all([
-          fetch('/api/directorio/consultores'),
-          fetch('/api/directorio/software'),
-        ]);
-        const [cData, sData] = await Promise.all([cRes.json(), sRes.json()]);
-        entries = [
-          ...(cData.consultores || []),
-          ...(sData.software || []),
-        ];
-        // Filtrar por idioma: mostrar entradas sin lang o con el lang actual
-        // Show all entries regardless of language — UI toggle handles switching
-      } catch (e) {
-        console.error('Error loading directory:', e);
-      }
-
-      try {
-        const res = await fetch('/data/articles.json');
-        if (res.ok) {
-          const all = await res.json();
-          articles = all.filter((a: any) => a.status === 'published').slice(0, 6);
-        }
-      } catch (e) {
-        console.error('Error loading articles:', e);
-      }
-
-      render(entries, articles);
-    }
-
-    function render(entries: any[], articles: any[]) {
-      const tr = (k: string) => t(k, lang);
-      const consultants = entries.filter((e: any) => e.seccion !== 'software');
-      const softwareEntries = entries.filter((e: any) => e.seccion === 'software');
-      const stats = {
-        total: entries.length,
-        empresas: consultants.filter((e: any) => e.tipo === 'empresa').length,
-        consultores: consultants.filter((e: any) => e.tipo === 'consultor').length,
-        software: softwareEntries.length,
-      };
-
-      const specialties = [
-        { name: lang === 'es' ? 'Cronometraje' : 'Time Study', icon: '⏱️', slug: 'cronometraje' },
-        { name: 'MTM', icon: '📋', slug: 'mtm' },
-        { name: 'MOST', icon: '⚡', slug: 'most' },
-        { name: 'OEE', icon: '📊', slug: 'oee' },
-        { name: lang === 'es' ? 'Lean Manufacturing' : 'Lean Manufacturing', icon: '🏭', slug: 'lean' },
-      ];
-
-      const app = document.getElementById('app')!;
-      // Pick featured entries (verified or with description)
-      const featured = entries
-        .filter((e: any) => e.descripcion || e.logo)
-        .slice(0, 6);
-      if (featured.length < 6) {
-        const ids = new Set(featured.map((e: any) => e.slug || e.nombre));
-        for (const e of entries) {
-          if (featured.length >= 6) break;
-          if (!ids.has(e.slug || e.nombre)) featured.push(e);
-        }
-      }
-
-      const espLabels: Record<string, string> = {
-        cronometraje: lang === 'es' ? 'Cronometraje' : 'Time Study',
-        mtm: 'MTM', most: 'MOST', oee: 'OEE',
-        lean: 'Lean Manufacturing',
-        estudio_trabajo: lang === 'es' ? 'Estudio del Trabajo' : 'Work Study',
-      };
-
-      app.innerHTML = `
-        <!-- Hero -->
-        <section class="relative bg-gradient-to-br from-primary-900 via-primary-800 to-steel-800 text-white overflow-hidden">
-          <div class="absolute inset-0 opacity-10">
-            <div class="absolute top-10 left-10 w-72 h-72 bg-accent-500 rounded-full blur-3xl"></div>
-            <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-500 rounded-full blur-3xl"></div>
-          </div>
-          <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-            <div class="max-w-3xl">
-              <p class="text-accent-400 font-semibold tracking-wide uppercase text-sm mb-3">${tr('industrialDirectory')}</p>
-              <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-                ${tr('heroTitle1')}
-                <span class="block text-accent-400">${tr('heroTitle2')}</span>
-              </h1>
-              <p class="text-lg md:text-xl text-steel-200 mb-8 leading-relaxed">${tr('heroDesc')}</p>
-              <div class="flex flex-col sm:flex-row gap-4">
-                <a href="/directorio" class="inline-flex items-center justify-center bg-accent-500 hover:bg-accent-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all hover:shadow-lg hover:shadow-accent-500/25">
-                  ${tr('exploreDirectory')}
-                  <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                </a>
-                <a href="/anadir" class="inline-flex items-center justify-center border-2 border-steel-400 hover:border-accent-400 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all hover:bg-white/5">
-                  ${tr('addMyCompany')}
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Stats -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <a href="/directorio" class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-accent-500 hover:shadow-xl hover:-translate-y-1 transition-all group">
-              <p class="text-3xl md:text-4xl font-extrabold text-primary-800 group-hover:text-accent-600 transition-colors">${stats.total}</p>
-              <p class="text-steel-500 font-medium mt-1 group-hover:text-accent-500 transition-colors">${tr('totalEntries')}</p>
-            </a>
-            <a href="/directorio?tipo=empresa" class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-primary-500 hover:shadow-xl hover:-translate-y-1 transition-all group">
-              <p class="text-3xl md:text-4xl font-extrabold text-primary-800 group-hover:text-primary-600 transition-colors">${stats.empresas}</p>
-              <p class="text-steel-500 font-medium mt-1 group-hover:text-primary-500 transition-colors">${tr('companies')}</p>
-            </a>
-            <a href="/directorio?tipo=consultor" class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-green-500 hover:shadow-xl hover:-translate-y-1 transition-all group">
-              <p class="text-3xl md:text-4xl font-extrabold text-primary-800 group-hover:text-green-600 transition-colors">${stats.consultores}</p>
-              <p class="text-steel-500 font-medium mt-1 group-hover:text-green-500 transition-colors">${tr('consultants')}</p>
-            </a>
-            <a href="/software" class="bg-white rounded-xl shadow-lg p-6 text-center border-t-4 border-orange-500 hover:shadow-xl hover:-translate-y-1 transition-all group">
-              <p class="text-3xl md:text-4xl font-extrabold text-primary-800 group-hover:text-orange-600 transition-colors">${stats.software}</p>
-              <p class="text-steel-500 font-medium mt-1 group-hover:text-orange-500 transition-colors">${lang === 'es' ? 'Software' : 'Software'}</p>
-            </a>
-          </div>
-        </section>
-
-        <!-- Categories -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-8">${tr('specialties')}</h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            ${specialties.map((cat) => `
-              <a href="/directorio?especialidad=${cat.slug}" class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-1 text-center group">
-                <span class="text-3xl mb-3 block">${cat.icon}</span>
-                <h3 class="font-semibold text-primary-800 group-hover:text-accent-600 transition-colors">${cat.name}</h3>
-              </a>
-            `).join('')}
-          </div>
-        </section>
-
-        <!-- What is Time Study? (SEO content) -->
-        <section class="bg-white py-16">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-4xl mx-auto">
-              <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-6">${lang === 'es' ? '¿Qué es el Cronometraje Industrial?' : 'What is Industrial Time Study?'}</h2>
-              <div class="prose prose-lg text-steel-600 space-y-4">
-                <p>${lang === 'es'
-                  ? 'El <strong>cronometraje industrial</strong> es una técnica fundamental de la <strong>ingeniería de métodos y tiempos</strong> que consiste en medir con precisión el tiempo que un operario cualificado tarda en ejecutar cada elemento de una tarea definida. Su objetivo es establecer el <strong>tiempo estándar</strong> necesario para realizar esa operación bajo condiciones normales de trabajo.'
-                  : '<strong>Industrial time study</strong> is a fundamental <strong>methods and time engineering</strong> technique that involves precisely measuring how long a qualified operator takes to execute each element of a defined task. Its goal is to establish the <strong>standard time</strong> required to perform that operation under normal working conditions.'
-                }</p>
-                <p>${lang === 'es'
-                  ? 'Estas técnicas, junto con sistemas de predeterminación de tiempos como <strong>MTM</strong>, <strong>MOST</strong> y <strong>Maynard</strong>, son la base para la <strong>optimización de procesos productivos</strong>, el diseño de <strong>sistemas de incentivos</strong> justos, y la mejora continua en entornos de fabricación, logística y servicios.'
-                  : 'These techniques, together with time predetermined systems such as <strong>MTM</strong>, <strong>MOST</strong>, and <strong>Maynard</strong>, are the foundation for <strong>production process optimization</strong>, fair <strong>incentive system design</strong>, and continuous improvement in manufacturing, logistics, and service environments.'
-                }</p>
-                <p>${lang === 'es'
-                  ? 'En <strong>ASETEMYT</strong> conectamos empresas que necesitan estos servicios con los mejores <strong>consultores, técnicos y empresas especializadas</strong> en cronometraje, estudio de tiempos y Lean Manufacturing en España y Latinoamérica.'
-                  : 'At <strong>ASETEMYT</strong> we connect companies needing these services with the best <strong>consultants, technicians, and specialized companies</strong> in time study, time analysis, and Lean Manufacturing across Spain and Latin America.'
-                }</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Featured Listings -->
-        ${featured.length > 0 ? `
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl md:text-3xl font-bold text-primary-800">${lang === 'es' ? 'Profesionales Destacados' : 'Featured Professionals'}</h2>
-            <a href="/directorio" class="text-accent-600 hover:text-accent-700 font-semibold flex items-center gap-1">
-              ${tr('viewAll')}
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-            </a>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            ${featured.map((entry: any) => `
-              <a href="/directorio/${entry.slug || ''}" class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group border border-steel-100">
-                <div class="flex items-start gap-4">
-                  ${entry.logo
-                    ? `<img src="${entry.logo}" alt="${entry.nombre}" class="w-14 h-14 rounded-lg object-cover flex-shrink-0" loading="lazy" />`
-                    : `<div class="w-14 h-14 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 font-bold text-xl flex-shrink-0">${(entry.nombre || '?')[0]}</div>`
-                  }
-                  <div class="min-w-0">
-                    <h3 class="font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">${entry.nombre || 'Sin nombre'}</h3>
-                    <span class="text-xs font-medium text-accent-600 uppercase">${entry.tipo === 'empresa' ? (lang === 'es' ? 'Empresa' : 'Company') : (lang === 'es' ? 'Consultor' : 'Consultant')}</span>
-                    ${entry.ubicacion?.pais ? `<p class="text-sm text-steel-500 mt-1">📍 ${entry.ubicacion.ciudad ? entry.ubicacion.ciudad + ', ' : ''}${entry.ubicacion.pais}</p>` : ''}
-                  </div>
-                </div>
-                ${entry.descripcion ? `<p class="text-sm text-steel-500 mt-3 line-clamp-2">${entry.descripcion}</p>` : ''}
-                ${entry.especialidades?.length ? `
-                <div class="flex flex-wrap gap-1.5 mt-3">
-                  ${entry.especialidades.slice(0, 3).map((esp: string) => `<span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded-full">${espLabels[esp] || esp}</span>`).join('')}
-                </div>` : ''}
-              </a>
-            `).join('')}
-          </div>
-        </section>
-        ` : ''}
-
-        <!-- FAQ Section -->
-        <section class="bg-white py-16">
-          <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-8 text-center">${lang === 'es' ? 'Preguntas Frecuentes' : 'Frequently Asked Questions'}</h2>
-            <div class="space-y-4">
-              ${[
-                { q: lang === 'es' ? '¿Qué es el cronometraje industrial?' : 'What is industrial time study?', a: lang === 'es' ? 'Es una técnica de ingeniería de métodos que mide el tiempo que un trabajador cualificado tarda en realizar una tarea específica, para determinar el tiempo estándar y optimizar la productividad.' : 'It is a methods engineering technique that measures how long a qualified worker takes to perform a specific task, to determine the standard time and optimize productivity.' },
-                { q: lang === 'es' ? '¿Qué diferencia hay entre MTM y cronometraje?' : 'What is the difference between MTM and time study?', a: lang === 'es' ? 'El cronometraje mide tiempos observando operaciones en marcha. MTM (Methods-Time Measurement) predetermina tiempos asignando valores a movimientos básicos sin necesidad de observación directa, ideal para la planificación de nuevos métodos.' : 'Time study measures times by observing ongoing operations. MTM (Methods-Time Measurement) predetermines times by assigning values to basic movements without direct observation, ideal for planning new methods.' },
-                { q: lang === 'es' ? '¿Cómo puedo contratar a un consultor del directorio?' : 'How can I hire a consultant from the directory?', a: lang === 'es' ? 'Explora el directorio filtrando por especialidad y ubicación, y contacta directamente con el profesional que mejor se adapte a tus necesidades. Todos los perfiles incluyen información de contacto.' : 'Browse the directory filtering by specialty and location, and contact directly the professional that best suits your needs. All profiles include contact information.' },
-                { q: lang === 'es' ? '¿Es gratuito aparecer en ASETEMYT?' : 'Is it free to appear on ASETEMYT?', a: lang === 'es' ? 'Sí, añadir tu perfil o empresa al directorio es completamente gratuito. Solo necesitas completar el formulario y nuestro equipo revisará tu solicitud antes de publicarla.' : 'Yes, adding your profile or company to the directory is completely free. You just need to fill out the form and our team will review your application before publishing it.' },
-              ].map((faq) => `
-                <details class="bg-steel-50 rounded-xl group">
-                  <summary class="cursor-pointer p-5 font-semibold text-primary-800 flex items-center justify-between hover:text-accent-600 transition-colors">
-                    ${faq.q}
-                    <svg class="w-5 h-5 text-steel-400 group-open:rotate-180 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                  </summary>
-                  <p class="px-5 pb-5 text-steel-600">${faq.a}</p>
-                </details>
-              `).join('')}
-            </div>
-          </div>
-        </section>
-
-        <!-- Latest Articles -->
-        ${articles.length > 0 ? `
-        <section class="bg-white py-16">
-          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between mb-8">
-              <h2 class="text-2xl md:text-3xl font-bold text-primary-800">${tr('latestArticles')}</h2>
-              <a href="/blog" class="text-accent-600 hover:text-accent-700 font-semibold flex items-center gap-1">
-                ${tr('viewAll')}
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-              </a>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              ${articles.slice(0, 3).map((article: any) => `
-                <a href="/blog/${article.slug}" class="bg-steel-50 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group">
-                  ${article.coverImage ? `<img src="${article.coverImage}" alt="${article.title}" class="w-full h-48 object-cover" loading="lazy" />` : ''}
-                  <div class="p-5">
-                    <div class="flex gap-2 mb-3">
-                      ${(article.tags || []).slice(0, 2).map((tag: string) => `<span class="text-xs bg-primary-100 text-primary-700 px-2 py-1 rounded-full font-medium">${tag}</span>`).join('')}
-                    </div>
-                    <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">${article.title}</h3>
-                    <p class="text-steel-500 text-sm line-clamp-2">${article.excerpt}</p>
-                    <p class="text-xs text-steel-400 mt-3">${article.publishedAt?.toDate?.()?.toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US') || ''}</p>
-                  </div>
-                </a>
-              `).join('')}
-            </div>
-          </div>
-        </section>
-        ` : ''}
-
-        <!-- Newsletter CTA -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div class="bg-gradient-to-r from-accent-500 to-accent-600 rounded-2xl p-6 md:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-              <h3 class="text-xl font-bold mb-1">📊 Newsletter ASETEMYT</h3>
-              <p class="text-white/80 text-sm">Recibe cada mes un reporte con el nuevo software especializado incorporado al directorio. 50€/año.</p>
-            </div>
-            <a href="/newsletter" class="inline-flex items-center bg-white text-accent-600 hover:bg-steel-100 px-6 py-2.5 rounded-lg font-semibold transition-colors text-sm whitespace-nowrap">
-              Suscribirse →
-            </a>
-          </div>
-        </section>
-
-        <!-- CTA -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div class="bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 md:p-12 text-white text-center">
-            <h2 class="text-2xl md:text-3xl font-bold mb-4">${tr('ctaTitle')}</h2>
-            <p class="text-steel-300 mb-6 max-w-2xl mx-auto">${tr('ctaDesc')}</p>
-            <a href="/anadir" class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all">
-              ${tr('addMyCompany')}
-              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            </a>
-          </div>
-        </section>
-      `;
-    }
-
-    // Listen for language changes
-    window.addEventListener('langChange', ((e: CustomEvent) => {
-      lang = e.detail;
-      load();
-    }) as EventListener);
-
-    load();
-  </script>
+  <!-- CTA -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 md:p-12 text-white text-center">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">¿Ofreces servicios de cronometraje industrial?</h2>
+      <p class="text-steel-300 mb-6 max-w-2xl mx-auto">Añade tu perfil al directorio y conecta con cientos de empresas que buscan tu experiencia.</p>
+      <a href="/anadir" class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all" rel="nofollow">
+        Añadir mi empresa
+        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      </a>
+    </div>
+  </section>
 </Layout>

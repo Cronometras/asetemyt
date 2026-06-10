@@ -1,25 +1,48 @@
 ---
 export const prerender = true;
 import Layout from '../layouts/Layout.astro';
+
+const SITE = 'https://asetemyt.com';
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: 'Empleo', item: `${SITE}/empleo` },
+  ],
+};
 ---
 
-<Layout title="Empleo en Ingeniería de Métodos y Tiempos" description="Ofertas de trabajo en cronometraje industrial, ingeniería de métodos, Lean Manufacturing y optimización de procesos. Job board especializado.">
+<Layout
+  title="Empleo en Ingeniería de Métodos y Tiempos — Ofertas de Cronometraje Industrial | ASETEMYT"
+  description="Ofertas de trabajo en cronometraje industrial, ingeniería de métodos, MTM, MOST, Lean Manufacturing y optimización de procesos. Publica tu oferta o postúlate gratis."
+  canonical={`${SITE}/empleo`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+
   <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="mb-10">
-      <nav class="mb-4 text-sm text-steel-500">
-        <a href="/" class="hover:text-accent-600" data-field="home">Inicio</a>
-        <span class="mx-2">/</span>
-        <span data-field="navJobs">Empleo</span>
+      <nav aria-label="Migas" class="mb-4 text-sm text-steel-500">
+        <ol class="flex flex-wrap items-center gap-2">
+          <li><a href="/" class="hover:text-accent-600">Inicio</a></li>
+          <li aria-hidden="true">/</li>
+          <li class="text-primary-800 font-semibold">Empleo</li>
+        </ol>
       </nav>
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3" data-field="jobsTitle">Empleo en Ingeniería de Métodos</h1>
-          <p class="text-steel-500 text-lg" data-field="jobsDesc">Ofertas de trabajo en cronometraje industrial, Lean Manufacturing y optimización de procesos.</p>
+          <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">Empleo en Ingeniería de Métodos y Tiempos</h1>
+          <p class="text-steel-500 text-lg max-w-3xl">
+            Ofertas de trabajo especializadas en cronometraje industrial, MTM, MOST, Lean
+            Manufacturing y optimización de procesos. Encuentra tu próximo puesto o publica
+            una oferta gratis.
+          </p>
         </div>
         <button id="open-post-job"
           class="inline-flex items-center gap-2 bg-accent-500 hover:bg-accent-600 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm whitespace-nowrap">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          <span data-field="postJob">Publicar oferta</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span>Publicar oferta</span>
         </button>
       </div>
     </div>
@@ -183,6 +206,7 @@ import Layout from '../layouts/Layout.astro';
     }
 
     function renderJobs(jobs: any[]) {
+      injectJobPostingSchema(jobs);
       const list = document.getElementById('jobs-list')!;
       if (jobs.length === 0) {
         list.innerHTML = `
@@ -226,6 +250,56 @@ import Layout from '../layouts/Layout.astro';
       const d = document.createElement('div');
       d.textContent = str || '';
       return d.innerHTML;
+    }
+
+    /**
+     * Inject JobPosting JSON-LD for every currently visible job.
+     * Google for Jobs requires this schema, including datePosted, validThrough,
+     * employmentType, hiringOrganization, jobLocation. The page is fully SSR'd
+     * at build time, but jobs are dynamic; we therefore (re)write the schema in
+     * the browser. Googlebot does execute JS, so this is fine.
+     */
+    function injectJobPostingSchema(jobs: any[]) {
+      document.querySelectorAll('script[data-schema="jobposting"]').forEach((s) => s.remove());
+
+      jobs.forEach((j) => {
+        if (!j.title || !j.company) return;
+        const schema: any = {
+          '@context': 'https://schema.org',
+          '@type': 'JobPosting',
+          title: j.title,
+          description: j.description || '',
+          datePosted: j.createdAt || new Date().toISOString(),
+          employmentType: (j.type || 'FULL_TIME').toUpperCase().replace('-', '_'),
+          hiringOrganization: { '@type': 'Organization', name: j.company },
+          jobLocation: {
+            '@type': 'Place',
+            address: {
+              '@type': 'PostalAddress',
+              addressLocality: j.location || 'Madrid',
+              addressCountry: 'ES',
+            },
+          },
+          directApply: !!j.contactUrl,
+        };
+        if (j.contactEmail) schema.contactPoint = { '@type': 'ContactPoint', email: j.contactEmail, contactType: 'hiring' };
+        if (j.contactUrl) schema.url = j.contactUrl;
+        if (j.salary) {
+          const m = j.salary.match(/(\d[\d.]*)\s*€?\s*-\s*(\d[\d.]*)/);
+          if (m) {
+            schema.baseSalary = {
+              '@type': 'MonetaryAmount',
+              currency: 'EUR',
+              value: { '@type': 'QuantitativeValue', minValue: Number(m[1].replace(/\./g, '')), maxValue: Number(m[2].replace(/\./g, '')), unitText: 'YEAR' },
+            };
+          }
+        }
+        const s = document.createElement('script');
+        s.type = 'application/ld+json';
+        s.setAttribute('data-schema', 'jobposting');
+        s.textContent = JSON.stringify(schema);
+        document.head.appendChild(s);
+      });
     }
 
     // Modal

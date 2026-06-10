@@ -1,0 +1,39 @@
+{
+  "name": "ASETEMYT — Directorio de Cronometraje Industrial",
+  "short_name": "ASETEMYT",
+  "description": "Directorio de técnicos, consultores y empresas de cronometraje industrial e ingeniería de métodos y tiempos (MTM, MOST, Work Sampling).",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b2545",
+  "theme_color": "#0b2545",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo-asetemyt.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "education"]
+}

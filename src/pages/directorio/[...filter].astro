@@ -1,10 +1,36 @@
 ---
 // Landing pages SEO: /directorio/[...filter]
-// Handles: /directorio/espana, /directorio/barcelona, /directorio/cronometraje,
-//          /directorio/espana/cronometraje, etc.
+// Handles: /directorio/pais/[country], /directorio/ciudad/[city],
+//          /directorio/especialidad/[specialty],
+//          /directorio/pais/[country]/[specialty]
 export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
 import { getDirectoryEntries } from '../../lib/firebase';
+
+const SITE = 'https://asetemyt.com';
+
+function toSlug(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function toCountryISO(country?: string): string | undefined {
+  if (!country) return undefined;
+  const k = country.toLowerCase().trim();
+  const map: Record<string, string> = {
+    'españa': 'ES', 'alemania': 'DE', 'méxico': 'MX', 'mexico': 'MX',
+    'méjico': 'MX', 'perú': 'PE', 'peru': 'PE', 'estados unidos': 'US',
+    'usa': 'US', 'francia': 'FR', 'italia': 'IT', 'portugal': 'PT',
+    'brasil': 'BR', 'brazil': 'BR', 'colombia': 'CO', 'argentina': 'AR',
+    'chile': 'CL', 'reino Unido': 'GB', 'uk': 'GB', 'china': 'CN',
+    'japón': 'JP', 'japan': 'JP', 'india': 'IN',
+  };
+  return map[k];
+}
 
 export async function getStaticPaths() {
   let entries: any[] = [];
@@ -16,7 +42,6 @@ export async function getStaticPaths() {
 
   const paths: any[] = [];
 
-  // Collect all countries and cities
   const countries = new Map<string, number>();
   const cities = new Map<string, number>();
   const specialties = new Map<string, number>();
@@ -34,48 +59,63 @@ export async function getStaticPaths() {
 
   // Country pages: /directorio/pais/[slug]
   for (const [country, count] of countries) {
-    if (count >= 2) { // Only generate pages with enough entries
-      const slug = country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+    if (count >= 2) {
       paths.push({
-        params: { filter: `pais/${slug}` },
-        props: { type: 'country', value: country, entries: entries.filter((e: any) => e.ubicacion?.pais?.toLowerCase()?.trim() === country) },
+        params: { filter: `pais/${toSlug(country)}` },
+        props: {
+          type: 'country',
+          value: country,
+          entries: entries.filter((e: any) => e.ubicacion?.pais?.toLowerCase()?.trim() === country),
+        },
+      });
+    }
+  }
+
+  // City pages: /directorio/ciudad/[slug]
+  for (const [city, count] of cities) {
+    if (count >= 2) {
+      paths.push({
+        params: { filter: `ciudad/${toSlug(city)}` },
+        props: {
+          type: 'city',
+          value: city,
+          entries: entries.filter((e: any) => e.ubicacion?.ciudad?.toLowerCase()?.trim() === city),
+        },
       });
     }
   }
 
   // Specialty pages: /directorio/especialidad/[slug]
-  const espLabels: Record<string, string> = {
-    cronometraje: 'Cronometraje Industrial',
-    mtm: 'MTM (Methods-Time Measurement)',
-    most: 'MOST (Maynard Operation Sequence Technique)',
-    oee: 'OEE (Overall Equipment Effectiveness)',
-    lean: 'Lean Manufacturing',
-    estudio_trabajo: 'Estudio del Trabajo',
-  };
-
   for (const [esp, count] of specialties) {
     if (count >= 2) {
       paths.push({
-        params: { filter: `especialidad/${esp}` },
-        props: { type: 'specialty', value: esp, entries: entries.filter((e: any) => (e.especialidades || []).some((s: string) => s.toLowerCase() === esp)) },
+        params: { filter: `especialidad/${toSlug(esp)}` },
+        props: {
+          type: 'specialty',
+          value: esp,
+          entries: entries.filter((e: any) => (e.especialidades || []).some((s: string) => s.toLowerCase() === esp)),
+        },
       });
     }
   }
 
   // Country + specialty combo: /directorio/pais/[country]/[specialty]
   for (const [country, cCount] of countries) {
-    if (cCount < 3) continue;
-    const countrySlug = country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
+    if (cCount < 2) continue;
     for (const [esp, eCount] of specialties) {
       if (eCount < 2) continue;
       const matching = entries.filter((e: any) =>
         e.ubicacion?.pais?.toLowerCase()?.trim() === country &&
-        (e.especialidades || []).some((s: string) => s.toLowerCase() === esp)
+        (e.especialidades || []).some((s: string) => s.toLowerCase() === esp),
       );
-      if (matching.length >= 1) {
+      if (matching.length >= 2) {
         paths.push({
-          params: { filter: `pais/${countrySlug}/${esp}` },
-          props: { type: 'country_specialty', value: `${country}|${esp}`, entries: matching },
+          params: { filter: `pais/${toSlug(country)}/${toSlug(esp)}` },
+          props: {
+            type: 'country_specialty',
+            value: `${country}|${esp}`,
+            entries: matching,
+          },
         });
       }
     }
@@ -86,11 +126,6 @@ export async function getStaticPaths() {
 
 const { type, value, entries } = Astro.props;
 
-let title = '';
-let description = '';
-let h1 = '';
-let breadcrumbs: { name: string; url: string }[] = [{ name: 'Inicio', url: '/' }, { name: 'Directorio', url: '/directorio' }];
-
 const espLabels: Record<string, string> = {
   cronometraje: 'Cronometraje Industrial',
   mtm: 'MTM (Methods-Time Measurement)',
@@ -98,75 +133,131 @@ const espLabels: Record<string, string> = {
   oee: 'OEE (Overall Equipment Effectiveness)',
   lean: 'Lean Manufacturing',
   estudio_trabajo: 'Estudio del Trabajo',
+  'work sampling': 'Work Sampling',
+  kaizen: 'Kaizen',
+  balanceo: 'Balanceo de líneas',
+  'estudio de métodos': 'Estudio de métodos',
 };
 
 function capitalize(s: string) {
-  return s.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  return s.split(' ').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
+
+let title = '';
+let description = '';
+let h1 = '';
+let introCopy = '';
+let breadcrumbs: { name: string; url: string }[] = [
+  { name: 'Inicio', url: '/' },
+  { name: 'Directorio', url: '/directorio' },
+];
+let pathPrefix = '/directorio';
+let isThin = entries.length < 2;
 
 if (type === 'country') {
   const countryName = capitalize(value);
-  title = `Consultores de Cronometraje en ${countryName}`;
-  h1 = `Profesionales del Cronometraje Industrial en ${countryName}`;
-  description = `Encuentra consultores y empresas especializados en cronometraje industrial, MTM, MOST y Lean Manufacturing en ${countryName}.`;
-  breadcrumbs.push({ name: countryName, url: `/directorio/pais/${value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}` });
+  const slug = toSlug(value);
+  const iso = toCountryISO(value);
+  title = `Consultores y empresas de cronometraje industrial en ${countryName} | ASETEMYT`;
+  h1 = `Profesionales del cronometraje industrial en ${countryName}`;
+  description = `Encuentra consultores y empresas especializados en cronometraje industrial, MTM, MOST, OEE y Lean Manufacturing en ${countryName}. Fichas verificadas con datos de contacto y servicios.`;
+  introCopy = `Listado de profesionales, consultores y empresas del sector del cronometraje industrial y la ingeniería de métodos y tiempos con sede en ${countryName}. Filtra por especialidad o ciudad para afinar tu búsqueda.`;
+  breadcrumbs.push({ name: countryName, url: `/directorio/pais/${slug}` });
+  pathPrefix = `/directorio/pais/${slug}`;
+} else if (type === 'city') {
+  const cityName = capitalize(value);
+  const slug = toSlug(value);
+  title = `Cronometristas y consultores en ${cityName} | ASETEMYT`;
+  h1 = `Profesionales del cronometraje industrial en ${cityName}`;
+  description = `Directorio de cronometristas, consultores MTM y empresas de ingeniería de métodos y tiempos en ${cityName}. Contacto directo y especialidades.`;
+  introCopy = `Encuentra profesionales verificados del cronometraje industrial y la ingeniería de métodos y tiempos en ${cityName}.`;
+  breadcrumbs.push({ name: cityName, url: `/directorio/ciudad/${slug}` });
+  pathPrefix = `/directorio/ciudad/${slug}`;
 } else if (type === 'specialty') {
   const espName = espLabels[value] || capitalize(value);
-  title = `${espName} — Consultores y Software`;
-  h1 = `Profesionales de ${espName}`;
+  const slug = toSlug(value);
+  title = `${espName} — Consultores, empresas y software | ASETEMYT`;
+  h1 = `Profesionales y software de ${espName}`;
   description = `Directorio de consultores, empresas y software especializado en ${espName}. Encuentra expertos en ingeniería de métodos y tiempos.`;
-  breadcrumbs.push({ name: espName, url: `/directorio/especialidad/${value}` });
+  introCopy = `Listado global de profesionales y herramientas de software especializadas en ${espName}. Compara experiencia, ubicación y servicios, y contacta directamente.`;
+  breadcrumbs.push({ name: espName, url: `/directorio/especialidad/${slug}` });
+  pathPrefix = `/directorio/especialidad/${slug}`;
 } else if (type === 'country_specialty') {
   const [country, esp] = value.split('|');
   const countryName = capitalize(country);
   const espName = espLabels[esp] || capitalize(esp);
-  title = `${espName} en ${countryName}`;
-  h1 = `Profesionales de ${espName} en ${countryName}`;
+  const cSlug = toSlug(country);
+  const eSlug = toSlug(esp);
+  title = `${espName} en ${countryName} | ASETEMYT`;
+  h1 = `${espName} en ${countryName}`;
   description = `Consultores y empresas especializadas en ${espName} en ${countryName}. Directorio de ingeniería de métodos y tiempos.`;
-  breadcrumbs.push({ name: countryName, url: `/directorio/pais/${country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-')}` });
-  breadcrumbs.push({ name: espName, url: '#' });
+  introCopy = `Combinación ${espName} + ${countryName}: profesionales verificados en la región con esta especialidad concreta.`;
+  breadcrumbs.push({ name: countryName, url: `/directorio/pais/${cSlug}` });
+  breadcrumbs.push({ name: espName, url: `/directorio/pais/${cSlug}/${eSlug}` });
+  pathPrefix = `/directorio/pais/${cSlug}/${eSlug}`;
 }
+
+const canonical = `${SITE}${pathPrefix}`;
 
 const tipoColors: Record<string, string> = {
   empresa: 'bg-blue-100 text-blue-700',
   consultor: 'bg-green-100 text-green-700',
 };
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((b, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: b.name,
+    item: b.url === '#' ? canonical : `${SITE}${b.url}`,
+  })),
+};
+
+const itemListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  itemListElement: entries.slice(0, 30).map((e: any, i: number) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: e.nombre,
+    url: `${SITE}/directorio/${e.slug}`,
+  })),
+};
 ---
 
-<Layout title={title} description={description}>
-  <!-- BreadcrumbList Schema -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": ${JSON.stringify(breadcrumbs.map((b, i) => ({
-        "@type": "ListItem",
-        "position": i + 1,
-        "name": b.name,
-        "item": `https://asetemyt.com${b.url}`
-      })))}
-    }
-  </script>
+<Layout
+  title={title}
+  description={description}
+  canonical={canonical}
+  noindex={isThin}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
 
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Breadcrumb -->
-    <nav class="mb-6 flex items-center gap-2 text-sm text-steel-500 flex-wrap">
+    <nav aria-label="Migas" class="mb-6 flex items-center gap-2 text-sm text-steel-500 flex-wrap">
       {breadcrumbs.map((b, i) => (
         <>
-          {i > 0 && <span class="text-steel-300">/</span>}
-          <a href={b.url} class="hover:text-accent-600 transition-colors">{b.name}</a>
+          {i > 0 && <span class="text-steel-300" aria-hidden="true">/</span>}
+          {b.url === '#' || b.url === pathPrefix ? (
+            <span class="text-primary-800 font-semibold">{b.name}</span>
+          ) : (
+            <a href={b.url} class="hover:text-accent-600 transition-colors">{b.name}</a>
+          )}
         </>
       ))}
     </nav>
 
-    <!-- Header -->
     <div class="mb-10">
       <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">{h1}</h1>
-      <p class="text-steel-500 text-lg">{description}</p>
-      <p class="text-sm text-steel-400 mt-2">{entries.length} {entries.length === 1 ? 'resultado' : 'resultados'}</p>
+      <p class="text-steel-500 text-lg mb-2">{description}</p>
+      <p class="text-steel-600 mb-4 max-w-3xl">{introCopy}</p>
+      <p class="text-sm text-steel-400">{entries.length} {entries.length === 1 ? 'resultado' : 'resultados'}</p>
     </div>
 
-    <!-- Directory Grid -->
     {entries.length === 0 ? (
       <div class="text-center py-20 bg-white rounded-xl shadow">
         <p class="text-steel-400 text-lg">No se encontraron entradas para esta búsqueda.</p>
@@ -175,17 +266,30 @@ const tipoColors: Record<string, string> = {
     ) : (
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {entries.map((entry: any) => (
-          <a href={`/directorio/${entry.slug}`} class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group">
+          <a
+            href={`/directorio/${entry.slug}`}
+            class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group"
+          >
             <div class="flex items-start gap-4 mb-4">
               {entry.logo ? (
-                <img src={entry.logo} alt={entry.nombre} class="w-14 h-14 rounded-lg object-cover shadow-sm" loading="lazy" />
+                <img
+                  src={entry.logo}
+                  alt={`Logo de ${entry.nombre}`}
+                  class="w-14 h-14 rounded-lg object-cover shadow-sm"
+                  width="56"
+                  height="56"
+                  loading="lazy"
+                  decoding="async"
+                />
               ) : (
-                <div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl">
+                <div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl" aria-hidden="true">
                   {(entry.nombre || '?')[0].toUpperCase()}
                 </div>
               )}
               <div class="flex-1 min-w-0">
-                <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">{entry.nombre}</h3>
+                <h2 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">
+                  {entry.nombre}
+                </h2>
                 <span class={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1 ${tipoColors[entry.tipo] || 'bg-steel-100 text-steel-600'}`}>
                   {entry.tipo === 'empresa' ? 'Empresa' : 'Consultor'}
                 </span>
@@ -198,7 +302,10 @@ const tipoColors: Record<string, string> = {
               ))}
             </div>
             <div class="flex items-center text-sm text-steel-400">
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
               {[entry.ubicacion?.ciudad, entry.ubicacion?.pais].filter(Boolean).join(', ') || 'Sin ubicación'}
             </div>
           </a>
@@ -206,7 +313,6 @@ const tipoColors: Record<string, string> = {
       </div>
     )}
 
-    <!-- CTA -->
     <div class="mt-12 bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 text-white text-center">
       <h2 class="text-xl md:text-2xl font-bold mb-3">¿Tu empresa no aparece aquí?</h2>
       <p class="text-steel-300 mb-5">Añade tu perfil al directorio gratuito y conecta con clientes potenciales.</p>

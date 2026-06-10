@@ -1,31 +1,160 @@
 ---
 export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
+import { getDirectoryEntries } from '../../lib/firebase';
+
+const SITE = 'https://asetemyt.com';
+
+let allEntries: any[] = [];
+try {
+  allEntries = await getDirectoryEntries();
+} catch (e) {
+  console.error('Error fetching entries for /directorio:', e);
+}
+
+const featured = allEntries
+  .filter((e) => e.destacado)
+  .sort((a, b) => (b.verificado ? 1 : 0) - (a.verificado ? 1 : 0))
+  .slice(0, 9);
+
+const itemListSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Directorio de Cronometraje Industrial',
+  itemListElement: allEntries.slice(0, 50).map((e: any, i: number) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: e.nombre,
+    url: `${SITE}/directorio/${e.slug}`,
+  })),
+};
+
+const breadcrumbSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Inicio', item: `${SITE}/` },
+    { '@type': 'ListItem', position: 2, name: 'Directorio', item: `${SITE}/directorio` },
+  ],
+};
+
+const collectionSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': `${SITE}/directorio`,
+  name: 'Directorio de Cronometraje Industrial',
+  description: 'Directorio de técnicos, consultores y empresas de cronometraje industrial e ingeniería de métodos y tiempos (MTM, MOST, OEE, Lean, Work Sampling).',
+  isPartOf: { '@id': `${SITE}#website` },
+  about: { '@type': 'Thing', name: 'Cronometraje industrial' },
+};
 ---
 
-<Layout title="Directorio de Profesionales del Cronometraje Industrial" description="Consultores y empresas especializados en cronometraje industrial, MTM, MOST, OEE y Lean Manufacturing.">
+<Layout
+  title="Directorio de Cronometraje Industrial — Consultores y Empresas | ASETEMYT"
+  description="Directorio verificado de consultores y empresas especializados en cronometraje industrial, MTM, MOST, OEE, Lean Manufacturing y Work Sampling en España y Latinoamérica."
+  canonical={`${SITE}/directorio`}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(itemListSchema)} />
+
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div id="directory-content">
-      <!-- Skeleton loader -->
-      <div class="mb-10">
-        <div class="h-10 w-96 bg-steel-200 rounded animate-pulse mb-3"></div>
-        <div class="h-5 w-[32rem] bg-steel-100 rounded animate-pulse"></div>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[1,2,3,4,5,6].map(() => (
-          <div class="bg-white rounded-xl shadow-md p-6">
-            <div class="flex items-start gap-4 mb-4">
-              <div class="w-14 h-14 bg-steel-200 rounded-lg animate-pulse"></div>
-              <div class="flex-1">
-                <div class="h-5 w-32 bg-steel-200 rounded animate-pulse mb-2"></div>
-                <div class="h-5 w-20 bg-steel-100 rounded-full animate-pulse"></div>
+    <header class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">
+        Directorio de Cronometraje Industrial
+      </h1>
+      <p class="text-steel-600 text-lg max-w-3xl">
+        Encuentra consultores y empresas especializados en cronometraje industrial,
+        MTM, MOST, OEE, Lean Manufacturing y Work Sampling. Fichas verificadas
+        con datos de contacto, especialidades y ubicación.
+      </p>
+      <p class="text-sm text-steel-400 mt-2">{allEntries.length} profesionales en el directorio</p>
+    </header>
+
+    {featured.length > 0 && (
+      <section aria-labelledby="destacados-h2" class="mb-12">
+        <h2 id="destacados-h2" class="text-2xl font-bold text-primary-800 mb-4">Destacados</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featured.map((entry: any) => (
+            <a
+              href={`/directorio/${entry.slug}`}
+              class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group"
+            >
+              <div class="flex items-start gap-4 mb-4">
+                {entry.logo ? (
+                  <img
+                    src={entry.logo}
+                    alt={`Logo de ${entry.nombre}`}
+                    class="w-14 h-14 rounded-lg object-cover shadow-sm"
+                    width="56"
+                    height="56"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl" aria-hidden="true">
+                    {(entry.nombre || '?')[0].toUpperCase()}
+                  </div>
+                )}
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">
+                    {entry.nombre}
+                  </h3>
+                  <span class={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1 ${entry.tipo === 'empresa' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                    {entry.tipo === 'empresa' ? 'Empresa' : 'Consultor'}
+                  </span>
+                </div>
               </div>
+              {entry.descripcion && <p class="text-steel-500 text-sm line-clamp-2 mb-3">{entry.descripcion}</p>}
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                {(entry.especialidades || []).slice(0, 3).map((esp: string) => (
+                  <span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded font-medium">{esp}</span>
+                ))}
+              </div>
+              <div class="flex items-center text-sm text-steel-400">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                {[entry.ubicacion?.ciudad, entry.ubicacion?.pais].filter(Boolean).join(', ') || 'Sin ubicación'}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <section aria-labelledby="todos-h2" class="mb-12">
+      <h2 id="todos-h2" class="text-2xl font-bold text-primary-800 mb-4">Todos los profesionales</h2>
+      <div id="directory-content">
+        <div class="mb-10">
+          <div class="h-10 w-96 bg-steel-200 rounded animate-pulse mb-3"></div>
+          <div class="h-5 w-[32rem] bg-steel-100 rounded animate-pulse"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1,2,3,4,5,6].map(() => (
+            <div class="bg-white rounded-xl shadow-md p-6">
+              <div class="flex items-start gap-4 mb-4">
+                <div class="w-14 h-14 bg-steel-200 rounded-lg animate-pulse"></div>
+                <div class="flex-1">
+                  <div class="h-5 w-32 bg-steel-200 rounded animate-pulse mb-2"></div>
+                  <div class="h-5 w-20 bg-steel-100 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+              <div class="h-4 w-full bg-steel-100 rounded animate-pulse mb-2"></div>
+              <div class="h-4 w-3/4 bg-steel-100 rounded animate-pulse mb-3"></div>
             </div>
-            <div class="h-4 w-full bg-steel-100 rounded animate-pulse mb-2"></div>
-            <div class="h-4 w-3/4 bg-steel-100 rounded animate-pulse mb-3"></div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+    </section>
+
+    <div class="mt-8 bg-gradient-to-r from-primary-800 to-primary-900 rounded-2xl p-8 text-white text-center">
+      <h2 class="text-xl md:text-2xl font-bold mb-3">¿Tu empresa no aparece aquí?</h2>
+      <p class="text-steel-300 mb-5">Añade tu perfil al directorio gratuito y conecta con clientes potenciales.</p>
+      <a href="/anadir" class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white px-6 py-3 rounded-lg font-semibold transition-all">
+        Añadir mi empresa
+      </a>
     </div>
   </section>
 
@@ -36,6 +165,15 @@ import Layout from '../../layouts/Layout.astro';
     // with a fetch to /api/directorio/consultores, which is cached in
     // Cloudflare KV (24h TTL, invalidated on mutations). This brought the
     // Firestore reads from ~974/page-load to ~1/day.
+
+    // Filter URLs (?especialidad=...&pais=...) are duplicate-content traps.
+    // Inject a noindex meta so Google doesn't index every combination.
+    if (window.location.search) {
+      const meta = document.createElement('meta');
+      meta.name = 'robots';
+      meta.content = 'noindex, follow';
+      document.head.appendChild(meta);
+    }
 
     let lang: Lang = getLang();
 

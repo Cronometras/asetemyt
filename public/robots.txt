@@ -1,7 +1,14 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /registro
+Disallow: /mi-cuenta
+Disallow: /checkout
+Disallow: /anadir
+Disallow: /reclamar/
+Disallow: /editar/
+Disallow: /*?*
 
 Sitemap: https://asetemyt.com/sitemap.xml
-
-# Block admin/form submission endpoints
-Disallow: /anadir?*

@@ -1,0 +1,59 @@
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-XSS-Protection: 1; mode=block
+  Content-Security-Policy: default-src 'self' https:; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-ancestors 'self'
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=86400
+
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+
+/api/*
+  X-Robots-Tag: noindex, nofollow
+
+/anadir/*
+  X-Robots-Tag: noindex, nofollow
+
+/login
+  X-Robots-Tag: noindex, nofollow
+
+/registro
+  X-Robots-Tag: noindex, nofollow
+
+/mi-cuenta
+  X-Robots-Tag: noindex, nofollow
+
+/checkout
+  X-Robots-Tag: noindex, nofollow
+
+/checkout/*
+  X-Robots-Tag: noindex, nofollow
+
+/reclamar/*
+  X-Robots-Tag: noindex, nofollow
+
+/editar/*
+  X-Robots-Tag: noindex, nofollow
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+
+/apple-touch-icon.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
+
+/favicon.svg
+  Content-Type: image/svg+xml
+  Cache-Control: public, max-age=31536000, immutable
