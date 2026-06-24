@@ -1,0 +1,184 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Contacto y Consultas — ASETEMYT"
+  description="Contacta con el equipo de ASETEMYT. Directorio profesional de cronometraje industrial e ingeniería de métodos y tiempos. Resolvemos dudas sobre el directorio, sugerencias o colaboraciones."
+>
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <header class="mb-10 text-center">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">
+        Contacta con nosotros
+      </h1>
+      <p class="text-steel-500 text-lg">
+        ¿Tienes dudas sobre el directorio, sugerencias o quieres colaborar? Escríbenos y te respondemos en menos de 24 horas laborables.
+      </p>
+    </header>
+
+    <div class="bg-white rounded-2xl shadow-lg p-8 border border-steel-200">
+      <form id="contact-form" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="nombre" class="block text-sm font-semibold text-steel-700 mb-1">
+              Nombre y Apellidos <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="nombre"
+              name="nombre"
+              required
+              placeholder="Ej: María García López"
+              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all"
+            />
+          </div>
+          <div>
+            <label for="empresa" class="block text-sm font-semibold text-steel-700 mb-1">
+              Empresa / Organización
+            </label>
+            <input
+              type="text"
+              id="empresa"
+              name="empresa"
+              placeholder="Ej: Industrias Acme S.L."
+              class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-semibold text-steel-700 mb-1">
+            Email <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            placeholder="Ej: maria@empresa.com"
+            class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all"
+          />
+        </div>
+
+        <div>
+          <label for="asunto" class="block text-sm font-semibold text-steel-700 mb-1">
+            Motivo de contacto <span class="text-red-500">*</span>
+          </label>
+          <select
+            id="asunto"
+            name="asunto"
+            required
+            class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none bg-white"
+          >
+            <option value="" disabled selected>Selecciona un motivo...</option>
+            <option value="consulta-directorio">Consulta sobre el directorio</option>
+            <option value="alta-ficha">Dar de alta mi ficha profesional</option>
+            <option value="reclamar-ficha">Reclamar o verificar mi ficha</option>
+            <option value="colaboracion">Colaboración o partnership</option>
+            <option value="prensa">Prensa / medios</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="mensaje" class="block text-sm font-semibold text-steel-700 mb-1">
+            Mensaje <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            id="mensaje"
+            name="mensaje"
+            required
+            rows="5"
+            placeholder="Cuéntanos en qué podemos ayudarte..."
+            class="w-full border border-steel-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all resize-y"
+          ></textarea>
+        </div>
+
+        <div class="flex items-start">
+          <input
+            id="privacy"
+            name="privacy"
+            type="checkbox"
+            required
+            class="cursor-pointer mt-1 h-4 w-4 rounded border-steel-300 text-accent-500 focus:ring-accent-500"
+          />
+          <label for="privacy" class="ml-3 text-sm text-steel-600 cursor-pointer select-none">
+            Acepto la <a href="/politica-de-privacidad" class="text-accent-500 hover:underline">política de privacidad</a> y el tratamiento de mis datos para recibir respuesta a mi consulta.
+          </label>
+        </div>
+
+        <div>
+          <button
+            type="submit"
+            id="submit-btn"
+            class="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-3.5 px-6 rounded-lg shadow-lg focus:ring-4 focus:ring-accent-300 transition-all"
+          >
+            Enviar mensaje
+          </button>
+        </div>
+
+        <div id="form-status" class="hidden text-center text-sm font-semibold"></div>
+      </form>
+    </div>
+
+    <div class="mt-8 text-center text-sm text-steel-500">
+      <p>O escríbenos directamente a <a href="mailto:info@asetemyt.com" class="text-accent-500 hover:underline font-semibold">info@asetemyt.com</a></p>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('contact-form') as HTMLFormElement | null;
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+    const statusEl = document.getElementById('form-status');
+    if (!form || !submitBtn || !statusEl) return;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nombre = (document.getElementById('nombre') as HTMLInputElement).value.trim();
+      const empresa = (document.getElementById('empresa') as HTMLInputElement).value.trim();
+      const email = (document.getElementById('email') as HTMLInputElement).value.trim();
+      const asunto = (document.getElementById('asunto') as HTMLSelectElement).value;
+      const mensaje = (document.getElementById('mensaje') as HTMLTextAreaElement).value.trim();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando...';
+      statusEl.className = 'hidden text-center text-sm font-semibold';
+
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre,
+            empresa,
+            email,
+            asunto,
+            mensaje,
+            site: 'asetemyt.com',
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          statusEl.textContent = '✅ Mensaje enviado correctamente. Te responderemos pronto.';
+          statusEl.className = 'text-center text-sm font-semibold text-green-600';
+          form.reset();
+        } else {
+          statusEl.textContent = result.error || 'Ha ocurrido un error. Inténtalo de nuevo.';
+          statusEl.className = 'text-center text-sm font-semibold text-red-600';
+        }
+      } catch (error) {
+        statusEl.textContent = 'Error de conexión. Inténtalo de nuevo.';
+        statusEl.className = 'text-center text-sm font-semibold text-red-600';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar mensaje';
+      }
+    });
+  });
+</script>
