@@ -286,6 +286,33 @@ export async function findListingBySlug(env: any, slug: string): Promise<{ listi
   return null;
 }
 
+/**
+ * Cached variant of findListingBySlug. Wraps with KV cache (1h TTL).
+ * On HIT: 0 reads. On MISS: 2 reads (consultores + software in parallel).
+ * Use this in routes that look up the same slug repeatedly (claim, edit,
+ * review submit, outreach). Build-time contexts should still use the
+ * uncached `findListingBySlug`.
+ */
+export async function findListingBySlugCached(
+  env: any,
+  slug: string
+): Promise<{ listing: any; collection: string } | null> {
+  // Lazy import to avoid a circular dep at module load time.
+  const { getCached } = await import('./cache');
+  return getCached(
+    env,
+    RUNTIME_CACHE_KEYS.listingBySlug(slug),
+    () => findListingBySlug(env, slug),
+    3600 // 1h TTL — slugs rarely change identity; mutations invalidate
+  );
+}
+
+/** Invalidate the cache entry for a slug (call from mutation routes). */
+export async function invalidateListingBySlug(env: any, slug: string): Promise<void> {
+  const { invalidate } = await import('./cache');
+  await invalidate(env, [RUNTIME_CACHE_KEYS.listingBySlug(slug)]);
+}
+
 // ---------------------------------------------------------------------------
 // BLOQUE 2 — Readers runtime con caché KV
 //
