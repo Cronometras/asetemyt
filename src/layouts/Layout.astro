@@ -64,7 +64,7 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
             <img src="/images/logo-asetemyt-nav.webp" alt="ASETEMYT" class="h-9 w-auto" width="51" height="40" loading="eager" />
             <span class="text-xl font-bold tracking-tight">ASETEMYT</span>
           </a>
-          <div class="hidden md:flex items-center gap-6">
+          <div class="hidden lg:flex items-center gap-6">
             <a href="/directorio" class="hover:text-accent-400 transition-colors font-medium" data-nav="prof">Profesionales</a>
             <a href="/software" class="hover:text-accent-400 transition-colors font-medium" data-nav="soft">Software</a>
             <a href="/blog" class="hover:text-accent-400 transition-colors font-medium" data-nav="blog">Blog</a>
@@ -84,13 +84,13 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
               <a href="/login" class="hover:text-accent-400 transition-colors font-medium" data-nav="login">Iniciar Sesión</a>
             </div>
           </div>
-          <button id="mobile-menu-btn" class="md:hidden p-2">
+          <button id="mobile-menu-btn" class="lg:hidden p-2">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
         </div>
-        <div id="mobile-menu" class="hidden md:hidden pb-4">
+        <div id="mobile-menu" class="hidden lg:hidden pb-4">
           <a href="/directorio" class="block py-2 hover:text-accent-400" data-nav="prof">Profesionales</a>
           <a href="/software" class="block py-2 hover:text-accent-400" data-nav="soft">Software</a>
           <a href="/blog" class="block py-2 hover:text-accent-400" data-nav="blog">Blog</a>
