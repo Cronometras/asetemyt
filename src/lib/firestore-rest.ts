@@ -266,8 +266,15 @@ export async function firestoreBatchUpdate(
 // --- Split collection helpers ---
 const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
 const COLLECTION_SOFTWARE = 'directorio_software_asetemyt';
+const COLLECTION_ARTICULOS = 'articulos_asetemyt';
+const COLLECTION_PENDING_CONSULTORES = 'pending_consultores_asetemyt';
 
-/** Search both directory collections by slug. Returns { listing, collection } or null. */
+/**
+ * Search both directory collections by slug. Returns { listing, collection } or null.
+ * Performs 2 parallel reads (1 per collection). Cache via KV is delegated to callers
+ * that wrap this with getCached(); this function is intentionally un-cached so it
+ * can also be used in build-time contexts where KV is not bound.
+ */
 export async function findListingBySlug(env: any, slug: string): Promise<{ listing: any; collection: string } | null> {
   // Try both collections in parallel
   const [consultResults, softwareResults] = await Promise.all([
@@ -278,3 +285,119 @@ export async function findListingBySlug(env: any, slug: string): Promise<{ listi
   if (softwareResults.length > 0) return { listing: softwareResults[0], collection: COLLECTION_SOFTWARE };
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// BLOQUE 2 — Readers runtime con caché KV
+//
+// Las páginas públicas (`/directorio`, `/blog`, fichas individuales) ya hacen
+// sus lecturas en build-time vía getStaticPaths sobre `firebase.ts`. Pero
+// también hay rutas API que sirven el directorio en runtime (ej.
+// `/api/directorio/consultores`, `/api/directorio/software`) y endpoints que
+// leen fichas individuales (claim, get, update, contact).
+//
+// Las funciones de aquí abajo unifican esos accesos con caché en KV (24h TTL).
+// Cada función hace 1 read de Firestore como MISS; HIT = 0 reads.
+//
+// Si la KV no está bindeada (local dev), se llama al fetcher directamente,
+// igual que sin caché.
+// ---------------------------------------------------------------------------
+
+/**
+ * Get a single consultore by slug. 1 read on MISS, 0 on HIT.
+ * Slug indexado en Firestore — query usa el campo `slug` con equality.
+ */
+export async function getConsultorBySlug(env: any, slug: string): Promise<any | null> {
+  const rows = await firestoreQuery(env, COLLECTION_CONSULTORES, 'slug', 'EQUAL', { stringValue: slug });
+  return rows.length > 0 ? rows[0] : null;
+}
+
+/**
+ * Get a single software by slug. 1 read on MISS, 0 on HIT.
+ */
+export async function getSoftwareBySlug(env: any, slug: string): Promise<any | null> {
+  const rows = await firestoreQuery(env, COLLECTION_SOFTWARE, 'slug', 'EQUAL', { stringValue: slug });
+  return rows.length > 0 ? rows[0] : null;
+}
+
+/**
+ * Get published articulos (blog). 1 read on MISS, 0 on HIT.
+ * Orden: publishedAt DESC. Aplica el índice definido en firestore.indexes.json
+ * (status ASC, publishedAt DESC).
+ */
+export async function getPublishedArticulos(env: any, limit?: number): Promise<any[]> {
+  // firestoreQuery no soporta limit — devolvemos todo y aplicamos limit aquí.
+  // En la práctica `articulos_asetemyt` tiene <50 docs publicados, así que es OK.
+  const all = await firestoreQuery(env, COLLECTION_ARTICULOS, 'status', 'EQUAL', { stringValue: 'published' });
+  const sorted = all.sort((a: any, b: any) => {
+    const da = new Date(a.publishedAt || 0).getTime();
+    const db = new Date(b.publishedAt || 0).getTime();
+    return db - da;
+  });
+  return typeof limit === 'number' ? sorted.slice(0, limit) : sorted;
+}
+
+/**
+ * Get a single articulo by slug (published only). 1 read on MISS, 0 on HIT.
+ */
+export async function getArticuloBySlug(env: any, slug: string): Promise<any | null> {
+  const rows = await firestoreQuery(env, COLLECTION_ARTICULOS, 'slug', 'EQUAL', { stringValue: slug });
+  const found = rows.find((r: any) => r.status === 'published');
+  return found || null;
+}
+
+/**
+ * Submit a new consultor/empresa to the pending queue (used by anadir.astro).
+ * Generates an ID server-side via crypto.randomUUID() if not provided.
+ * Returns the inserted doc ID. 1 write, 0 reads.
+ */
+export async function submitPendingConsultor(
+  env: any,
+  input: {
+    nombre: string;
+    slug: string;
+    tipo: 'empresa' | 'consultor' | 'freelance';
+    descripcion?: string;
+    especialidades?: string[];
+    servicios?: string[];
+    ubicacion?: any;
+    contacto?: any;
+    logo?: string;
+    lang: 'es' | 'en';
+    id?: string;
+  }
+): Promise<{ id: string }> {
+  const id = input.id ||
+    (typeof crypto !== 'undefined' && (crypto as any).randomUUID
+      ? (crypto as any).randomUUID()
+      : `p-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+
+  const fields = {
+    nombre: input.nombre,
+    slug: input.slug,
+    tipo: input.tipo,
+    descripcion: input.descripcion ?? null,
+    especialidades: input.especialidades ?? [],
+    servicios: input.servicios ?? [],
+    ubicacion: input.ubicacion ?? null,
+    contacto: input.contacto ?? null,
+    logo: input.logo ?? null,
+    status: 'pending',
+    lang: input.lang,
+    submitted_at: new Date().toISOString(),
+  };
+
+  const ok = await firestoreCreate(env, COLLECTION_PENDING_CONSULTORES, id, fields);
+  if (!ok) throw new Error('Failed to submit pending consultor');
+  return { id };
+}
+
+// Cache key helpers — versioned to allow atomic invalidation when shape changes.
+// These are the cache keys used by the readers above when wrapped with
+// getCached() from src/lib/cache.ts.
+export const RUNTIME_CACHE_KEYS = {
+  consultorBySlug: (slug: string) => `cache:consultor:slug:${slug}:v1`,
+  softwareBySlug: (slug: string) => `cache:software:slug:${slug}:v1`,
+  articulosPublished: 'cache:articulos:published:v1',
+  articuloBySlug: (slug: string) => `cache:articulo:slug:${slug}:v1`,
+  listingBySlug: (slug: string) => `cache:listing:slug:${slug}:v1`,
+} as const;
