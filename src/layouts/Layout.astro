@@ -47,6 +47,13 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <title>{title} | ASETEMYT</title>
+    {/* BLOQUE 3 - MEJ-1: meta robots/sitemap/llms (portado de InsForge). */}
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <link rel="sitemap" type="application/xml" href="https://asetemyt.com/sitemap.xml" />
+    <link rel="alternate" type="text/plain" href="https://asetemyt.com/llms.txt" title="ASETEMYT para LLMs" />
+    <link rel="alternate" type="text/plain" href="https://asetemyt.com/llms-full.txt" title="ASETEMYT (versión completa) para LLMs" />
+    {/* BLOQUE 3 - MEJ-1: named slot for per-page <head> additions (canonical específico, JSON-LD, OG article tags). */}
+    <slot name="head" />
     <Analytics />
   </head>
   <body class="bg-steel-50 text-steel-800 font-sans min-h-screen flex flex-col">

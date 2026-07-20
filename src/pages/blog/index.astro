@@ -1,6 +1,58 @@
 ---
+// BLOQUE 1 — Blog estático: render de tarjetas en build-time, sin lecturas runtime.
+// Las tarjetas se emiten como HTML estático desde articles.json (build-time).
+// Búsqueda y paginación operan en cliente sobre un JSON embebido, sin fetches.
+// ===============================
 export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+interface Article {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  content?: string;
+  coverImage?: string;
+  author?: string;
+  publishedAt?: string;
+  tags?: string[];
+  status?: string;
+}
+
+function loadArticles(): Article[] {
+  try {
+    const data = readFileSync(join(process.cwd(), 'public', 'data', 'articles.json'), 'utf-8');
+    const all: Article[] = JSON.parse(data);
+    return all
+      .filter((a) => a.status === 'published')
+      .sort((a, b) => {
+        const da = new Date(a.publishedAt || 0).getTime();
+        const db = new Date(b.publishedAt || 0).getTime();
+        return db - da;
+      });
+  } catch (e) {
+    console.error('[blog/index] Error loading articles.json:', e);
+    return [];
+  }
+}
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function truncateText(text: string, maxLength: number): string {
+  const clean = (text || '').replace(/[#*_`~\[\]>|]/g, '').replace(/\n+/g, ' ').trim();
+  if (clean.length <= maxLength) return clean;
+  return clean.substring(0, maxLength) + '...';
+}
+
+const articles = loadArticles();
+const ARTICLES_PER_PAGE = 9;
+// Build-time solo emitimos la primera página; el resto se pagina en cliente.
+const initialArticles = articles.slice(0, ARTICLES_PER_PAGE);
 ---
 
 <Layout title="Blog — Cronometraje Industrial" description="Artículos, guías y novedades sobre cronometraje industrial, ingeniería de métodos y tiempos, MTM, MOST y optimización de procesos.">
@@ -41,27 +93,55 @@ import Layout from '../../layouts/Layout.astro';
       <p id="search-results-count" class="mt-2 text-sm text-steel-400 hidden"></p>
     </div>
 
-    <!-- Loading State -->
-    <div id="loading" class="text-center py-20">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-      <p class="mt-4 text-steel-400">Cargando artículos...</p>
-    </div>
+    <!-- Articles Grid (build-time: primera página) -->
+    {initialArticles.length > 0 ? (
+      <div id="articles-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {initialArticles.map((article) => {
+          const excerpt = article.excerpt || truncateText(article.content || '', 150);
+          return (
+            <a
+              href={`/blog/${article.slug}`}
+              class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group"
+            >
+              {article.coverImage && (
+                <div class="overflow-hidden">
+                  <img
+                    src={article.coverImage}
+                    alt={article.title}
+                    class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              <div class="p-6">
+                <div class="flex gap-2 mb-3 flex-wrap">
+                  {(article.tags || []).slice(0, 3).map((tag) => (
+                    <span class="text-xs bg-primary-100 text-primary-700 px-2.5 py-1 rounded-full font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <h2 class="text-xl font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">
+                  {article.title}
+                </h2>
+                <p class="text-steel-500 text-sm line-clamp-3">{excerpt}</p>
+                <div class="flex items-center justify-between mt-4 pt-4 border-t border-steel-100">
+                  <span class="text-sm text-steel-400">{article.author || 'ASETEMYT'}</span>
+                  <span class="text-xs text-steel-400">{formatDate(article.publishedAt)}</span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    ) : (
+      <div class="text-center py-20 bg-white rounded-xl shadow">
+        <p class="text-steel-400 text-lg">No hay artículos publicados todavía.</p>
+        <p class="text-steel-300 mt-2">Vuelve pronto para leer las últimas novedades.</p>
+      </div>
+    )}
 
-    <!-- Error State -->
-    <div id="error" class="hidden text-center py-20">
-      <p class="text-red-600 mb-2">Error al cargar los artículos</p>
-      <button onclick="loadArticles()" class="text-primary-600 hover:text-primary-700 underline">
-        Reintentar
-      </button>
-    </div>
-
-    <!-- Empty State -->
-    <div id="empty" class="hidden text-center py-20 bg-white rounded-xl shadow">
-      <p class="text-steel-400 text-lg">No hay artículos publicados todavía.</p>
-      <p class="text-steel-300 mt-2">Vuelve pronto para leer las últimas novedades.</p>
-    </div>
-
-    <!-- No Results State -->
+    <!-- No Results (hidden, shown by client when search yields 0) -->
     <div id="no-results" class="hidden text-center py-20 bg-white rounded-xl shadow">
       <svg class="mx-auto h-12 w-12 text-steel-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -69,9 +149,6 @@ import Layout from '../../layouts/Layout.astro';
       <p class="text-steel-400 text-lg">No se encontraron artículos</p>
       <p class="text-steel-300 mt-2">Prueba con otros términos de búsqueda.</p>
     </div>
-
-    <!-- Articles Grid -->
-    <div id="articles-grid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
     <!-- Pagination -->
     <div id="pagination" class="hidden mt-10 flex items-center justify-center gap-2">
@@ -86,20 +163,26 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 </Layout>
 
+<!-- Embed the full articles list as JSON for client-side search & pagination.
+     No runtime fetch needed: the data is in the HTML payload, ~15KB gzipped. -->
+<script id="articles-data" type="application/json" set:html={JSON.stringify(articles)} />
+
 <script>
-  let allArticles: any[] = [];
-  let filteredArticles: any[] = [];
+  // Read articles from the embedded JSON (no fetch needed).
+  const dataEl = document.getElementById('articles-data') as HTMLScriptElement | null;
+  const allArticles: any[] = dataEl ? JSON.parse(dataEl.textContent || '[]') : [];
+  let filteredArticles: any[] = [...allArticles];
   let currentPage = 1;
   const ARTICLES_PER_PAGE = 9;
 
   function formatDate(dateStr: string | null): string {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
   }
 
   function truncateText(text: string, maxLength: number): string {
-    const clean = text.replace(/[#*_`~\[\]>|]/g, '').replace(/\n+/g, ' ').trim();
+    const clean = (text || '').replace(/[#*_`~\[\]>|]/g, '').replace(/\n+/g, ' ').trim();
     if (clean.length <= maxLength) return clean;
     return clean.substring(0, maxLength) + '...';
   }
@@ -113,31 +196,28 @@ import Layout from '../../layouts/Layout.astro';
     return parts.join(' ').toLowerCase();
   }
 
-  function filterArticles(query: string) {
-    if (!query.trim()) {
-      filteredArticles = [...allArticles];
-    } else {
-      const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-      filteredArticles = allArticles.filter(article => {
-        const index = buildSearchIndex(article);
-        return terms.every(term => index.includes(term));
-      });
-    }
-    currentPage = 1;
-    renderPage();
-  }
-
-  function clearSearch() {
-    const input = document.getElementById('search-input') as HTMLInputElement;
-    input.value = '';
-    filterArticles('');
-    document.getElementById('search-clear')!.classList.add('hidden');
-    document.getElementById('search-results-count')!.classList.add('hidden');
+  function renderCard(article: any): string {
+    const excerpt = article.excerpt || truncateText(article.content || '', 150);
+    return `
+      <a href="/blog/${article.slug}" class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group">
+        ${article.coverImage ? `<div class="overflow-hidden"><img src="${article.coverImage}" alt="${article.title}" class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" /></div>` : ''}
+        <div class="p-6">
+          <div class="flex gap-2 mb-3 flex-wrap">
+            ${(article.tags || []).slice(0, 3).map((tag: string) => `<span class="text-xs bg-primary-100 text-primary-700 px-2.5 py-1 rounded-full font-medium">${tag}</span>`).join('')}
+          </div>
+          <h2 class="text-xl font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">${article.title}</h2>
+          <p class="text-steel-500 text-sm line-clamp-3">${excerpt}</p>
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-steel-100">
+            <span class="text-sm text-steel-400">${article.author || 'ASETEMYT'}</span>
+            <span class="text-xs text-steel-400">${formatDate(article.publishedAt)}</span>
+          </div>
+        </div>
+      </a>
+    `;
   }
 
   function renderPage() {
     const grid = document.getElementById('articles-grid')!;
-    const empty = document.getElementById('empty')!;
     const noResults = document.getElementById('no-results')!;
     const pagination = document.getElementById('pagination')!;
     const searchCount = document.getElementById('search-results-count')!;
@@ -147,7 +227,6 @@ import Layout from '../../layouts/Layout.astro';
     const start = (currentPage - 1) * ARTICLES_PER_PAGE;
     const pageArticles = filteredArticles.slice(start, start + ARTICLES_PER_PAGE);
 
-    // Show search results count if searching
     if (searchInput.value.trim()) {
       searchCount.textContent = `${filteredArticles.length} artículo${filteredArticles.length !== 1 ? 's' : ''} encontrado${filteredArticles.length !== 1 ? 's' : ''}`;
       searchCount.classList.remove('hidden');
@@ -163,59 +242,9 @@ import Layout from '../../layouts/Layout.astro';
     }
 
     noResults.classList.add('hidden');
-
-    if (pageArticles.length === 0) {
-      empty.classList.remove('hidden');
-      grid.classList.add('hidden');
-      pagination.classList.add('hidden');
-      return;
-    }
-
-    empty.classList.add('hidden');
-
-    grid.innerHTML = pageArticles.map((article: any) => {
-      const excerpt = article.excerpt || truncateText(article.content || '', 150);
-      const formattedDate = formatDate(article.publishedAt);
-
-      return `
-        <a
-          href="/blog/${article.slug}"
-          class="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all hover:-translate-y-1 group"
-        >
-          ${article.coverImage ? `
-            <div class="overflow-hidden">
-              <img
-                src="${article.coverImage}"
-                alt="${article.title}"
-                class="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-            </div>
-          ` : ''}
-          <div class="p-6">
-            <div class="flex gap-2 mb-3 flex-wrap">
-              ${(article.tags || []).slice(0, 3).map((tag: string) => `
-                <span class="text-xs bg-primary-100 text-primary-700 px-2.5 py-1 rounded-full font-medium">
-                  ${tag}
-                </span>
-              `).join('')}
-            </div>
-            <h2 class="text-xl font-bold text-primary-800 group-hover:text-accent-600 transition-colors mb-2">
-              ${article.title}
-            </h2>
-            <p class="text-steel-500 text-sm line-clamp-3">${excerpt}</p>
-            <div class="flex items-center justify-between mt-4 pt-4 border-t border-steel-100">
-              <span class="text-sm text-steel-400">${article.author || 'ASETEMYT'}</span>
-              <span class="text-xs text-steel-400">${formattedDate}</span>
-            </div>
-          </div>
-        </a>
-      `;
-    }).join('');
-
     grid.classList.remove('hidden');
+    grid.innerHTML = pageArticles.map(renderCard).join('');
 
-    // Pagination
     if (totalPages > 1) {
       pagination.classList.remove('hidden');
       const prevBtn = document.getElementById('prev-btn') as HTMLButtonElement;
@@ -241,6 +270,28 @@ import Layout from '../../layouts/Layout.astro';
     }
   }
 
+  function filterArticles(query: string) {
+    if (!query.trim()) {
+      filteredArticles = [...allArticles];
+    } else {
+      const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+      filteredArticles = allArticles.filter((article: any) => {
+        const index = buildSearchIndex(article);
+        return terms.every((term: string) => index.includes(term));
+      });
+    }
+    currentPage = 1;
+    renderPage();
+  }
+
+  function clearSearch() {
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    input.value = '';
+    filterArticles('');
+    document.getElementById('search-clear')!.classList.add('hidden');
+    document.getElementById('search-results-count')!.classList.add('hidden');
+  }
+
   function goToPage(page: number) {
     currentPage = page;
     renderPage();
@@ -256,60 +307,18 @@ import Layout from '../../layouts/Layout.astro';
     if (currentPage < totalPages) goToPage(currentPage + 1);
   }
 
-  // Expose for onclick handlers
   (window as any).clearSearch = clearSearch;
   (window as any).prevPage = prevPage;
   (window as any).nextPage = nextPage;
-  (window as any).loadArticles = loadArticles;
 
-  async function loadArticles() {
-    const loading = document.getElementById('loading')!;
-    const error = document.getElementById('error')!;
-    const empty = document.getElementById('empty')!;
-    const grid = document.getElementById('articles-grid')!;
-
-    loading.classList.remove('hidden');
-    error.classList.add('hidden');
-    empty.classList.add('hidden');
-    grid.classList.add('hidden');
-
-    try {
-      const resp = await fetch('/data/articles.json');
-      if (!resp.ok) throw new Error('Failed to fetch articles');
-      const articles = await resp.json();
-
-      loading.classList.add('hidden');
-
-      // Filter published and sort by date (most recent first)
-      allArticles = articles
-        .filter((a: any) => a.status === 'published')
-        .sort((a: any, b: any) => {
-          const da = new Date(a.publishedAt || 0).getTime();
-          const db = new Date(b.publishedAt || 0).getTime();
-          return db - da;
-        });
-
-      filteredArticles = [...allArticles];
-      renderPage();
-    } catch (err) {
-      console.error('Error fetching articles:', err);
-      loading.classList.add('hidden');
-      error.classList.remove('hidden');
-    }
-  }
-
-  // Setup search
   document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('search-input') as HTMLInputElement;
     const clearBtn = document.getElementById('search-clear')!;
     let debounce: ReturnType<typeof setTimeout>;
-
     input.addEventListener('input', () => {
       clearTimeout(debounce);
       clearBtn.classList.toggle('hidden', !input.value.trim());
       debounce = setTimeout(() => filterArticles(input.value), 200);
     });
   });
-
-  loadArticles();
 </script>
