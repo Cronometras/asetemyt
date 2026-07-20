@@ -31,9 +31,13 @@ async function getAccessToken(sa: any): Promise<string> {
     iat: now,
     exp: now + 3600,
   }));
-  const pemContents = sa.private_key
-    .replace(/[REDACTED PRIVATE KEY]/, '')
-    .replace(/[\s\r\n]+/g, '');
+  // Extraer solo el bloque base64 entre los marcadores BEGIN/END.
+  // El truco: la regex /[\s\r\n]+/g quita TODOS los espacios, lo que
+  // rompe el padding (=) y deja 'BEGINPRIVATEKEY...'. Solución: capturar
+  // solo la parte base64 (sin BEGIN/END), y luego quitar solo \n\r.
+  const pkMatch = sa.private_key.match(/[REDACTED PRIVATE KEY]/s);
+  if (!pkMatch) throw new Error('private_key PEM mal formado');
+  const pemContents = pkMatch[1].replace(/[\n\r]/g, '');
   const binaryKey = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
   const key = await crypto.subtle.importKey(
     'pkcs8', binaryKey, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']
@@ -137,6 +141,12 @@ export async function POST({ request, locals }: { request: Request; locals: any 
     }
 
     const sa = JSON.parse(saJson);
+    // Doble escape: CF Pages guarda el env var como string, y al meter
+    // otro JSON dentro, los \n se escapan dos veces (\\n literal). Si el
+    // private_key no tiene saltos de línea reales, los restauramos.
+    if (sa.private_key && !sa.private_key.includes('\n') && sa.private_key.includes('\\n')) {
+      sa.private_key = sa.private_key.split('\\n').join('\n');
+    }
     const token = await getAccessToken(sa);
     const docData = {
       nombre,
