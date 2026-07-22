@@ -201,6 +201,10 @@
         { name: 'OEE', icon: '📊', slug: 'oee' },
         { name: lang === 'es' ? 'Lean Manufacturing' : 'Lean Manufacturing', icon: '🏭', slug: 'lean' },
       ];
+      // Servicio propio: solo visible en español (no canibaliza SEO internacional).
+      if (lang === 'es') {
+        specialties.push({ name: 'Estudio Métodos y Tiempos', icon: '🎯', slug: '__servicio' });
+      }
 
       const app = document.getElementById('app')!;
       // Pick featured entries (verified or with description)
@@ -245,6 +249,12 @@
                 <a href="/anadir" class="inline-flex items-center justify-center border-2 border-steel-400 hover:border-accent-400 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all hover:bg-white/5">
                   ${tr('addMyCompany')}
                 </a>
+                ${lang === 'es' ? `
+                <a href="/estudio-metodos-tiempos" class="inline-flex items-center justify-center bg-white/10 hover:bg-accent-500 border-2 border-accent-400 text-white px-8 py-3.5 rounded-lg font-semibold text-lg transition-all hover:shadow-lg">
+                  🎯 Estudio desde 495 €
+                  <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                </a>
+                ` : ''}
               </div>
             </div>
           </div>
@@ -270,16 +280,28 @@
               <p class="text-steel-500 font-medium mt-1 group-hover:text-orange-500 transition-colors">${lang === 'es' ? 'Software' : 'Software'}</p>
             </a>
           </div>
+          ${lang === 'es' ? `
+          <div class="mt-6 bg-gradient-to-r from-accent-500 to-accent-600 rounded-xl shadow-lg p-6 md:p-8 text-center md:flex md:items-center md:justify-between md:text-left text-white">
+            <div>
+              <h3 class="text-xl md:text-2xl font-bold mb-1">🎯 ¿Necesitas un Estudio de Métodos y Tiempos?</h3>
+              <p class="text-white/90 text-sm md:text-base">Servicio profesional online desde <span class="font-extrabold text-2xl">495 €</span>. Entregables PDF + Excel + JSON. Vídeo de hasta 60 min.</p>
+            </div>
+            <a href="/estudio-metodos-tiempos" class="inline-flex items-center justify-center mt-4 md:mt-0 bg-white text-accent-600 hover:bg-steel-100 px-6 py-3 rounded-lg font-bold transition-colors whitespace-nowrap">
+              Solicitar estudio →
+            </a>
+          </div>
+          ` : ''}
         </section>
 
         <!-- Categories -->
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 class="text-2xl md:text-3xl font-bold text-primary-800 mb-8">${tr('specialties')}</h2>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             ${specialties.map((cat) => `
-              <a href="/directorio?especialidad=${cat.slug}" class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-1 text-center group">
+              <a href="${cat.slug === '__servicio' ? '/estudio-metodos-tiempos' : `/directorio?especialidad=${cat.slug}`}" class="bg-white rounded-xl p-6 shadow-md hover:shadow-xl transition-all hover:-translate-y-1 text-center group ${cat.slug === '__servicio' ? 'border-2 border-accent-500 bg-accent-50' : ''}">
                 <span class="text-3xl mb-3 block">${cat.icon}</span>
                 <h3 class="font-semibold text-primary-800 group-hover:text-accent-600 transition-colors">${cat.name}</h3>
+                ${cat.slug === '__servicio' ? '<p class="text-xs text-accent-600 font-semibold mt-1">Desde 495 €</p>' : ''}
               </a>
             `).join('')}
           </div>
