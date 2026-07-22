@@ -1,0 +1,373 @@
+---
+export const prerender = true;
+import Layout from '../../layouts/Layout.astro';
+
+const siteUrl = 'https://asetemyt.com';
+const pageUrl = `${siteUrl}/estudio-metodos-tiempos/`;
+---
+
+<Layout
+  title="Estudio de Métodos y Tiempos — Servicio con tarifa cerrada"
+  description="Estudio profesional de métodos y tiempos realizado por nuestro equipo de técnicos especializados del directorio ASETEMYT. Tarifa cerrada desde 495 €. Servicio disponible solo en español."
+>
+  {/* JSON-LD Service — solo en español */}
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Estudio de métodos y tiempos',
+    name: 'Estudio de métodos y tiempos desde 495 €',
+    description:
+      'Estudio profesional de métodos y tiempos realizado por nuestro equipo de técnicos verificados del directorio ASETEMYT. Tarifa cerrada desde 495 €, entregables en PDF, Excel y JSON.',
+    provider: { '@id': `${siteUrl}/#organization` },
+    areaServed: ['ES', 'MX', 'AR', 'CO', 'CL', 'PE'],
+    url: pageUrl,
+    availableLanguage: 'es-ES',
+    inLanguage: 'es-ES',
+    offers: {
+      '@type': 'Offer',
+      price: '495',
+      priceCurrency: 'EUR',
+      availability: 'https://schema.org/InStock',
+      url: pageUrl,
+    },
+  })} />
+
+  {/* HERO */}
+  <section class="bg-primary-900 text-white py-16 md:py-24 relative" style="background-image: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav class="text-sm text-steel-300 mb-6">
+        <a href="/" class="hover:text-accent-400">Inicio</a>
+        <span class="mx-2">/</span>
+        <a href="/directorio" class="hover:text-accent-400">Profesionales</a>
+        <span class="mx-2">/</span>
+        <span class="text-white">Estudio de Métodos y Tiempos</span>
+      </nav>
+      <div class="max-w-3xl">
+        <span class="inline-block bg-accent-500/20 text-accent-400 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
+          Servicio disponible solo en español
+        </span>
+        <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-6">
+          Estudio de Métodos y Tiempos con nuestro equipo de especialistas
+        </h1>
+        <p class="text-lg md:text-xl text-steel-200 mb-8 leading-relaxed">
+          Nuestro equipo de técnicos verificados del directorio ASETEMYT realiza tu estudio
+          de métodos y tiempos a partir de un vídeo de tu operación.
+          Tarifa cerrada desde <strong class="text-white">495 €</strong>.
+        </p>
+        <div id="cta-es" class="flex flex-wrap gap-4">
+          <a href="#contacto" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-lg px-7 py-4 transition-colors">
+            Solicitar estudio
+          </a>
+          <a href="#como-funciona" class="inline-block border-2 border-white text-white font-semibold rounded-lg px-7 py-4 hover:bg-white/10 transition-colors">
+            Ver cómo funciona
+          </a>
+        </div>
+        {/* Aviso EN */}
+        <div id="cta-en" class="hidden bg-white/10 border border-white/20 rounded-lg p-5 text-white/90">
+          <p class="font-semibold mb-1">🌐 This service is available only in Spanish.</p>
+          <p class="text-sm text-steel-200">
+            Switch language to <strong>ES</strong> in the top menu to continue.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* STATS */}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-10">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <div class="text-3xl font-bold text-accent-500">495 €</div>
+        <div class="text-sm text-steel-600 mt-1">Tarifa cerrada · 1 operación</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <div class="text-3xl font-bold text-accent-500">60 min</div>
+        <div class="text-sm text-steel-600 mt-1">Vídeo máximo</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <div class="text-3xl font-bold text-accent-500">MP · MM · TM</div>
+        <div class="text-sm text-steel-600 mt-1">Metodología OIT</div>
+      </div>
+      <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <div class="text-3xl font-bold text-accent-500">100%</div>
+        <div class="text-sm text-steel-600 mt-1">Online</div>
+      </div>
+    </div>
+  </section>
+
+  {/* QUÉ INCLUYE */}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16" id="que-incluye">
+    <div class="text-center mb-12">
+      <span class="text-accent-500 font-semibold text-sm uppercase tracking-wider">El servicio</span>
+      <h2 class="text-3xl md:text-4xl font-bold text-primary-800 mt-2 mb-4">
+        Qué incluye el estudio desde 495 €
+      </h2>
+      <p class="text-steel-600 max-w-3xl mx-auto">
+        Una tarifa cerrada para un estudio profesional completo: desde el análisis del vídeo
+        hasta la reunión de resultados, sin sorpresas en la factura.
+      </p>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl p-6 shadow-md border border-steel-100">
+        <div class="text-3xl mb-3">🎥</div>
+        <h3 class="font-semibold text-lg text-primary-800 mb-2">Análisis de 1 vídeo</h3>
+        <p class="text-steel-600 text-sm">Una sola operación o puesto, con un máximo de 60 minutos de grabación.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-md border border-steel-100">
+        <div class="text-3xl mb-3">⏱️</div>
+        <h3 class="font-semibold text-lg text-primary-800 mb-2">Descomposición por elementos</h3>
+        <p class="text-steel-600 text-sm">Cada vuelta se cronometra por elementos, con valoración del ritmo del operario.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-md border border-steel-100">
+        <div class="text-3xl mb-3">⚖️</div>
+        <h3 class="font-semibold text-lg text-primary-800 mb-2">Suplementos OIT/TAL</h3>
+        <p class="text-steel-600 text-sm">Aplicados sobre el tiempo normal para obtener el tiempo estándar.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-md border border-steel-100">
+        <div class="text-3xl mb-3">📊</div>
+        <h3 class="font-semibold text-lg text-primary-800 mb-2">Informe técnico en PDF y Excel</h3>
+        <p class="text-steel-600 text-sm">PDF profesional con método, tiempos por elemento y observaciones, más Excel con los datos del estudio.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-md border border-steel-100">
+        <div class="text-3xl mb-3">🎤</div>
+        <h3 class="font-semibold text-lg text-primary-800 mb-2">Reunión online de resultados</h3>
+        <p class="text-steel-600 text-sm">Videollamada de 30 minutos para explicarte el informe y comentar las recomendaciones.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 shadow-md border border-steel-100">
+        <div class="text-3xl mb-3">🤝</div>
+        <h3 class="font-semibold text-lg text-primary-800 mb-2">Confidencialidad</h3>
+        <p class="text-steel-600 text-sm">Tu proceso y vídeo se tratan de forma confidencial y solo los ve el equipo asignado.</p>
+      </div>
+    </div>
+    <div class="mt-10 bg-white border-l-4 border-accent-500 rounded-r-xl p-6 max-w-3xl mx-auto">
+      <p class="text-steel-600 text-sm leading-relaxed">
+        <strong class="text-primary-800">¿Necesitas algo más?</strong> El precio incluye 1 operación
+        y hasta 60 minutos de grabación. Para estudios de varias operaciones, líneas completas
+        o análisis en planta, te preparamos un presupuesto a medida.
+      </p>
+    </div>
+  </section>
+
+  {/* CÓMO FUNCIONA */}
+  <section class="bg-steel-50 py-16" id="como-funciona">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <span class="text-accent-500 font-semibold text-sm uppercase tracking-wider">Proceso</span>
+        <h2 class="text-3xl md:text-4xl font-bold text-primary-800 mt-2 mb-4">
+          Cómo funciona en 4 pasos
+        </h2>
+        <p class="text-steel-600 max-w-3xl mx-auto">
+          Tú grabas, nosotros analizamos. El proceso es 100% online y no interrumpe tu producción.
+        </p>
+      </div>
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl p-6 shadow-md relative">
+          <div class="text-4xl font-bold text-accent-500/30 absolute top-4 right-6">01</div>
+          <h3 class="font-semibold text-primary-800 mb-2">Nos envías el vídeo</h3>
+          <p class="text-steel-600 text-sm">Graba la operación con el móvil en horizontal. No necesitas parar la producción.</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-md relative">
+          <div class="text-4xl font-bold text-accent-500/30 absolute top-4 right-6">02</div>
+          <h3 class="font-semibold text-primary-800 mb-2">Analizamos el método</h3>
+          <p class="text-steel-600 text-sm">Descomponemos la operación en elementos, cronometramos vuelta a vuelta y valoramos el ritmo.</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-md relative">
+          <div class="text-4xl font-bold text-accent-500/30 absolute top-4 right-6">03</div>
+          <h3 class="font-semibold text-primary-800 mb-2">Calculamos el tiempo estándar</h3>
+          <p class="text-steel-600 text-sm">Aplicamos suplementos OIT y preparamos el informe técnico con tiempos y observaciones.</p>
+        </div>
+        <div class="bg-white rounded-xl p-6 shadow-md relative">
+          <div class="text-4xl font-bold text-accent-500/30 absolute top-4 right-6">04</div>
+          <h3 class="font-semibold text-primary-800 mb-2">Recibes el informe + reunión</h3>
+          <p class="text-steel-600 text-sm">Te entregamos el PDF, Excel y JSON por enlace privado y cerramos con una videollamada de 30 minutos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* PARA QUIÉN */}
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+      <span class="text-accent-500 font-semibold text-sm uppercase tracking-wider">Casos de uso</span>
+      <h2 class="text-3xl md:text-4xl font-bold text-primary-800 mt-2 mb-4">
+        ¿Cuándo necesitas un estudio?
+      </h2>
+    </div>
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-white rounded-xl p-6 border border-steel-100">
+        <div class="text-3xl mb-3">🏭</div>
+        <h3 class="font-semibold text-primary-800 mb-2">Plantas de fabricación</h3>
+        <p class="text-steel-600 text-sm">Cotizar, planificar o equilibrar líneas con tiempos estándar fiables.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-steel-100">
+        <div class="text-3xl mb-3">📦</div>
+        <h3 class="font-semibold text-primary-800 mb-2">Operaciones logísticas</h3>
+        <p class="text-steel-600 text-sm">Preparación de pedidos, cross-docking, movimientos de almacén.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-steel-100">
+        <div class="text-3xl mb-3">🔧</div>
+        <h3 class="font-semibold text-primary-800 mb-2">Talleres y mantenimiento</h3>
+        <p class="text-steel-600 text-sm">Justificar tiempos estándar y planificar cargas de trabajo.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-steel-100">
+        <div class="text-3xl mb-3">🍽️</div>
+        <h3 class="font-semibold text-primary-800 mb-2">Hostelería y restauración</h3>
+        <p class="text-steel-600 text-sm">Medir el trabajo real en cocinas, servicio de sala y montaje de pedidos.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-steel-100">
+        <div class="text-3xl mb-3">🏥</div>
+        <h3 class="font-semibold text-primary-800 mb-2">Sanidad y servicios</h3>
+        <p class="text-steel-600 text-sm">Tareas administrativas, atención al paciente, call centers.</p>
+      </div>
+      <div class="bg-white rounded-xl p-6 border border-steel-100">
+        <div class="text-3xl mb-3">🧑‍🏫</div>
+        <h3 class="font-semibold text-primary-800 mb-2">Formación interna</h3>
+        <p class="text-steel-600 text-sm">Enseñar a tu equipo con un caso real explicado paso a paso.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* FAQ */}
+  <section class="bg-steel-50 py-16">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl md:text-4xl font-bold text-primary-800 text-center mb-4">
+        Preguntas frecuentes
+      </h2>
+      <p class="text-center text-steel-600 mb-12 max-w-3xl mx-auto">
+        Sobre el estudio de métodos y tiempos de nuestro equipo.
+      </p>
+      <div class="space-y-4">
+        <details class="group bg-white rounded-xl p-6 shadow-sm">
+          <summary class="flex items-start justify-between gap-4 cursor-pointer list-none">
+            <h3 class="font-semibold text-lg text-primary-800 pr-4">¿Quién realiza el estudio?</h3>
+            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-accent-500 transition-transform group-open:rotate-45 text-2xl leading-none">+</span>
+          </summary>
+          <p class="mt-4 text-steel-600 leading-relaxed">
+            El estudio lo realiza nuestro equipo de técnicos especializados, todos ellos miembros
+            verificados del directorio ASETEMYT. Cuentan con experiencia contrastada en cronometraje
+            industrial y métodos OIT.
+          </p>
+        </details>
+        <details class="group bg-white rounded-xl p-6 shadow-sm">
+          <summary class="flex items-start justify-between gap-4 cursor-pointer list-none">
+            <h3 class="font-semibold text-lg text-primary-800 pr-4">¿Cómo entrego el vídeo sin que pese demasiado?</h3>
+            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-accent-500 transition-transform group-open:rotate-45 text-2xl leading-none">+</span>
+          </summary>
+          <p class="mt-4 text-steel-600 leading-relaxed">
+            Sube el vídeo a tu servicio preferido (Google Drive, Dropbox, OneDrive, WeTransfer…) y
+            comparte con nosotros el enlace. El archivo se almacena en tu cuenta y solo accede
+            nuestro equipo.
+          </p>
+        </details>
+        <details class="group bg-white rounded-xl p-6 shadow-sm">
+          <summary class="flex items-start justify-between gap-4 cursor-pointer list-none">
+            <h3 class="font-semibold text-lg text-primary-800 pr-4">¿Qué pasa si la operación tiene máquinas?</h3>
+            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-accent-500 transition-transform group-open:rotate-45 text-2xl leading-none">+</span>
+          </summary>
+          <p class="mt-4 text-steel-600 leading-relaxed">
+            Descomponemos el tiempo en tres bloques: <strong>MM</strong> (Máquina en Marcha = trabajo
+            manual con la máquina funcionando), <strong>MP</strong> (Máquina Parada = trabajo manual con la
+            máquina apagada) y <strong>TM/TW</strong> (trabajo automático de la máquina, sin intervención
+            del operario). Aplicamos suplementos distintos a cada bloque y calculamos la saturación
+            del operario a partir del reparto MM vs MP.
+          </p>
+        </details>
+        <details class="group bg-white rounded-xl p-6 shadow-sm">
+          <summary class="flex items-start justify-between gap-4 cursor-pointer list-none">
+            <h3 class="font-semibold text-lg text-primary-800 pr-4">¿Cuánto debe durar el vídeo?</h3>
+            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-accent-500 transition-transform group-open:rotate-45 text-2xl leading-none">+</span>
+          </summary>
+          <p class="mt-4 text-steel-600 leading-relaxed">
+            Lo ideal es grabar entre 5 y 10 ciclos completos, con un máximo de 60 minutos. Más
+            ciclos dan más fiabilidad estadística. Si grabas más tiempo, te lo confirmamos al
+            recibirlo.
+          </p>
+        </details>
+        <details class="group bg-white rounded-xl p-6 shadow-sm">
+          <summary class="flex items-start justify-between gap-4 cursor-pointer list-none">
+            <h3 class="font-semibold text-lg text-primary-800 pr-4">¿Qué entregables recibiré?</h3>
+            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-accent-500 transition-transform group-open:rotate-45 text-2xl leading-none">+</span>
+          </summary>
+          <p class="mt-4 text-steel-600 leading-relaxed">
+            Recibes un <strong>PDF</strong> profesional con el método, los tiempos por elemento y las
+            observaciones, un <strong>Excel</strong> con los datos del estudio y un <strong>JSON
+            estructurado</strong> para integrar los datos en tus sistemas si lo necesitas. Cerramos
+            con una reunión online de 30 minutos.
+          </p>
+        </details>
+        <details class="group bg-white rounded-xl p-6 shadow-sm">
+          <summary class="flex items-start justify-between gap-4 cursor-pointer list-none">
+            <h3 class="font-semibold text-lg text-primary-800 pr-4">¿Cuánto tardáis en entregar el estudio?</h3>
+            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-accent-500 transition-transform group-open:rotate-45 text-2xl leading-none">+</span>
+          </summary>
+          <p class="mt-4 text-steel-600 leading-relaxed">
+            El plazo habitual es de 5 días laborables desde que recibimos el vídeo. Para entregas
+            urgentes (48 h) consulta suplemento.
+          </p>
+        </details>
+        <details class="group bg-white rounded-xl p-6 shadow-sm">
+          <summary class="flex items-start justify-between gap-4 cursor-pointer list-none">
+            <h3 class="font-semibold text-lg text-primary-800 pr-4">¿El servicio está disponible en otros idiomas?</h3>
+            <span class="flex-shrink-0 w-6 h-6 flex items-center justify-center text-accent-500 transition-transform group-open:rotate-45 text-2xl leading-none">+</span>
+          </summary>
+          <p class="mt-4 text-steel-600 leading-relaxed">
+            Este servicio opera únicamente en español y se ofrece a clientes en mercados
+            hispanohablantes (España, México, Argentina, Colombia, Chile, Perú, etc.). El directorio
+            general de ASETEMYT sí está disponible en inglés, pero la gestión del estudio se realiza
+            en español.
+          </p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  {/* CTA FINAL */}
+  <section class="bg-primary-900 text-white py-16" id="contacto">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4">
+        Solicita tu estudio desde 495 €
+      </h2>
+      <p class="text-lg text-steel-200 mb-8 max-w-2xl mx-auto">
+        Envíanos un mensaje con una breve descripción de tu operación y te confirmamos
+        alcance, plazo y presupuesto en menos de 24 horas laborables.
+      </p>
+      <div id="cta-es-2" class="flex flex-wrap justify-center gap-4">
+        <a href="/contact" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold rounded-lg px-7 py-4 transition-colors">
+          Solicitar estudio
+        </a>
+        <a href="/directorio" class="inline-block border-2 border-white text-white font-semibold rounded-lg px-7 py-4 hover:bg-white/10 transition-colors">
+          Ver nuestro equipo
+        </a>
+      </div>
+      <div id="cta-en-2" class="hidden bg-white/10 border border-white/20 rounded-lg p-5 text-white/90 max-w-xl mx-auto mt-4">
+        <p class="font-semibold mb-1">🌐 This service is available only in Spanish.</p>
+        <p class="text-sm text-steel-200">Switch language to <strong>ES</strong> in the top menu to continue.</p>
+      </div>
+    </div>
+  </section>
+
+  {/* Multi-idioma: oculta CTAs si lang === 'en' */}
+  <script>
+    import { getLang } from '../../lib/firebase';
+    function applyLang() {
+      const lang = getLang();
+      const ctaEs = document.getElementById('cta-es');
+      const ctaEn = document.getElementById('cta-en');
+      const ctaEs2 = document.getElementById('cta-es-2');
+      const ctaEn2 = document.getElementById('cta-en-2');
+      if (lang === 'en') {
+        ctaEs?.classList.add('hidden');
+        ctaEs2?.classList.add('hidden');
+        ctaEn?.classList.remove('hidden');
+        ctaEn2?.classList.remove('hidden');
+      } else {
+        ctaEs?.classList.remove('hidden');
+        ctaEs2?.classList.remove('hidden');
+        ctaEn?.classList.add('hidden');
+        ctaEn2?.classList.add('hidden');
+      }
+    }
+    applyLang();
+    window.addEventListener('langChange', applyLang);
+  </script>
+</Layout>
