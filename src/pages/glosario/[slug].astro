@@ -23,36 +23,38 @@ const { term, allTerms } = Astro.props;
 const relatedTerms = (term.related || [])
   .map((slug: string) => allTerms.find((t: any) => t.slug === slug))
   .filter(Boolean);
+
+// JSON-LD (build-time) — schema.org DefinedTerm
+const definedTermSchema = {
+  "@context": "https://schema.org",
+  "@type": "DefinedTerm",
+  "name": term.term,
+  "description": term.definition,
+  "url": `https://asetemyt.com/glosario/${term.slug}`,
+  "inDefinedTermSet": {
+    "@type": "DefinedTermSet",
+    "name": "Glosario de Cronometraje Industrial - ASETEMYT",
+    "url": "https://asetemyt.com/glosario",
+  },
+};
+
+// JSON-LD (build-time) — schema.org BreadcrumbList
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://asetemyt.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Glosario", "item": "https://asetemyt.com/glosario" },
+    { "@type": "ListItem", "position": 3, "name": term.term, "item": `https://asetemyt.com/glosario/${term.slug}` },
+  ],
+};
 ---
 
 <Layout title={`${term.term} - Glosario ASETEMYT`} description={term.definition}>
   <!-- Schema.org DefinedTerm -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "DefinedTerm",
-      "name": {JSON.stringify(term.term)},
-      "description": {JSON.stringify(term.definition)},
-      "url": {JSON.stringify(`https://asetemyt.com/glosario/${term.slug}`)},
-      "inDefinedTermSet": {
-        "@type": "DefinedTermSet",
-        "name": "Glosario de Cronometraje Industrial - ASETEMYT",
-        "url": "https://asetemyt.com/glosario"
-      }
-    }
-  </script>
+  <script type="application/ld+json" set:html={JSON.stringify(definedTermSchema)} />
   <!-- BreadcrumbList -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://asetemyt.com/" },
-        { "@type": "ListItem", "position": 2, "name": "Glosario", "item": "https://asetemyt.com/glosario" },
-        { "@type": "ListItem", "position": 3, "name": {JSON.stringify(term.term)}, "item": {JSON.stringify(`https://asetemyt.com/glosario/${term.slug}`)} }
-      ]
-    }
-  </script>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
 
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Breadcrumb -->

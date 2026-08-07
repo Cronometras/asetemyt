@@ -3,17 +3,30 @@ export interface Props {
   title: string;
   description?: string;
   image?: string;
+  ogType?: 'website' | 'article' | 'profile' | 'product';
 }
 
 const {
   title,
   description = 'Directorio de técnicos, consultores y empresas de cronometraje industrial e ingeniería de métodos y tiempos.',
   image = 'https://asetemyt.com/images/logo-asetemyt.webp',
+  ogType = 'website',
 } = Astro.props;
 import Analytics from '../components/Analytics.astro';
 import CookieConsent from '../components/CookieConsent.astro';
 
 const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
+
+// Title: cap at 60 chars so Google SERPs don't truncate. " | ASETEMYT" suffix (12 chars) is part of the cap.
+const titleWithBrand = title.includes('ASETEMYT') ? title : `${title} | ASETEMYT`;
+const finalTitle = titleWithBrand.length > 60
+  ? titleWithBrand.slice(0, 57).replace(/\s+\S*$/, '') + '…'
+  : titleWithBrand;
+
+// Description: cap at ~160 chars (Google truncates around 155-160 on SERPs)
+const finalDescription = description.length > 160
+  ? description.slice(0, 157).replace(/\s+\S*$/, '') + '…'
+  : description;
 ---
 
 <!doctype html>
@@ -21,32 +34,36 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={description} />
+    <meta name="application-name" content="ASETEMYT" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="description" content={finalDescription} />
     <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/images/logo-asetemyt-icon.webp" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="canonical" href={canonicalUrl} />
     <link rel="alternate" hreflang="es" href={canonicalUrl} />
     <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalUrl} />
-    <meta property="og:title" content={`${title} | ASETEMYT`} />
-    <meta property="og:description" content={description} />
+    <meta property="og:title" content={finalTitle} />
+    <meta property="og:description" content={finalDescription} />
     <meta property="og:image" content={image} />
     <meta property="og:site_name" content="ASETEMYT" />
     <meta property="og:locale" content="es_ES" />
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content={canonicalUrl} />
-    <meta name="twitter:title" content={`${title} | ASETEMYT`} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={finalTitle} />
+    <meta name="twitter:description" content={finalDescription} />
     <meta name="twitter:image" content={image} />
     <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <title>{title} | ASETEMYT</title>
+    <title>{finalTitle}</title>
     {/* BLOQUE 3 - MEJ-1: meta robots/sitemap/llms (portado de InsForge). */}
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <link rel="sitemap" type="application/xml" href="https://asetemyt.com/sitemap.xml" />
@@ -61,7 +78,7 @@ const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <a href="/" class="flex items-center gap-3 group">
-            <img src="/images/logo-asetemyt-nav.webp" alt="ASETEMYT" class="h-9 w-auto" width="51" height="40" loading="eager" />
+            <img src="/images/logo-asetemyt-nav.webp" alt="ASETEMYT" class="h-9 w-auto" width="51" height="40" loading="eager" fetchpriority="high" decoding="async" />
             <span class="text-xl font-bold tracking-tight">ASETEMYT</span>
           </a>
           <div class="hidden lg:flex items-center gap-6">

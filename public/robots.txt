@@ -1,7 +1,94 @@
+# ASETEMYT — robots.txt
+# Default policy: open to all crawlers.
+
 User-agent: *
 Allow: /
 
+# Block admin/form submission endpoints (avoid crawler submitting forms)
+Disallow: /anadir?*
+Disallow: /api/
+Disallow: /checkout
+Disallow: /login
+Disallow: /registro
+Disallow: /mi-cuenta
+Disallow: /editar
+Disallow: /admin
+
+# Sitemap
 Sitemap: https://asetemyt.com/sitemap.xml
 
-# Block admin/form submission endpoints
-Disallow: /anadir?*
+# ─────────────────────────────────────────────────────────────────────────────
+# AI / LLM crawlers (GEO): allow by default for AI training + retrieval.
+# Each bot listed explicitly so we can monitor and tune later without ambiguity.
+# Reference: https://platform.openai.com/docs/bots, https://support.anthropic.com,
+#            https://docs.perplexity.ai/guides/bots, https://developers.google.com/search/docs/crawling-indexing/google-common-crawlers
+# ─────────────────────────────────────────────────────────────────────────────
+
+# OpenAI — ChatGPT, SearchGPT, OAI-SearchBot used for search results
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic — Claude.ai and Claude API retrieve pages via ClaudeBot / Claude-Web
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+# Perplexity — PerplexityBot + Perplexity-User fetch pages for cited answers
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Google — Google-Extended is the opt-out for Gemini training (default allow)
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+# Apple Intelligence / Spotlight crawler (Applebot-Extended for Siri suggestions)
+User-agent: Applebot-Extended
+Allow: /
+
+# Common Crawl foundation (CCBot) — feeds many open datasets; harmless
+User-agent: CCBot
+Allow: /
+
+# Bytespider (ByteDance) — block by default to avoid noisy traffic and IP reputation issues
+User-agent: Bytespider
+Disallow: /
+
+# Meta AI / Meta external hit
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+# Cohere AI crawler
+User-agent: cohere-ai
+Allow: /
+
+# Diffbot (knowledge graph + entity extraction)
+User-agent: Diffbot
+Allow: /
+
+# DuckDuckGo AI assistant (DuckAssist)
+User-agent: DuckAssistBot
+Allow: /
+
+# Mistral AI
+User-agent: MistralAI-User
+Allow: /

@@ -33,30 +33,38 @@ const tipoColors: Record<string, string> = {
   empresa: 'bg-blue-100 text-blue-700',
   consultor: 'bg-green-100 text-green-700',
 };
+
+// JSON-LD (build-time) — schema.org BreadcrumbList
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://asetemyt.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Directorio", "item": "https://asetemyt.com/directorio" },
+    { "@type": "ListItem", "position": 3, "name": entry.nombre, "item": `https://asetemyt.com/directorio/${entry.slug}` },
+  ],
+};
+
+// JSON-LD (build-time) — schema.org Organization | Person
+const entitySchema: Record<string, unknown> = {
+  "@context": "https://schema.org",
+  "@type": entry.tipo === 'empresa' ? 'Organization' : 'Person',
+  "name": entry.nombre,
+  "url": `https://asetemyt.com/directorio/${entry.slug}`,
+  "description": entry.descripcion || '',
+};
+if (entry.tipo === 'empresa') {
+  entitySchema['@id'] = `https://asetemyt.com/directorio/${entry.slug}#organization`;
+} else {
+  entitySchema['@id'] = `https://asetemyt.com/directorio/${entry.slug}#person`;
+}
 ---
 
-<Layout title={entry.nombre} description={entry.descripcion}>
+<Layout title={entry.nombre} description={entry.descripcion} ogType="profile">
   <!-- BreadcrumbList structured data -->
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://asetemyt.com/" },
-        { "@type": "ListItem", "position": 2, "name": "Directorio", "item": "https://asetemyt.com/directorio" },
-        { "@type": "ListItem", "position": 3, "name": {JSON.stringify(entry.nombre)}, "item": {JSON.stringify(`https://asetemyt.com/directorio/${entry.slug}`)} }
-      ]
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": entry.tipo === 'empresa' ? "Organization" : "Person",
-      "name": {JSON.stringify(entry.nombre)},
-      "url": {JSON.stringify(`https://asetemyt.com/directorio/${entry.slug}`)},
-      "description": {JSON.stringify(entry.descripcion || '')}
-    }
-  </script>
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <!-- Entity (Organization | Person) structured data -->
+  <script type="application/ld+json" set:html={JSON.stringify(entitySchema)} />
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Breadcrumb -->
     <nav class="mb-8">

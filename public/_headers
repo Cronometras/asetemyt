@@ -1,0 +1,30 @@
+/*
+  # ── Security headers ─────────────────────────────────────────────────────────
+  # CSP: allow inline scripts (Astro injects hydration scripts inline; allow
+  #       inline JSON-LD too via 'unsafe-inline' on script-src). Strict on
+  #       everything else. report-uri empty so no reports are sent by default.
+  # HSTS: 1 year + subdomains + preload-ready.
+  # X-Frame-Options: deny (we never embed in iframes; protects against clickjacking).
+  # Permissions-Policy: disable unused powerful APIs by default.
+  # Referrer-Policy: strict-origin-when-cross-origin.
+  # ─────────────────────────────────────────────────────────────────────────────
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://*.cloudflareinsights.com https://*.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.firestore.googleapis.com https://*.firebaseio.com https://*.googleapis.com https://*.cloudflareinsights.com https://*.googletagmanager.com; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# AI-readable text files — keep content-type correct, no compression issues.
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+
+/llms-full.txt
+  Content-Type: text/plain; charset=utf-8
+
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8

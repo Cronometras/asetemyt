@@ -1,0 +1,32 @@
+{
+  "name": "ASETEMYT — Directorio de Cronometraje Industrial",
+  "short_name": "ASETEMYT",
+  "description": "Directorio de técnicos, consultores y empresas especializadas en cronometraje industrial, time study, MTM, MOST, OEE y optimización de procesos productivos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "es-ES",
+  "categories": ["business", "productivity", "education"],
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/logo-asetemyt-icon.webp",
+      "sizes": "192x192",
+      "type": "image/webp",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/logo-asetemyt-icon.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,4 +1,8 @@
+// Build-time static sitemap. Prerendered to dist/sitemap.xml.
+export const prerender = true;
 import type { APIRoute } from 'astro';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { getDirectoryEntries } from '../lib/firebase';
 
 export const GET: APIRoute = async () => {
@@ -19,6 +23,7 @@ export const GET: APIRoute = async () => {
     { url: '/empleo', priority: '0.6', changefreq: 'daily' },
     { url: '/software', priority: '0.9', changefreq: 'daily' },
     { url: '/newsletter', priority: '0.7', changefreq: 'monthly' },
+    { url: '/estudio-metodos-tiempos', priority: '0.9', changefreq: 'monthly' },
   ];
 
   const directoryPages = entries
@@ -60,37 +65,40 @@ export const GET: APIRoute = async () => {
     }
   }
 
-  // Glossary pages — fetch from public URL (Cloudflare Workers compatible)
+  // Glossary pages — read from filesystem (build-time safe, no self-fetch)
   let glossaryPages: any[] = [];
   try {
-    const glossaryResp = await fetch('https://asetemyt.com/data/glossary.json');
-    if (glossaryResp.ok) {
-      const glossaryTerms = await glossaryResp.json();
-      glossaryPages = glossaryTerms.map((t: any) => ({
-        url: `/glosario/${t.slug}`,
-        priority: '0.6',
-        changefreq: 'monthly',
-      }));
-    }
-  } catch {}
+    const raw = readFileSync(join(process.cwd(), 'public', 'data', 'glossary.json'), 'utf-8');
+    const glossaryTerms = JSON.parse(raw);
+    glossaryPages = glossaryTerms.map((t: any) => ({
+      url: `/glosario/${t.slug}`,
+      priority: '0.6',
+      changefreq: 'monthly',
+    }));
+  } catch (e) {
+    console.error('Error reading glossary.json for sitemap:', e);
+  }
 
   const allPages = [...staticPages, ...directoryPages, ...landingPages, ...glossaryPages];
+
+  const xmlEscape = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${allPages
   .map(
     (p) => `  <url>
-    <loc>https://asetemyt.com${p.url}</loc>
+    <loc>https://asetemyt.com${xmlEscape(p.url)}</loc>
     <changefreq>${p.changefreq}</changefreq>
     <priority>${p.priority}</priority>
-    ${p.lastmod ? `<lastmod>${new Date(p.lastmod).toISOString().split('T')[0]}</lastmod>` : ''}
+    ${p.lastmod ? `<lastmod>${xmlEscape(p.lastmod)}</lastmod>` : ''}
   </url>`
   )
   .join('\n')}
 </urlset>`;
 
   return new Response(xml, {
-    headers: { 'Content-Type': 'application/xml' },
+    headers: { 'Content-Type': 'application/xml; charset=utf-8' },
   });
 };
