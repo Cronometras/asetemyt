@@ -84,9 +84,30 @@ export const GET: APIRoute = async () => {
   const xmlEscape = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // Fix indexación (2026-09-02): sitemap must point to the same URL the page
+  // serves + declares as canonical. Astro/Cloudflare Pages normalizes everything
+  // to trailing-slash via 308, so emitting without-slash causes Google to flag
+  // every URL as "Página con redirección" (1.734 casos en Search Console).
+  // We: (1) ensure trailing slash, (2) dedupe so the same URL never appears
+  // twice (mix of slash/no-slash variants), (3) skip obviously empty paths.
+  // ──────────────────────────────────────────────────────────────────────────
+  const seen = new Set<string>();
+  const normalizedPages = allPages
+    .map((p) => {
+      const clean = (p.url || '').replace(/\/+$/, '');
+      const withSlash = clean ? `${clean}/` : '/';
+      return { ...p, url: withSlash };
+    })
+    .filter((p) => {
+      if (seen.has(p.url)) return false;
+      seen.add(p.url);
+      return true;
+    });
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${allPages
+${normalizedPages
   .map(
     (p) => `  <url>
     <loc>https://asetemyt.com${xmlEscape(p.url)}</loc>
