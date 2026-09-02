@@ -1,17 +1,13 @@
 # ASETEMYT — _redirects (Cloudflare Pages)
-# Fix indexación (2026-09-02):
-# 1. Forzar HTTPS para cualquier petición en plano.
-# 2. Forzar dominio raíz (sin www). Resuelve ~330 URLs "Página con redirección"
-#    en Search Console que provenían de backlinks/foros/indexaciones previas
-#    con https://www.asetemyt.com.
 #
-# Cloudflare Pages evalúa _redirects en orden: la primera regla que coincide
-# se aplica. Ambas son 301 (permanente) para consolidar señales SEO.
-# Doc: https://developers.cloudflare.com/pages/configuration/redirects/
+# Este fichero solo aplica al **host primario** del proyecto (asetemyt.com).
+# El redirect www -> raiz NO va aquí porque Pages no lo evalúa para el
+# custom domain "www.asetemyt.com"; está gestionado por una Page Rule
+# específica en el panel de Cloudflare (id c9850d4da4dd132da1e639a118732671).
+#
+# Verificación posterior al fix (2026-09-02):
+#   - https://www.asetemyt.com/*  →  301 https://asetemyt.com/$1 (Page Rule)
+#   - http://asetemyt.com/*       →  301 https://asetemyt.com/$1 (este _redirects)
 
-# HTTPS — http://*  →  https://*  (301)
-http://asetemyt.com/*      https://asetemyt.com/:splat   301
-http://www.asetemyt.com/*  https://asetemyt.com/:splat   301
-
-# WWW → raíz  (301)
-https://www.asetemyt.com/*  https://asetemyt.com/:splat  301
+# HTTP -> HTTPS (301) — solo para el host primario (asetemyt.com)
+http://asetemyt.com/*  https://asetemyt.com/:splat  301
