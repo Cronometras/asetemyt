@@ -11,3 +11,7 @@ compare.mjs
 __pycache__/
 
 .hermes/
+
+# Migration scripts and service-account files (one-shot operations)
+scripts/add-batch-*.mjs
+scripts/.sa-*.json
