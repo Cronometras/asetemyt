@@ -167,7 +167,7 @@ export async function invalidatePrefix(env: CacheEnv, prefix: string): Promise<v
 
 export const CACHE_KEYS = {
   // Public listings — invalidated by: new listing, edit listing, claim approved
-  directorioConsultores: 'cache:directorio:consultores:v11',
+  directorioConsultores: 'cache:directorio:consultores:v12',
   directorioSoftware: 'cache:directorio:software:v1',
 
   // Public job board — invalidated by: new job, job update
