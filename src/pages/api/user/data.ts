@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
   try {
     // 1. Get user doc + subscriptions in parallel
-    const [userDoc, subs] = await Promise.all([
+    let [userDoc, subs] = await Promise.all([
       firestoreGet(env, 'users_asetemyt', user.user_id),
       firestoreQuery(env, 'subscriptions_asetemyt', 'uid', 'EQUAL', { stringValue: user.user_id }),
     ]);
