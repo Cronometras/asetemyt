@@ -7,8 +7,10 @@
  *  Returns the Fetch API to use for subsequent calls (authFetch or a cookie-based wrapper). */
 export async function initAdmin(): Promise<{
   ok: boolean;
+  error?: string;
   api: (url: string, options?: RequestInit) => Promise<Response>;
 }> {
+  let checkError: string | undefined;
   // Path 1: cookie token (fast, set during login, no IndexedDB needed)
   const cookieMatch = document.cookie.match(/asetemyt_token=([^;]+)/);
   const token = cookieMatch?.[1];
@@ -28,8 +30,10 @@ export async function initAdmin(): Promise<{
           };
           return { ok: true, api: cookieApi };
         }
+      } else if (res.status >= 500) {
+        return { ok: false, error: 'No se pudo comprobar el acceso. El servidor no está disponible temporalmente.', api: window.fetch.bind(window) };
       }
-    } catch {}
+    } catch { checkError = 'No se pudo conectar con el servidor para comprobar el acceso.'; }
   }
 
   // Path 2: Firebase authStateReady (lazy import — avoids triggering
@@ -50,10 +54,11 @@ export async function initAdmin(): Promise<{
       // claim (the cookie-based /api/admin/status check already ran on
       // /admin landing, and Firebase's onAuthStateChanged is canonical).
       const res = await authFetch('/api/admin/status');
+      if (!res.ok) throw new Error('No se pudo comprobar el acceso. Reinténtalo más tarde.');
       const data = await res.json();
       if (data.admin) return { ok: true, api: authFetch };
     }
-  } catch {}
+  } catch { checkError = 'No se pudo comprobar el acceso. Reinténtalo más tarde.'; }
 
-  return { ok: false, api: window.fetch.bind(window) };
+  return { ok: false, error: checkError, api: window.fetch.bind(window) };
 }

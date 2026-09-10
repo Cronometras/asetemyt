@@ -1,17 +1,6 @@
-// lib/d1.ts — D1 helpers for the asetemyt public mirror.
-// D1 is a READ mirror of Firestore's public collections (directorio_consultores_asetemyt,
-// directorio_software_asetemyt). Writes still go to Firestore (source-of-truth).
-//
-// Binding name in wrangler.toml: `DB` (D1 database, type `d1`).
-// Cloudflare D1 has no "per-row read quota" — the 5M rows/day free tier is more than
-// enough to serve /directorio/* indefinitely.
-//
-// Why this file exists: see migration history. Originally the public endpoints hit
-// Firestore's REST API, gated by a 24h KV cache. Two incidents (2026-09-08 quota 429,
-// 2026-09-09 KV 1000 puts/day exhausted) made that fragile. D1 replaces both:
-//   - No 20k-reads/day cap (Firestore Spark)
-//   - No 1000-puts/day cap on cache invalidation (KV Free)
-//   - ~50ms latency on full listing (1024 rows) vs ~1.7s wrangler-cli overhead
+// Public directory readers. app_documents is the runtime source of truth;
+// migration 0003 keeps these public-only tables synchronized with SQL triggers.
+// Private document fields are intentionally not returned by these readers.
 
 type D1Binding = D1Database;
 

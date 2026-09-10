@@ -18,11 +18,7 @@
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { firestoreGet, firestoreCreate } from '../../../lib/firestore-rest';
-
-const BOOTSTRAP_EMAILS = new Set<string>([
-  'micaot@gmail.com',           // titular (ProdCont)
-  // Add more bootstrap admins here if needed
-]);
+import { isBootstrapAdmin } from '../../../lib/admin';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -36,9 +32,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // 2. Check the caller is in the bootstrap list
   const email = (user.email || '').toLowerCase();
-  if (!email || !BOOTSTRAP_EMAILS.has(email)) {
+  if (!isBootstrapAdmin(env, user)) {
     return new Response(JSON.stringify({
-      error: 'Tu email no está en la lista de bootstrap admins.',
+      error: 'Se requiere un email verificado incluido en la lista de administradores iniciales.',
       email,
     }), { status: 403 });
   }

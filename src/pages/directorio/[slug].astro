@@ -1,5 +1,5 @@
 ---
-  export const prerender = true;
+  export const prerender = false;
   import Layout from '../../layouts/Layout.astro';
   import ReviewsSection from '../../components/ReviewsSection.astro';
   import RequestQuote from '../../components/RequestQuote.astro';
@@ -7,23 +7,11 @@
   import PartnerBadge from '../../components/PartnerBadge.astro';
   import CasesSection from '../../components/CasesSection.astro';
   import ContactSection from '../../components/ContactSection.astro';
-  import { getDirectoryEntries } from '../../lib/firebase';
+  import { getDB, getConsultorBySlug, getSoftwareBySlug } from '../../lib/d1';
 
-export async function getStaticPaths() {
-  let entries: any[] = [];
-  try {
-    entries = await getDirectoryEntries();
-  } catch (e) {
-    console.error('Error fetching entries for static paths:', e);
-  }
-
-  return entries.map((entry) => ({
-    params: { slug: entry.slug },
-    props: { entry },
-  }));
-}
-
-const { entry } = Astro.props;
+const db = getDB(Astro.locals);
+const slug = Astro.params.slug || '';
+const entry = await getConsultorBySlug(db, slug) || await getSoftwareBySlug(db, slug);
 
 if (!entry) {
   return Astro.redirect('/directorio');

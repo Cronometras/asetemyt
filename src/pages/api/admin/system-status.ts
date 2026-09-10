@@ -2,14 +2,8 @@
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
-import { getAccessToken, firestoreListAll } from '../../../lib/firestore-rest';
+import { getAccessToken } from '../../../lib/firestore-rest';
 import { getStripe } from '../../../lib/stripe-server';
-
-// Health check just needs to know Firestore is reachable. Reading the whole
-// consultores collection (300+ docs) for a "connected" check was burning
-// quota on every status check. A single-document read is sufficient.
-const SYSTEM_STATUS_CACHE_TTL = 30; // seconds — pretty fresh, but still protects quota
-const SYSTEM_STATUS_CACHE_KEY = 'cache:admin:system-status:v1';
 
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -20,22 +14,19 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 
   const results: Record<string, { ok: boolean; detail: string; ms: number }> = {};
-  const cached = !!(env.CACHE || env.ASETEMYT_CACHE);
 
   // Firestore — single token acquisition (cheaper than reading N docs)
   const fsStart = Date.now();
   try {
-    await getAccessToken(env);
-    // Only do a real read if the cache is empty (otherwise just trust the
-    // token-call success for connectivity). Falls back to a listAll on miss.
-    if (cached) {
-      results.firestore = { ok: true, detail: 'Conectado (token)', ms: Date.now() - fsStart };
+    if (env.DB) {
+      await env.DB.prepare('SELECT collection FROM app_documents LIMIT 1').all();
+      results.d1 = { ok: true, detail: 'Conectado (administración y directorio)', ms: Date.now() - fsStart };
     } else {
-      await firestoreListAll(env, 'directorio_consultores_asetemyt');
-      results.firestore = { ok: true, detail: 'Conectado', ms: Date.now() - fsStart };
+      await getAccessToken(env);
+      results.firestore = { ok: true, detail: 'Conectado (token)', ms: Date.now() - fsStart };
     }
   } catch (e: any) {
-    results.firestore = { ok: false, detail: e.message || 'Error', ms: Date.now() - fsStart };
+    results[env.DB ? 'd1' : 'firestore'] = { ok: false, detail: e.message || 'Error', ms: Date.now() - fsStart };
   }
 
   // Stripe — use customers.list (works with restricted keys) instead of balance.retrieve (requires rak_balance_read)
@@ -73,7 +64,8 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
   // Env vars check
   const envVars = {
-    firebase: !!(env.FIREBASE_API_KEY && env.FIREBASE_PROJECT_ID),
+    firebase: !!(env.FIREBASE_API_KEY || import.meta.env.PUBLIC_FIREBASE_API_KEY),
+    d1: !!env.DB,
     stripe: !!(env.STRIPE_SECRET_KEY && env.STRIPE_WEBHOOK_SECRET),
     resend: !!env.RESEND_API_KEY,
     cronSecret: !!env.CRON_SECRET,

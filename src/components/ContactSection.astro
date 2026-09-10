@@ -68,13 +68,13 @@ const { slug } = Astro.props;
     }
 
     try {
-      const res = await fetch('/api/ficha/contact?slug=' + encodeURIComponent(slug));
+      const res = await fetch('/api/ficha/contact?slug=' + encodeURIComponent(slug), { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
 
-      if (data.locked || !data.contacto) return;
+      if (data.locked !== false) return;
 
-      const c = data.contacto;
+      const c = data.contacto || {};
       const container = el.querySelector('.contact-unlocked');
       if (!container) return;
 
@@ -106,10 +106,14 @@ const { slug } = Astro.props;
 
       if (items.length > 0) {
         container.innerHTML = items.join('');
-        const lockedDiv = el.querySelector('.relative');
-        if (lockedDiv) lockedDiv.remove();
-        container.classList.remove('hidden');
+      } else {
+        container.innerHTML = '<p class="sm:col-span-2 text-sm text-steel-500 py-3">No hay datos de contacto disponibles para esta ficha.</p>';
       }
+      // Visibility and availability are different: an unlocked empty contact
+      // must never retain the locked placeholder.
+      const lockedDiv = el.querySelector('.relative');
+      if (lockedDiv) lockedDiv.remove();
+      container.classList.remove('hidden');
     } catch (e) {
       console.error('ContactSection fetch error:', e);
     }

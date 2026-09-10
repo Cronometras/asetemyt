@@ -1,5 +1,5 @@
 // POST /api/contact — Guarda mensajes del formulario público de asetemyt.com/contact
-// en Firestore colección `contactos_asetemyt` y envía email de notificación a
+// en D1 (o Firestore en despliegues antiguos), colección `contactos_asetemyt` y envía email de notificación a
 // info@asetemyt.com vía webhook GMAIL_WEBAPP_URL.
 //
 // Esquema esperado por src/pages/contact.astro:
@@ -9,7 +9,10 @@
 //   FIREBASE_SERVICE_ACCOUNT  (JSON del service account inline, una línea)
 //   GMAIL_WEBAPP_URL          (URL del Google Apps Script que envía el email)
 
+import { firestoreCreate, toFirestoreValue } from '../../lib/firestore-rest';
+
 interface Env {
+  DB?: unknown;
   FIREBASE_SERVICE_ACCOUNT: string;
   GMAIL_WEBAPP_URL?: string;
 }
@@ -111,7 +114,7 @@ export async function POST({ request, locals }: { request: Request; locals: any 
     const env: Env = (locals as any)?.runtime?.env || {};
     const saJson = env.FIREBASE_SERVICE_ACCOUNT;
 
-    if (!saJson) {
+    if (!saJson && !env.DB) {
       console.error('FIREBASE_SERVICE_ACCOUNT env var is missing!');
       return new Response(
         JSON.stringify({ error: 'Server configuration error' }),
@@ -140,14 +143,6 @@ export async function POST({ request, locals }: { request: Request; locals: any 
       );
     }
 
-    const sa = JSON.parse(saJson);
-    // Doble escape: CF Pages guarda el env var como string, y al meter
-    // otro JSON dentro, los \n se escapan dos veces (\\n literal). Si el
-    // private_key no tiene saltos de línea reales, los restauramos.
-    if (sa.private_key && !sa.private_key.includes('\n') && sa.private_key.includes('\\n')) {
-      sa.private_key = sa.private_key.split('\\n').join('\n');
-    }
-    const token = await getAccessToken(sa);
     const docData = {
       nombre,
       email,
@@ -159,22 +154,35 @@ export async function POST({ request, locals }: { request: Request; locals: any 
       source: 'web_contact',
     };
 
-    const resp = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents/contactos_asetemyt`,
-      {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(firestoreDocument(docData)),
+    if (env.DB) {
+      await firestoreCreate(env, 'contactos_asetemyt', crypto.randomUUID(), toFirestoreValue(docData).mapValue.fields);
+    } else {
+      const sa = JSON.parse(saJson);
+      // Doble escape: CF Pages guarda el env var como string, y al meter
+      // otro JSON dentro, los \n se escapan dos veces (\\n literal). Si el
+      // private_key no tiene saltos de línea reales, los restauramos.
+      if (sa.private_key && !sa.private_key.includes('\n') && sa.private_key.includes('\\n')) {
+        sa.private_key = sa.private_key.split('\\n').join('\n');
       }
-    );
-
-    if (!resp.ok) {
-      const errText = await resp.text();
-      console.error('Firestore error:', resp.status, errText);
-      return new Response(
-        JSON.stringify({ error: 'Error al guardar el mensaje', details: errText.substring(0, 200) }),
-        { status: 500, headers: corsHeaders }
+      const token = await getAccessToken(sa);
+      const resp = await fetch(
+        `https://firestore.googleapis.com/v1/projects/${sa.project_id}/databases/(default)/documents/contactos_asetemyt`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(firestoreDocument(docData)),
+        }
       );
+
+      if (!resp.ok) {
+        const errText = await resp.text();
+        console.error('Firestore error:', resp.status, errText);
+        return new Response(
+          JSON.stringify({ error: 'Error al guardar el mensaje', details: errText.substring(0, 200) }),
+          { status: 500, headers: corsHeaders }
+        );
+      }
+
     }
 
     sendNotificationEmail(env, { nombre, email, empresa, asunto, mensaje });

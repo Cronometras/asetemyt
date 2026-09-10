@@ -9,6 +9,11 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const { user } = await getAuthUser(request, apiKey);
   if (!user) return new Response(JSON.stringify({ admin: false }), { status: 200 });
 
-  const admin = await isAdmin(env, user);
-  return new Response(JSON.stringify({ admin, email: user.email }), { status: 200 });
+  try {
+    const admin = await isAdmin(env, user);
+    return Response.json({ admin, email: user.email }, { headers: { 'Cache-Control': 'no-store' } });
+  } catch {
+    return Response.json({ error: 'No se pudo comprobar el permiso de administrador. Reinténtalo más tarde.' },
+      { status: 503, headers: { 'Cache-Control': 'no-store' } });
+  }
 };

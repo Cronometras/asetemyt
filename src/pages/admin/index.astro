@@ -22,6 +22,8 @@ import Layout from '../../layouts/Layout.astro';
       <!-- Stats Cards -->
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-10" id="statsCards"></div>
 
+      <p id="dataWarning" class="hidden text-amber-800 bg-amber-50 p-4 rounded-lg mb-6" role="status"></p>
+
       <!-- Quick Actions + Trend -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
         <!-- Quick Actions -->
@@ -59,7 +61,7 @@ import Layout from '../../layouts/Layout.astro';
           <div>
             <h2 class="text-lg font-bold text-primary-800">🗄️ Cache KV</h2>
             <p class="text-xs text-steel-500 mt-1">
-              Listados públicos cacheados en Cloudflare KV. Se invalidan automáticamente al mutar datos.
+              Caché del sistema anterior. La administración conectada a D1 consulta los datos directamente.
             </p>
           </div>
           <span id="cacheCount" class="text-sm font-semibold text-steel-600 bg-steel-100 px-3 py-1 rounded-full">
@@ -101,7 +103,8 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
-    import { authFetch } from '../../lib/auth';
+    import { initAdmin } from '../../lib/admin-auth';
+    let authFetch: (url: string, options?: RequestInit) => Promise<Response> = window.fetch.bind(window);
 
     const icons = {
       consultores: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>',
@@ -119,55 +122,21 @@ import Layout from '../../layouts/Layout.astro';
       subs: 'violet',
     };
 
-    // Dual-path auth: cookie first (fast, no IndexedDB), then Firebase as fallback.
+    // Permission checks and dashboard data failures are independent.
     (async () => {
-      // Helper: read asetemyt_token cookie
-      function getTokenCookie() {
-        const m = document.cookie.match(/asetemyt_token=([^;]+)/);
-        return m ? m[1] : null;
-      }
-
-      // Try cookie-based auth first — bypasses IndexedDB entirely
-      const token = getTokenCookie();
-      if (token) {
-        try {
-          const res = await fetch('/api/admin/stats', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const data = await res.json();
-            return showDashboard(data);
-          }
-        } catch {}
-      }
-
-      // Cookie didn't work — wait for Firebase Auth (lazy import, may need IndexedDB)
-      let resolved = false;
-      const timeout = setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          showError('La autenticación está tardando demasiado. Verifica tu conexión.');
-        }
-      }, 8000);
-
+      const timeout = setTimeout(() => showError('La autenticación está tardando demasiado. Puedes reintentar.'), 10000);
       try {
-        const { auth } = await import('../../lib/auth');
-        await auth.authStateReady();
-        if (resolved) return;
-        resolved = true;
-        clearTimeout(timeout);
-
-        const user = auth.currentUser;
-        if (!user) return showNotAuth();
-
+        const session = await initAdmin();
+        if (!session.ok) return session.error ? showError(session.error) : showNotAuth();
+        authFetch = session.api;
         const res = await authFetch('/api/admin/stats');
-        if (!res.ok) return showNotAuth();
-
-        const data = await res.json();
-        showDashboard(data);
+        if (res.status === 401 || res.status === 403) return showNotAuth();
+        if (!res.ok) return showError('No se pudieron cargar las estadísticas. El servicio de datos no está disponible temporalmente.');
+        showDashboard(await res.json());
       } catch {
-        if (!resolved) { resolved = true; clearTimeout(timeout); }
         showError('Error al conectar con el servidor.');
+      } finally {
+        clearTimeout(timeout);
       }
     })();
 
@@ -203,6 +172,11 @@ import Layout from '../../layouts/Layout.astro';
       document.getElementById('adminPanel')!.classList.remove('hidden');
       document.getElementById('lastUpdated')!.textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
+      const warning = document.getElementById('dataWarning')!;
+      warning.classList.toggle('hidden', !data.unavailable?.length && data.legacyPrivateDataImported !== false);
+      warning.textContent = data.unavailable?.length
+        ? 'Algunos datos no están disponibles temporalmente. Puedes reintentar la carga.'
+        : 'Administración conectada a D1. El historial privado de Firestore aún no se ha importado: los apartados muestran únicamente los datos disponibles en D1.';
       renderStats(data);
       renderQuickActions(data);
       renderTrend(data);
@@ -211,13 +185,13 @@ import Layout from '../../layouts/Layout.astro';
       initCachePanel();
     }
 
-    function statCard(label: string, value: number, key: string, href: string) {
+    function statCard(label: string, value: number | null, key: string, href: string) {
       const c = statColors[key as keyof typeof statColors] || 'steel';
       return `
         <a href="${href}" class="bg-white rounded-xl shadow-md p-5 border-t-4 border-${c}-500 hover:shadow-lg hover:-translate-y-0.5 transition-all group">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-3xl font-extrabold text-primary-800 group-hover:text-${c}-600 transition-colors">${value}</p>
+              <p class="text-3xl font-extrabold text-primary-800 group-hover:text-${c}-600 transition-colors">${value ?? '—'}</p>
               <p class="text-sm text-steel-500 mt-1">${label}</p>
             </div>
             <svg class="w-8 h-8 text-${c}-200 group-hover:text-${c}-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">${icons[key as keyof typeof icons]}</svg>
@@ -238,10 +212,10 @@ import Layout from '../../layouts/Layout.astro';
       const actions = [
         { href: '/admin/fichas', label: 'Gestionar Fichas', desc: 'Crear, editar, eliminar, exportar CSV', badge: `${d.totals.total} total` },
         { href: '/admin/outreach', label: '📬 Outreach', desc: 'Emails personalizados a fichas — 1er, 2º, 3er contacto', badge: 'Nuevo' },
-        { href: '/admin/claims', label: 'Revisar Verificaciones', desc: 'Aprobar o rechazar solicitudes', badge: d.claims.pending > 0 ? `${d.claims.pending} pendientes` : 'Al día', urgent: d.claims.pending > 0 },
-        { href: '/admin/leads', label: 'Ver Leads', desc: 'Solicitudes de presupuesto recibidas', badge: d.leads.new > 0 ? `${d.leads.new} nuevos` : 'Sin novedades', urgent: d.leads.new > 0 },
-        { href: '/admin/subscribers', label: 'Suscriptores', desc: 'Gestionar altas y bajas del newsletter', badge: `${d.subscriptions.active} activos` },
-        { href: '/admin/status', label: 'Estado del Sistema', desc: 'Firestore, Stripe, Resend', badge: 'Monitor' },
+        { href: '/admin/claims', label: 'Revisar Verificaciones', desc: 'Aprobar o rechazar solicitudes', badge: d.claims.pending === null ? 'No disponible' : d.claims.pending > 0 ? `${d.claims.pending} pendientes` : 'Al día', urgent: d.claims.pending > 0 },
+        { href: '/admin/leads', label: 'Ver Leads', desc: 'Solicitudes de presupuesto recibidas', badge: d.leads.new === null ? 'No disponible' : d.leads.new > 0 ? `${d.leads.new} nuevos` : 'Sin novedades', urgent: d.leads.new > 0 },
+        { href: '/admin/subscribers', label: 'Suscriptores', desc: 'Gestionar altas y bajas del newsletter', badge: d.subscriptions.active === null ? 'No disponible' : `${d.subscriptions.active} activos` },
+        { href: '/admin/status', label: 'Estado del Sistema', desc: 'Base de datos, Stripe, Resend', badge: 'Monitor' },
         { href: '/admin/newsletter', label: 'Newsletter Preview', desc: 'Previsualizar el boletín mensual', badge: 'HTML' },
       ];
       document.getElementById('quickActions')!.innerHTML = actions.map(a => `
@@ -275,6 +249,10 @@ import Layout from '../../layouts/Layout.astro';
     }
 
     function renderActivity(d: any) {
+      if (d.unavailable?.includes('claims')) {
+        document.getElementById('activityList')!.textContent = 'Actividad no disponible temporalmente.';
+        return;
+      }
       if (!d.recentActivity?.length) {
         document.getElementById('activityList')!.innerHTML = '<p class="text-sm text-steel-400 py-6 text-center">No hay actividad reciente.</p>';
         return;
@@ -329,12 +307,8 @@ import Layout from '../../layouts/Layout.astro';
     // ================== Cache KV panel ==================
     let cacheLoaded = false;
     async function loadCacheStatus() {
-      const token = getTokenCookie();
-      if (!token) return;
       try {
-        const res = await fetch('/api/admin/cache/status', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await authFetch('/api/admin/cache/status');
         if (!res.ok) return;
         const data = await res.json();
         if (!data.bound) {
@@ -390,15 +364,12 @@ import Layout from '../../layouts/Layout.astro';
           const origText = (btn as HTMLElement).textContent;
           (btn as HTMLElement).textContent = 'Purgando…';
 
-          const token = getTokenCookie();
-          if (!token) return;
           const body = target === 'all' ? { all: true } : { keys: [target] };
           try {
-            const res = await fetch('/api/admin/cache/purge', {
+            const res = await authFetch('/api/admin/cache/purge', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify(body),
             });

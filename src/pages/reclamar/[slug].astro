@@ -1,18 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getDirectoryEntries } from '../../lib/firebase';
+import { getDB, getConsultorBySlug, getSoftwareBySlug } from '../../lib/d1';
 
-export const prerender = true;
-
-export async function getStaticPaths() {
-  const entries = await getDirectoryEntries();
-  return entries.map((entry: any) => ({
-    params: { slug: entry.slug },
-    props: { entry },
-  }));
-}
-
-const { entry } = Astro.props;
+export const prerender = false;
+const db = getDB(Astro.locals);
+const slug = Astro.params.slug || '';
+const entry = await getConsultorBySlug(db, slug) || await getSoftwareBySlug(db, slug);
 if (!entry) return Astro.redirect('/directorio');
 ---
 

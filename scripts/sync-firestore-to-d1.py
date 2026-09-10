@@ -2,7 +2,7 @@
 """sync-firestore-to-d1.py — Mirror Firestore public collections to Cloudflare D1.
 
 Idempotent. Reads from Firestore via Admin SDK, generates SQL, applies via wrangler
-CLI. Safe to re-run after every enrichment round (INSERT OR REPLACE keyed by docId).
+CLI. Safe to re-run after every enrichment round (additive import keyed by docId; existing D1 fields win).
 
 Usage:
     # Full sync of both collections
@@ -179,44 +179,13 @@ def fetch_firestore_docs(firestore_collection: str):
 # ---------------------------------------------------------------------------
 
 def build_sql(name: str, docs) -> str:
-    """Build the SQL dump for one collection."""
-    cfg = COLLECTIONS[name]
-    lines = []
-    lines.append(f"-- Sync {name} → {cfg['table']} at {datetime.now(timezone.utc).isoformat()}")
-    lines.append(f"-- {len(docs)} docs")
-    # D1 does NOT support SQL-level BEGIN TRANSACTION (wrangler rejects it). Each
-    # INSERT OR REPLACE is atomic at the row level. For full atomicity across rows,
-    # use --batch with wrangler (handled by apply_sql_*). For our use case
-    # (idempotent re-sync of a few thousand rows), per-row atomicity is enough.
+    """Import missing document fields; preserve all existing D1 edits.
 
-    for doc_id, data in docs:
-        values = []
-        for col in cfg["columns"]:
-            if col == "id":
-                values.append(_sql_escape(doc_id))
-                continue
-            # Resolve source field name (with rename)
-            source_field = None
-            for orig, dest in cfg["rename"].items():
-                if dest == col:
-                    source_field = orig
-                    break
-            if source_field is None:
-                source_field = col
-
-            raw = data.get(source_field)
-            transform = cfg["transforms"].get(source_field)
-            if transform:
-                raw = transform(raw)
-            values.append(_sql_escape(raw))
-
-        cols_csv = ",".join(cfg["columns"])
-        vals_csv = ",".join(f"'{v}'" for v in values)
-        lines.append(
-            f"INSERT OR REPLACE INTO {cfg['table']}({cols_csv}) VALUES({vals_csv});"
-        )
-
-    return "\n".join(lines) + "\n"
+    Requires migration 0003. Never write the public projections directly.
+    """
+    from d1_import import document_sql
+    collection = f'directorio_{name}_asetemyt'
+    return '\n'.join(document_sql(collection, doc_id, data) for doc_id, data in docs) + '\n'
 
 
 # ---------------------------------------------------------------------------

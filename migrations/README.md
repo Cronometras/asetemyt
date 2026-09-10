@@ -1,116 +1,27 @@
-# D1 migration — asetemyt public mirror
+# Migraciones de D1
 
-This directory is the source of truth for the D1 schema that backs the public
-listing endpoints (`/api/directorio/consultores`, `/api/directorio/software`).
-
-## Why D1
-
-Two concrete incidents motivated the migration (full timeline in skill
-`devops/asetemyt-directory-ops`):
-
-- **2026-09-08**: Firestore Spark plan exhausted its 20k reads/day quota. The
-  endpoint `/api/directorio/consultores` started returning `[]` because the
-  Firestore query 429'd and KV cached the empty result.
-- **2026-09-09**: Cloudflare KV Free plan exhausted its 1000 puts/day quota
-  during cache-bust attempts to recover from the Firestore incident.
-
-D1 replaces both:
-- 5M rows/day free read tier (vs Firestore Spark 20k).
-- No per-write quota — D1 imports are batched, not per-key.
-
-Firestore remains the source of truth for writes (claim flow, ficha edits,
-admin actions). D1 is a read mirror, populated by `scripts/sync-firestore-to-d1.py`.
-
-## Migrations
-
-| File | Purpose |
+| Archivo | Función |
 |---|---|
-| `0001_consultores.sql` | Mirror of `directorio_consultores_asetemyt` |
-| `0002_software.sql` | Mirror of `directorio_software_asetemyt` |
+| `0001_consultores.sql` | Tabla pública de consultores |
+| `0002_software.sql` | Tabla pública de software |
+| `0003_app_documents.sql` | Documentos de administración y triggers para sincronizar las tablas públicas |
 
-## Apply migrations (remote)
+Desde la migración 0003, D1 es el almacén de lectura y escritura en runtime
+cuando existe el binding `DB`. Las tablas públicas son proyecciones de
+`app_documents`. Firebase Authentication sigue gestionando las sesiones.
 
-Requires a CF API token with `D1:Edit` scope on the Micaot account. Set it in
-shell before running:
-
-```bash
-export CLOUDFLARE_API_TOKEN=<token>
-export CLOUDFLARE_ACCOUNT_ID=1d7e014531130045fb08225c02c73597
-```
-
-Create the DB once:
-
-```bash
-npx wrangler d1 create asetemyt-directorio
-# → returns {"uuid": "<D1_ID>"} — copy into wrangler.toml as database_id
-```
-
-Apply migrations:
-
-```bash
+```sh
+npm run db:migrate:local
+# Producción, antes de desplegar la aplicación:
 npx wrangler d1 migrations apply DB --remote
 ```
 
-## Initial sync
+`npm run dev` y `npm start` aplican automáticamente las migraciones locales.
+La migración 0003 conserva las fichas públicas que ya hubiera en la base.
 
-After migrations, populate from Firestore:
+El historial privado que solo estuviera en Firestore requiere una importación
+independiente. No debe confundirse una colección vacía en D1 con la ausencia de
+historial en Firestore. El panel mantiene un aviso hasta que se importe.
 
-```bash
-cd /home/ubuntu/projects/asetemyt
-python3 scripts/sync-firestore-to-d1.py --collections consultores,software
-```
-
-This is idempotent — uses `INSERT OR REPLACE` keyed by Firestore docId. Safe
-to re-run after every enrichment round.
-
-## Production binding (one-time, CF Dashboard)
-
-The project uses CF Pages via git integration, so the production binding is
-configured in the dashboard, not via wrangler deploy:
-
-1. https://dash.cloudflare.com/ → Pages → asetemyt → Settings → Functions
-2. **D1 database bindings** → Add binding
-   - Variable name: `DB`
-   - D1 database: `asetemyt-directorio`
-3. Save → next deploy picks it up.
-
-Without this binding, `src/lib/d1.ts` throws "D1 binding `DB` not found".
-
-## Verification
-
-After deploy:
-
-```bash
-# 1) Endpoint serves from D1
-curl -s https://asetemyt.com/api/directorio/consultores \
-  | python3 -c "import json,sys; d=json.load(sys.stdin); print('count:', d['count'])"
-# Expected: 1024 (matches Firestore count)
-
-# 2) No Firestore reads during this call (verify via Admin SDK read quota)
-# (admin-side check, not part of public verification)
-```
-
-## Local dev
-
-```bash
-# Apply migrations locally
-npx wrangler d1 migrations apply DB --local
-
-# Seed local DB from Firestore (one-time, fast)
-python3 scripts/sync-firestore-to-d1.py --local \
-  --collections consultores,software
-```
-
-`wrangler dev` then serves `/api/directorio/consultores` against the local
-SQLite file in `.wrangler/state/v3/d1/`.
-
-## What's NOT in D1
-
-Everything Firestore-specific stays in Firestore:
-
-- Firebase Auth (`src/lib/auth.ts`, `/api/auth/*`)
-- Writes (`/api/ficha/*`, `/api/admin/*`)
-- Stripe webhook, jobs, reviews, newsletter, leads, outreach, coupons
-- Articles (`articulos_asetemyt` — published via Firestore, blog pages prerendered)
-
-D1 is a public read mirror only.
+Consultar [administración y recuperación](../docs/admin-recovery.md) para la
+configuración, el importador aditivo, la verificación y los pasos de despliegue.

@@ -41,6 +41,7 @@ type KVNamespaceLike = {
 const DEFAULT_TTL_SECONDS = 86400; // 24h
 
 interface CacheEnv {
+  DB?: unknown;
   // Cloudflare KV namespace. Bound as `CACHE` in Cloudflare Pages dashboard.
   // We accept any name to make local dev (where KV isn't bound) a no-op.
   CACHE?: KVNamespaceLike;
@@ -65,6 +66,9 @@ export async function getCached<T>(
   fetcher: () => Promise<T>,
   ttlSeconds: number = DEFAULT_TTL_SECONDS
 ): Promise<T> {
+  // D1 is now authoritative. Bypass legacy KV snapshots (including cached
+  // permissions) so writes are immediately visible and consume no KV puts.
+  if (env.DB) return fetcher();
   const kv = getKV(env);
 
   // 1. Try cache

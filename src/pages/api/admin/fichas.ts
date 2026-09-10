@@ -107,7 +107,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       createdBy: user.user_id,
     };
 
-    await firestoreCreate(env, collection, data.slug, toFirestoreValue(data));
+    await firestoreCreate(env, collection, data.slug, toFirestoreValue(data).mapValue.fields);
 
     // Invalidate public listings + admin cache so the new ficha shows up immediately
     await invalidate(env, [CACHE_KEYS.directorioConsultores, CACHE_KEYS.directorioSoftware, ADMIN_CACHE_KEYS.adminFichas]);

@@ -2,7 +2,7 @@
 // This repairs data where fichas were verified (free coupon) but the slug wasn't added to fichasReclamadas
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
-import { firestoreGet, firestoreUpdate, getAccessToken } from '../../../lib/firestore-rest';
+import { firestoreGet, firestoreUpdate, firestoreQuery } from '../../../lib/firestore-rest';
 
 const ADMIN_UID = 'NCCrZqW3xuhK6E2wkBGDpylStFH3';
 
@@ -16,40 +16,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
-    const token = await getAccessToken(env);
     const results: any[] = [];
 
     // Query all verified fichas from both collections
     for (const collection of ['directorio_consultores_asetemyt', 'directorio_software_asetemyt']) {
-      const resp = await fetch(
-        `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`,
-        {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            structuredQuery: {
-              from: [{ collectionId: collection }],
-              where: {
-                fieldFilter: {
-                  field: { fieldPath: 'verificado' },
-                  op: 'EQUAL',
-                  value: { booleanValue: true },
-                },
-              },
-            },
-          }),
-        }
-      );
-      const data = await resp.json();
-      
-      for (const row of data) {
-        if (!row.document) continue;
-        const doc = row.document;
-        const fields = doc.fields || {};
-        const slug = fields.slug?.stringValue || doc.name.split('/').pop();
-        const ownerUid = fields.ownerUid?.stringValue || '';
-        
+      const data = await firestoreQuery(env, collection, 'verificado', 'EQUAL', { booleanValue: true });
+      for (const doc of data) {
+        const slug = doc.slug || doc.id;
+        const ownerUid = doc.ownerUid || '';
+
         if (!ownerUid) {
           results.push({ slug, status: 'skipped', reason: 'no ownerUid' });
           continue;

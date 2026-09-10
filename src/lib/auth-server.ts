@@ -16,8 +16,14 @@ export async function getAuthUser(request: Request, apiKey: string): Promise<{ u
     return { user: null, error: 'no_token_found' };
   }
 
+  // Astro .env values are available at build time; local Cloudflare bindings
+  // only expose .dev.vars. Reuse the configured public Auth key when the
+  // separate runtime FIREBASE_API_KEY binding is absent.
+  const resolvedApiKey = apiKey || import.meta.env?.PUBLIC_FIREBASE_API_KEY || '';
+  if (!resolvedApiKey) return { user: null, error: 'missing_firebase_api_key' };
+
   try {
-    const resp = await fetch(`${FIREBASE_API_URL}?key=${apiKey}`, {
+    const resp = await fetch(`${FIREBASE_API_URL}?key=${encodeURIComponent(resolvedApiKey)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ idToken: token }),

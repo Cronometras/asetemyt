@@ -1,23 +1,28 @@
 // Server-side admin helpers
-// Admin status is stored in Firestore collection: admins_asetemyt/{email}
+// Verified bootstrap owners are authorized by server configuration.
+// Other roles live in admins_asetemyt/{email}: D1 when DB is bound, Firestore otherwise.
 // with fields: { uid, email, role: 'admin', createdAt }
 
 import { firestoreGet } from './firestore-rest';
 import { getCached } from './cache';
 
-// Admin role changes extremely rarely (a few times a year at most), so
-// we cache the per-email admin lookup for a long time. This is critical
-// because Firestore Spark quota (50K reads/day) is shared with the rest
-// of the app — without this cache, EVERY admin request costs a Firestore
-// read, and when quota is exhausted the silent catch below would 403
-// every admin action even though the user is legitimately an admin.
+// Legacy Firestore deployments cache role checks; D1 reads bypass KV.
 const ADMIN_ROLE_CACHE_TTL = 3600; // 1h
-const adminRoleCacheKey = (email: string) => `cache:admin:role:${email.toLowerCase()}:v1`;
+const adminRoleCacheKey = (email: string) => `cache:admin:role:${email.toLowerCase()}:v2`;
+
+// The same owner already authorized by ensure-admin. A verified bootstrap
+// identity can recover access without a Firestore read/write during an outage.
+export function isBootstrapAdmin(env: any, user: any): boolean {
+  const emails = String(env.BOOTSTRAP_ADMIN_EMAILS ?? 'micaot@gmail.com')
+    .split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
+  return user?.emailVerified === true && emails.includes(user.email?.toLowerCase());
+}
 
 export async function isAdmin(env: any, user: any): Promise<boolean> {
   if (!user) return false;
   const email = user.email?.toLowerCase();
   if (!email) return false;
+  if (isBootstrapAdmin(env, user)) return true;
 
   try {
     return await getCached(

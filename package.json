@@ -8,7 +8,11 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "predev": "wrangler d1 migrations apply DB --local",
+    "prestart": "wrangler d1 migrations apply DB --local",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "test:admin": "node --test scripts/admin-regression.test.mjs scripts/d1-admin.test.mjs scripts/d1-worker.test.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.13",

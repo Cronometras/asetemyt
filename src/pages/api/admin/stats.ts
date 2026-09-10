@@ -4,51 +4,62 @@ import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
 import { firestoreListAll, firestoreQuery } from '../../../lib/firestore-rest';
 import { getCached } from '../../../lib/cache';
+import { getDB, listConsultores, listSoftware } from '../../../lib/d1';
 
 const ADMIN_CACHE_TTL = 60;
-const ADMIN_CACHE_KEY_STATS = 'cache:admin:stats:v1';
+const ADMIN_CACHE_KEY_STATS = 'cache:admin:stats:v2';
 
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
   const apiKey = env.FIREBASE_API_KEY || '';
   const { user } = await getAuthUser(request, apiKey);
-  if (!user || !(await isAdmin(env, user))) {
+  if (!user) {
     return new Response(JSON.stringify({ error: 'Acceso denegado' }), { status: 403 });
   }
 
   try {
+    if (!(await isAdmin(env, user))) {
+      return Response.json({ error: 'Acceso denegado' }, { status: 403 });
+    }
     const data = await getCached(
       env,
       ADMIN_CACHE_KEY_STATS,
       async () => {
+        const unavailable: string[] = [];
+        const optional = async (name: string, read: () => Promise<any[]>) => {
+          try { return await read(); }
+          catch (error) {
+            console.error(`Admin stats: ${name} unavailable`, error);
+            unavailable.push(name);
+            return null;
+          }
+        };
         // Fetch all data in parallel
         const [
           consultores,
           software,
-          pendingClaims,
           leads,
           subscriptions,
           // Recent activity: last 5 claims (any status)
           recentClaims,
         ] = await Promise.all([
-          firestoreListAll(env, 'directorio_consultores_asetemyt'),
-          firestoreListAll(env, 'directorio_software_asetemyt'),
-          firestoreQuery(env, 'claims_asetemyt', 'estado', 'EQUAL', { stringValue: 'pending' }),
-          firestoreListAll(env, 'leads_asetemyt'),
-          firestoreQuery(env, 'subscriptions_asetemyt', 'status', 'EQUAL', { stringValue: 'active' }),
-          firestoreListAll(env, 'claims_asetemyt'),
+          env.DB ? listConsultores(getDB(locals)) : firestoreListAll(env, 'directorio_consultores_asetemyt'),
+          env.DB ? listSoftware(getDB(locals)) : firestoreListAll(env, 'directorio_software_asetemyt'),
+          optional('leads', () => firestoreListAll(env, 'leads_asetemyt')),
+          optional('subscriptions', () => firestoreQuery(env, 'subscriptions_asetemyt', 'status', 'EQUAL', { stringValue: 'active' })),
+          optional('claims', () => firestoreListAll(env, 'claims_asetemyt')),
         ]);
 
         // Lead stats
-        const newLeads = leads.filter((l: any) => l.status === 'new').length;
-        const totalLeads = leads.length;
-        const contactedLeads = leads.filter((l: any) => l.status === 'contacted' || l.status === 'closed').length;
+        const newLeads = leads?.filter((l: any) => l.status === 'new').length ?? null;
+        const totalLeads = leads?.length ?? null;
+        const contactedLeads = leads?.filter((l: any) => l.status === 'contacted' || l.status === 'closed').length ?? null;
 
         // Subscription stats
-        const activeSubs = subscriptions.length;
+        const activeSubs = subscriptions?.length ?? null;
 
         // Recent activity — last 5 claims sorted by date
-        const sortedClaims = recentClaims
+        const sortedClaims = (recentClaims || [])
           .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
           .slice(0, 5);
 
@@ -67,14 +78,19 @@ export const GET: APIRoute = async ({ request, locals }) => {
         }
 
         return {
+          storage: env.DB ? 'd1' : 'firestore',
+          legacyPrivateDataImported: env.DB
+            ? (await env.DB.prepare("SELECT value FROM app_migration_state WHERE name = 'legacy_private_data_imported'").first())?.value === 'true'
+            : true,
+          unavailable,
           totals: {
             consultores: consultores.length,
             software: software.length,
             total: consultores.length + software.length,
           },
           claims: {
-            pending: pendingClaims.length,
-            total: recentClaims.length,
+            pending: recentClaims?.filter((c: any) => c.estado === 'pending').length ?? null,
+            total: recentClaims?.length ?? null,
           },
           leads: {
             new: newLeads,

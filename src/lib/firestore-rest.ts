@@ -1,5 +1,15 @@
 // Google Cloud / Firestore REST API helpers for Cloudflare Workers
 // Replaces firebase-admin SDK which requires Node.js
+// Compatibility API: with a DB binding, ALL document operations use D1.
+// Firebase service-account credentials are only needed by legacy deployments.
+import { getDocument, listDocuments, queryDocuments, createDocument, updateDocument, deleteDocument, batchUpdateDocuments } from './d1-documents';
+
+function plainFields(fields: Record<string, any>): Record<string, any> {
+  const source = fields.mapValue?.fields || fields;
+  return Object.fromEntries(Object.entries(source).map(([key, value]) => [key,
+    value && typeof value === 'object' ? parseFirestoreValue(value) : value,
+  ]));
+}
 
 let cachedToken: { token: string; expiry: number } | null = null;
 
@@ -60,21 +70,31 @@ export async function getAccessToken(env: any): Promise<string> {
 
 const FIRESTORE_BASE = 'https://firestore.googleapis.com/v1';
 
+async function requireFirestoreResponse(resp: Response): Promise<void> {
+  if (resp.ok) return;
+  // Never turn quota/service failures into missing documents or empty lists.
+  // In particular, a failed admin lookup must not cache a false permission.
+  throw new Error(`Firestore no disponible (HTTP ${resp.status})${resp.status === 429 ? ': cuota agotada' : ''}`);
+}
+
 // Read a single document by path
 export async function firestoreGet(env: any, collection: string, docId: string): Promise<any | null> {
+  if (env.DB) return getDocument(env.DB, collection, docId);
   const token = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
   const resp = await fetch(
     `${FIRESTORE_BASE}/projects/${projectId}/databases/(default)/documents/${collection}/${docId}`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
-  if (!resp.ok) return null;
+  if (resp.status === 404) return null;
+  await requireFirestoreResponse(resp);
   const doc = await resp.json();
   return { id: doc.name.split('/').pop(), ...parseFirestoreDoc(doc) };
 }
 
 // Update specific fields of a document (PATCH)
 export async function firestoreUpdate(env: any, collection: string, docId: string, fields: Record<string, any>): Promise<boolean> {
+  if (env.DB) return updateDocument(env.DB, collection, docId, plainFields(fields));
   const token = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
   const fieldMask = Object.keys(fields).map((k) => `updateMask.fieldPaths=${k}`).join('&');
@@ -91,6 +111,7 @@ export async function firestoreUpdate(env: any, collection: string, docId: strin
 
 // Create a document with a specific ID
 export async function firestoreCreate(env: any, collection: string, docId: string, fields: Record<string, any>): Promise<boolean> {
+  if (env.DB) return createDocument(env.DB, collection, docId, plainFields(fields));
   const token = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
   const resp = await fetch(
@@ -116,6 +137,7 @@ export async function firestoreCreate(env: any, collection: string, docId: strin
 
 // Query documents with a single field filter
 export async function firestoreQuery(env: any, collection: string, field: string, op: string, value: any): Promise<any[]> {
+  if (env.DB) return queryDocuments(env.DB, collection, field, op, parseFirestoreValue(value));
   const token = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
   const resp = await fetch(
@@ -137,6 +159,7 @@ export async function firestoreQuery(env: any, collection: string, field: string
       }),
     }
   );
+  await requireFirestoreResponse(resp);
   const results = await resp.json();
   return results
     .filter((r: any) => r.document)
@@ -145,6 +168,7 @@ export async function firestoreQuery(env: any, collection: string, field: string
 
 // List ALL documents in a collection (no filter)
 export async function firestoreListAll(env: any, collection: string): Promise<any[]> {
+  if (env.DB) return listDocuments(env.DB, collection);
   const token = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
   const resp = await fetch(
@@ -159,6 +183,7 @@ export async function firestoreListAll(env: any, collection: string): Promise<an
       }),
     }
   );
+  await requireFirestoreResponse(resp);
   const results = await resp.json();
   return results
     .filter((r: any) => r.document)
@@ -183,7 +208,7 @@ function parseFirestoreValue(val: any): any {
   if (val.timestampValue !== undefined) return val.timestampValue;
   if (val.arrayValue) return (val.arrayValue.values || []).map(parseFirestoreValue);
   if (val.mapValue) return parseFirestoreDoc(val.mapValue);
-  if (val.nullValue) return null;
+  if ('nullValue' in val) return null;
   return val;
 }
 
@@ -207,6 +232,7 @@ export function toFirestoreValue(val: any): any {
 
 // Delete a document by path
 export async function firestoreDelete(env: any, collection: string, docId: string): Promise<boolean> {
+  if (env.DB) return deleteDocument(env.DB, collection, docId);
   const token = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
   const resp = await fetch(
@@ -224,6 +250,7 @@ export async function firestoreBatchUpdate(
   env: any,
   updates: Array<{ collection: string; docId: string; fields: Record<string, any> }>
 ): Promise<number> {
+  if (env.DB) return batchUpdateDocuments(env.DB, updates.map(u => ({ ...u, fields: plainFields(u.fields) })));
   const token = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID || 'asetemyt-ec205';
 

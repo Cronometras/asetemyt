@@ -54,7 +54,7 @@ import Layout from '../../layouts/Layout.astro';
         : '<div class="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3"><div class="w-3 h-3 bg-red-500 rounded-full"></div><span class="font-bold text-red-800">Servicios degradados</span></div>';
 
       const icons: Record<string, string> = {
-        firestore: '🗄️', stripe: '💳', resend: '📧'
+        d1: '🗄️', firestore: '🗄️', stripe: '💳', resend: '📧'
       };
       document.getElementById('serviceCards')!.innerHTML = Object.entries(d.services).map(([name, s]: [string, any]) => `
         <div class="bg-white rounded-xl shadow-md p-5 border ${s.ok ? 'border-green-300' : 'border-red-300'}">
