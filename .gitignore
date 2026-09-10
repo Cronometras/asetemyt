@@ -14,4 +14,7 @@ __pycache__/
 
 # Migration scripts and service-account files (one-shot operations)
 scripts/add-batch-*.mjs
+scripts/enrich-batch-*.mjs
+scripts/fix-camara-*.mjs
 scripts/.sa-*.json
+.wrangler/

@@ -1,65 +1,30 @@
 // GET /api/directorio/consultores
-// Public listing of all consultores/empresas. Cached 24h in KV.
-// Cache is invalidated by mutations (claim approval, admin edit, etc.)
-// via CACHE_KEYS.directorioConsultores.
+// Public listing of all consultores/empresas. Reads from Cloudflare D1.
 //
-// Query params (client-side filtering kept simple — all data in payload):
-//   - none for now; filtering happens in the browser to avoid cache fragmentation
+// 2026-09-10 migration: was Firestore REST API + 24h KV cache (cache-bust-by-version-bump).
+// Now: D1 mirror. Reads are unlimited in practice (5M rows/day free tier), no cache layer
+// to invalidate. Firestore remains the source of truth for writes (claim, admin edits,
+// ficha/update, anadir.astro). D1 sync happens out-of-band via the maintenance script
+// scripts/sync-firestore-to-d1.py — invoked manually after batches, or via Firestore
+// trigger if/when we wire it up.
+//
+// Country normalization: was done in-cache. D1 stores already-normalized values
+// (migration script applies the same map). If a row was inserted directly into D1
+// without going through the script, this normalization is a no-op pass-through.
 
 import type { APIRoute } from 'astro';
-import { firestoreListAll } from '../../../lib/firestore-rest';
-import { getCached, CACHE_KEYS } from '../../../lib/cache';
+import { getDB, listConsultores } from '../../../lib/d1';
 
 export const GET: APIRoute = async ({ locals }) => {
-  const env = (locals as any).runtime?.env || {};
-
   try {
-    const consultores = await getCached(
-      env,
-      CACHE_KEYS.directorioConsultores,
-      async () => {
-        const docs = await firestoreListAll(env, 'directorio_consultores_asetemyt');
-        // Normalize country names once at cache time (was done client-side before)
-        const countryMap: Record<string, string> = {
-          spain: 'España', españa: 'España',
-          germany: 'Alemania', alemania: 'Alemania',
-          mexico: 'México', 'méxico': 'México', méjico: 'México',
-          peru: 'Perú', 'perú': 'Perú',
-          usa: 'Estados Unidos', us: 'Estados Unidos',
-          'united states': 'Estados Unidos', 'estados unidos': 'Estados Unidos',
-          france: 'Francia', francia: 'Francia',
-          italy: 'Italia', italia: 'Italia',
-          portugal: 'Portugal',
-          brazil: 'Brasil', brasil: 'Brasil',
-          colombia: 'Colombia',
-          argentina: 'Argentina',
-          chile: 'Chile',
-          uk: 'Reino Unido', 'united kingdom': 'Reino Unido', 'reino unido': 'Reino Unido',
-          china: 'China',
-          japan: 'Japón', 'japón': 'Japón',
-          india: 'India',
-        };
-        return docs.map((e: any) => {
-          if (e.ubicacion?.pais) {
-            const norm = countryMap[e.ubicacion.pais.toLowerCase().trim()];
-            if (norm) e.ubicacion.pais = norm;
-          }
-          return e;
-        });
-      },
-      86400 // 24h TTL
-    );
-
+    const db = getDB(locals);
+    const consultores = await listConsultores(db);
     return new Response(JSON.stringify({ consultores, count: consultores.length }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        // Browser/proxy cache is INTENTIONALLY short (60s) — KV is the
-        // authoritative cache. Long max-age on a dynamic JSON endpoint
-        // poisoned every visitor's browser for an hour when KV was
-        // rebuilt with an empty array during the 429 incident.
-        // With a 60s browser cache, a hard refresh gets fresh data
-        // within a minute of the next KV repopulation.
+        // Short browser cache (60s) — D1 is fast enough that we don't need a long
+        // max-age. stale-while-revalidate keeps the page snappy under bursts.
         'Cache-Control': 'public, max-age=60, stale-while-revalidate=86400',
       },
     });
