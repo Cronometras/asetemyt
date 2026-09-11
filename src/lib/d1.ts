@@ -35,6 +35,53 @@ export async function listConsultores(db: D1Binding): Promise<any[]> {
 }
 
 /**
+ * Fetch consultores that have a given especialidad in their list.
+ * Used by /directorio/especialidad/[slug] SEO pages.
+ */
+export async function listConsultoresByEspecialidad(db: D1Binding, especialidad: string): Promise<any[]> {
+  const stmt = db.prepare(
+    "SELECT id, slug, nombre, tipo, lang, descripcion, especialidades, servicios, " +
+    "ubicacion, contacto, logo, verificado, destacado, created_at, updated_at " +
+    "FROM consultores " +
+    "WHERE LOWER(especialidades) LIKE ? " +
+    "ORDER BY destacado DESC, nombre ASC"
+  );
+  // Use JSON path to match exact element (LIKE '%"lean"%' would over-match nested quotes)
+  const pattern = `%"${especialidad}"%`;
+  const res = await stmt.bind(pattern).all();
+  return (res.results || []).map(rowToConsultor);
+}
+
+/**
+ * Fetch all unique especialidades with counts. Used by the SEO index page.
+ */
+export async function getEspecialidadesWithCounts(db: D1Binding): Promise<Array<{ slug: string; count: number; nombre: string }>> {
+  // Pull every row's especialidades JSON, parse it, and aggregate in JS
+  // (D1's JSON1 doesn't easily flatten arrays). With ~488 rows this is cheap.
+  const stmt = db.prepare(
+    "SELECT especialidades FROM consultores WHERE especialidades IS NOT NULL AND especialidades != '[]'"
+  );
+  const res = await stmt.all();
+  const counts: Record<string, number> = {};
+  for (const row of (res.results || []) as Array<{ especialidades: string }>) {
+    if (!row.especialidades) continue;
+    try {
+      const arr = JSON.parse(row.especialidades);
+      if (Array.isArray(arr)) {
+        for (const e of arr) {
+          if (typeof e === 'string' && e.trim()) {
+            counts[e] = (counts[e] || 0) + 1;
+          }
+        }
+      }
+    } catch {}
+  }
+  return Object.entries(counts)
+    .map(([slug, count]) => ({ slug, count, nombre: slug.replace(/-/g, ' ') }))
+    .sort((a, b) => b.count - a.count);
+}
+
+/**
  * Fetch consultores in a specific ciudad (case-insensitive, accent-insensitive match).
  * Used by /directorio/ciudad/[slug] SEO pages.
  * Returns matching consultores sorted by nombre.
