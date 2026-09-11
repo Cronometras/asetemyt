@@ -1,3 +1,5 @@
+import { firebaseConfig } from './firebase-config';
+
 // Server-side auth helpers for Cloudflare Pages Functions
 // Verifies Firebase ID tokens using the Firebase Auth REST API (accounts:lookup)
 
@@ -18,9 +20,9 @@ export async function getAuthUser(request: Request, apiKey: string): Promise<{ u
 
   // Resolve the Firebase Web API key. Order:
   //   1. Runtime env binding `FIREBASE_API_KEY` (set in CF Pages dashboard)
-  //   2. Build-time inlined `PUBLIC_FIREBASE_API_KEY` (Astro replaces import.meta.env at SSR build time)
+  //   2. Shared public Web configuration, identical to the browser (including its fallback).
   // Missing configuration is reported separately from an expired session.
-  const resolvedApiKey = apiKey || import.meta.env?.PUBLIC_FIREBASE_API_KEY || '';
+  const resolvedApiKey = apiKey?.trim() || firebaseConfig.apiKey;
   if (!resolvedApiKey) return { user: null, error: 'missing_firebase_api_key' };
 
   try {

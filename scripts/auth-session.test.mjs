@@ -67,3 +67,16 @@ test('auth diagnostics distinguish service configuration from an expired session
  }
  assert.equal(authFailureResponse('lookup_failed_500: INTERNAL_ERROR').status,503);
 });
+
+test('server without Firebase env bindings uses the same public fallback as the browser', async () => {
+ const {getAuthUser}=await server.ssrLoadModule('/src/lib/auth-server.ts');
+ const {firebaseConfig}=await server.ssrLoadModule('/src/lib/firebase-config.ts');
+ let requests=0;
+ globalThis.fetch=async (url)=>{
+  requests++;
+  assert.equal(new URL(url).searchParams.get('key'),firebaseConfig.apiKey);
+  return Response.json({users:[{localId:'test-owner',email:'micaot@gmail.com'}]});
+ };
+ const result=await getAuthUser(new Request('https://example.com/api/user/data',{headers:{Authorization:'Bearer test-token'}}),'');
+ assert.equal(result.user.uid,'test-owner');assert.equal(requests,1);
+});
