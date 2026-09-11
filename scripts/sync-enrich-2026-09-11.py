@@ -59,6 +59,8 @@ ENRICHED_SLUGS = [
     'laura-sanchez-ergonomia','pedro-gutierrez-oee','ignacio-sanchez-catalan',
     'maria-del-carmen-pena-serrano','ainhoa-ruiz-de-larramendi','juan-manuel-castillo-ruiz',
     'mikel-aldama-etxebarria',
+    # tanda 8: scraping batch 1+2 OI sector (4 reales scrapeados)
+    'productionteam-tpt','ergotime','technical-change-associates','know-industrial-engineering-factovare-llp',
 ]
 
 
