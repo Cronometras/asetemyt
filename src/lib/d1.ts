@@ -224,6 +224,12 @@ function rowToSoftware(r: any): any {
     id: r.id,
     slug: r.slug,
     nombre: r.nombre,
+    // Tag each row with seccion: 'software' so the home page counter and any
+    // other code that filters by `e.seccion === 'software'` works correctly.
+    // (The DB column 'tipo' is empty for many rows; the seccion tag is the
+    // authoritative discriminator between consultores and software in the
+    // home page stats rendering.)
+    seccion: 'software',
     tipo: r.tipo,
     lang: r.lang,
     descripcion: r.descripcion,
