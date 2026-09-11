@@ -1,0 +1,168 @@
+---
+export const prerender = false;
+import Layout from '../../../layouts/Layout.astro';
+import { getDB, listConsultoresByCity, getCitiesWithCounts, citySlug } from '../../../lib/d1';
+
+const db = getDB(Astro.locals);
+const slugParam = Astro.params.slug || '';
+const slugNorm = slugParam.toLowerCase();
+
+// Find matching ciudad: get all cities, find one whose normalized slug matches
+const cities = await getCitiesWithCounts(db);
+const match = cities.find(c => c.slug === slugNorm);
+
+if (!match) {
+  return Astro.redirect('/directorio/ciudades');
+}
+
+const consultores = await listConsultoresByCity(db, match.ciudad);
+const city = match.ciudad;
+
+// SEO meta
+const title = `Consultores y empresas de cronometraje industrial en ${city} | Asetemyt`;
+const description = `${consultores.length} profesionales del cronometraje industrial, ingeniería de métodos, OEE y Lean en ${city}. Directorio verificado de consultores y empresas.`;
+const canonical = `https://asetemyt.com/directorio/ciudad/${slugNorm}`;
+
+// JSON-LD BrowseList
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": `Consultores de cronometraje industrial en ${city}`,
+  "description": description,
+  "url": canonical,
+  "numberOfItems": consultores.length,
+  "itemListElement": consultores.slice(0, 20).map((c, i) => ({
+    "@type": "ListItem",
+    "position": i + 1,
+    "url": `https://asetemyt.com/directorio/${c.slug}`,
+    "name": c.nombre,
+  })),
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://asetemyt.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Directorio", "item": "https://asetemyt.com/directorio" },
+    { "@type": "ListItem", "position": 3, "name": "Ciudades", "item": "https://asetemyt.com/directorio/ciudades" },
+    { "@type": "ListItem", "position": 4, "name": city, "item": canonical },
+  ],
+};
+
+// Group consultores by tipo for sidebar
+const byTipo = {
+  empresa: consultores.filter(c => c.tipo === 'empresa'),
+  consultor: consultores.filter(c => c.tipo === 'consultor' || c.tipo === 'freelance'),
+};
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <script type="application/ld+json" set:html={JSON.stringify(collectionSchema)} slot="head" />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} slot="head" />
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Breadcrumb -->
+    <nav class="text-sm text-steel-500 mb-6" aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-1">
+        <li><a href="/" class="hover:text-steel-700">Inicio</a></li>
+        <li aria-hidden="true">›</li>
+        <li><a href="/directorio" class="hover:text-steel-700">Directorio</a></li>
+        <li aria-hidden="true">›</li>
+        <li><a href="/directorio/ciudades" class="hover:text-steel-700">Ciudades</a></li>
+        <li aria-hidden="true">›</li>
+        <li class="text-steel-900 font-medium">{city}</li>
+      </ol>
+    </nav>
+
+    <!-- Header -->
+    <header class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-bold text-steel-900 mb-3">
+        Consultores y empresas de cronometraje industrial en {city}
+      </h1>
+      <p class="text-lg text-steel-600">
+        {consultores.length} profesionales verificados en {city} especializados en ingeniería de métodos, OEE, Lean Manufacturing, MTM y mejora continua.
+      </p>
+    </header>
+
+    <!-- Filtros por tipo -->
+    {consultores.length > 0 && (
+      <div class="flex gap-2 mb-8 text-sm">
+        <span class="px-3 py-1 rounded-full bg-steel-100 text-steel-700">
+          Todos ({consultores.length})
+        </span>
+        {byTipo.empresa.length > 0 && (
+          <span class="px-3 py-1 rounded-full bg-blue-50 text-blue-700">
+            Empresas ({byTipo.empresa.length})
+          </span>
+        )}
+        {byTipo.consultor.length > 0 && (
+          <span class="px-3 py-1 rounded-full bg-green-50 text-green-700">
+            Consultores ({byTipo.consultor.length})
+          </span>
+        )}
+      </div>
+    )}
+
+    <!-- Listado -->
+    {consultores.length === 0 ? (
+      <div class="bg-steel-50 rounded-xl p-12 text-center">
+        <p class="text-steel-600 mb-4">No hay fichas registradas en {city} todavía.</p>
+        <a href="/anadir" class="inline-block px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700">
+          Añadir mi empresa
+        </a>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {consultores.map((c) => (
+          <a
+            href={`/directorio/${c.slug}`}
+            class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 block"
+          >
+            <div class="flex items-start gap-4 mb-4">
+              {c.logo ? (
+                <img src={c.logo} alt={`Logo ${c.nombre}`} class="w-14 h-14 object-contain rounded-lg bg-steel-50" loading="lazy" />
+              ) : (
+                <div class="w-14 h-14 bg-steel-100 rounded-lg flex items-center justify-center text-steel-400 text-xl font-bold">
+                  {c.nombre.charAt(0)}
+                </div>
+              )}
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg font-semibold text-steel-900 truncate" title={c.nombre}>
+                  {c.nombre}
+                </h2>
+                <span class={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full ${
+                  c.tipo === 'empresa' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                }`}>
+                  {c.tipo || 'consultor'}
+                </span>
+              </div>
+            </div>
+            {c.descripcion && (
+              <p class="text-sm text-steel-600 line-clamp-3 mb-3">{c.descripcion}</p>
+            )}
+            {c.especialidades && c.especialidades.length > 0 && (
+              <div class="flex flex-wrap gap-1">
+                {c.especialidades.slice(0, 3).map((e: string) => (
+                  <span class="text-xs px-2 py-0.5 bg-steel-100 text-steel-600 rounded">{e}</span>
+                ))}
+                {c.especialidades.length > 3 && (
+                  <span class="text-xs px-2 py-0.5 text-steel-500">+{c.especialidades.length - 3}</span>
+                )}
+              </div>
+            )}
+          </a>
+        ))}
+      </div>
+    )}
+
+    <!-- CTA inferior -->
+    <div class="mt-12 bg-gradient-to-r from-brand-50 to-brand-100 rounded-xl p-8 text-center">
+      <h3 class="text-xl font-semibold text-steel-900 mb-2">¿Eres profesional del cronometraje industrial en {city}?</h3>
+      <p class="text-steel-600 mb-4">Añade tu ficha al directorio y recibe consultas de empresas de tu zona.</p>
+      <a href="/anadir" class="inline-block px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">
+        Añadir mi empresa gratis
+      </a>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,75 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+import { getDB, getCitiesWithCounts } from '../../lib/d1';
+
+const db = getDB(Astro.locals);
+const cities = await getCitiesWithCounts(db);
+
+// Group cities by country for layout
+const byCountry = cities.reduce<Record<string, typeof cities>>((acc, c) => {
+  // Pull country from a sample or default to España; the page won't show country
+  // since we're grouping by city which already carries locale info.
+  // For now group all under 'España' since most are domestic.
+  const key = 'España';
+  if (!acc[key]) acc[key] = [];
+  acc[key].push(c);
+  return acc;
+}, {});
+
+const title = 'Directorio por ciudades | Asetemyt';
+const description = `Explora ${cities.length} ciudades con profesionales del cronometraje industrial, ingeniería de métodos y Lean Manufacturing en España.`;
+const canonical = 'https://asetemyt.com/directorio/ciudades';
+---
+
+<Layout title={title} description={description} canonical={canonical}>
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <nav class="text-sm text-steel-500 mb-6" aria-label="Breadcrumb">
+      <ol class="flex flex-wrap items-center gap-1">
+        <li><a href="/" class="hover:text-steel-700">Inicio</a></li>
+        <li aria-hidden="true">›</li>
+        <li><a href="/directorio" class="hover:text-steel-700">Directorio</a></li>
+        <li aria-hidden="true">›</li>
+        <li class="text-steel-900 font-medium">Ciudades</li>
+      </ol>
+    </nav>
+
+    <header class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-bold text-steel-900 mb-3">
+        Directorio por ciudades
+      </h1>
+      <p class="text-lg text-steel-600">
+        {cities.length} ciudades con profesionales del cronometraje industrial, MTM, OEE, Lean y mejora continua.
+      </p>
+    </header>
+
+    {Object.entries(byCountry).map(([country, list]) => (
+      <section class="mb-12">
+        <h2 class="text-xl font-semibold text-steel-800 mb-4">{country}</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {list.map((c) => (
+            <a
+              href={`/directorio/ciudad/${c.slug}`}
+              class="block p-4 bg-white rounded-lg border border-steel-200 hover:border-brand-500 hover:shadow-md transition-all"
+            >
+              <div class="font-medium text-steel-900 truncate" title={c.ciudad}>
+                {c.ciudad}
+              </div>
+              <div class="text-sm text-steel-500 mt-1">
+                {c.count} {c.count === 1 ? 'profesional' : 'profesionales'}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <div class="mt-8 bg-gradient-to-r from-brand-50 to-brand-100 rounded-xl p-8 text-center">
+      <h3 class="text-xl font-semibold text-steel-900 mb-2">¿No encuentras tu ciudad?</h3>
+      <p class="text-steel-600 mb-4">Añade tu ficha y aparecerá automáticamente en tu ciudad y provincia.</p>
+      <a href="/anadir" class="inline-block px-6 py-3 bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-medium">
+        Añadir mi empresa
+      </a>
+    </div>
+  </section>
+</Layout>

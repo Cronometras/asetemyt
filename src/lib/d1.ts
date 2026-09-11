@@ -35,6 +35,65 @@ export async function listConsultores(db: D1Binding): Promise<any[]> {
 }
 
 /**
+ * Fetch consultores in a specific ciudad (case-insensitive, accent-insensitive match).
+ * Used by /directorio/ciudad/[slug] SEO pages.
+ * Returns matching consultores sorted by nombre.
+ */
+export async function listConsultoresByCity(db: D1Binding, ciudad: string): Promise<any[]> {
+  const needle = ciudad.toLowerCase();
+  const norm = accentStrip(needle);
+  // Match either exact city, accent-stripped city, or the same city with different case
+  const stmt = db.prepare(
+    "SELECT id, slug, nombre, tipo, lang, descripcion, especialidades, servicios, " +
+    "ubicacion, contacto, logo, verificado, destacado, created_at, updated_at " +
+    "FROM consultores " +
+    "WHERE LOWER(IFNULL(json_extract(ubicacion, '$.ciudad'), '')) = ? " +
+    "   OR LOWER(IFNULL(json_extract(ubicacion, '$.ciudad'), '')) = ? " +
+    "ORDER BY nombre ASC"
+  );
+  const res = await stmt.bind(needle, norm).all();
+  return (res.results || []).map(rowToConsultor);
+}
+
+/**
+ * Fetch unique (ciudad, count) pairs from D1. Used by the SEO index page.
+ */
+export async function getCitiesWithCounts(db: D1Binding): Promise<Array<{ ciudad: string; count: number; slug: string }>> {
+  const stmt = db.prepare(
+    "SELECT json_extract(ubicacion, '$.ciudad') AS ciudad, COUNT(*) AS count " +
+    "FROM consultores " +
+    "WHERE json_extract(ubicacion, '$.ciudad') IS NOT NULL " +
+    "GROUP BY ciudad " +
+    "ORDER BY count DESC"
+  );
+  const res = await stmt.all();
+  const rows = (res.results || []) as Array<{ ciudad: string; count: number }>;
+  return rows
+    .filter(r => r.ciudad && r.ciudad.trim())
+    .map(r => ({
+      ciudad: r.ciudad,
+      count: r.count,
+      slug: citySlug(r.ciudad),
+    }));
+}
+
+function accentStrip(s: string): string {
+  return (s || '')
+    .toLowerCase()
+    .replace(/[áàäâ]/g, 'a')
+    .replace(/[éèëê]/g, 'e')
+    .replace(/[íìïî]/g, 'i')
+    .replace(/[óòöô]/g, 'o')
+    .replace(/[úùüû]/g, 'u')
+    .replace(/ñ/g, 'n');
+}
+
+export function citySlug(city: string): string {
+  const s = accentStrip(city);
+  return s.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+/**
  * Fetch a single consultor by slug. Returns the first match (Firestore may have multiple
  * docs with same slug — see migration 0001 commentary). Returns null if not found.
  */
