@@ -43,6 +43,8 @@ ENRICHED_SLUGS = [
     'timingsense','nadico','ayo-consulting',
     # tanda 5
     'daniel-penn','pa-consulting','camara-badajoz-f','kaizen-integral','tmg-consulting',
+    # tanda 6 (final, ad-hoc)
+    'movint','proyecta79',
 ]
 
 

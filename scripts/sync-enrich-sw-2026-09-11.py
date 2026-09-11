@@ -23,6 +23,21 @@ ENRICHED_SLUGS = [
     'iise-institute-of-industrial-engineers','fanuc-robotics',
     'keyence-inspection-systems','upkeep-cmms','celonis-process-mining',
     'ergoiq-intoware','kuka-robotics',
+    # sw tanda 2
+    'renishaw-metrology','prodcont','ergofellow-human-solutions',
+    'erpnext-manufacturing','aws-iot-sitewise','6sigmastudy-smec','qualio-eqms',
+    'ptc-windchill','litmus-edge','abbyy-timeline','asprova-aps','ibm-maximo',
+    'maintenance-connection-accruent','uipath-process-mining','thingworx-ptc',
+    'emulate3d','qpr-processanalyzer','eci-m1-erp','fulcrum-pro','aveva','ibm-process-mining',
+    # sw tanda 3
+    'catia-dassault','aris-process-mining-software-ag','creo-ptc',
+    'humancad-nexgen-ergonomics','flexsche-aps','universal-robots-cobots',
+    'kinaxis-rapidresponse','honeywell-forge','schedlyzer-lillyworks',
+    'mrpeasy','limble-cmms','fishbowl-manufacturing','critical-manufacturing-mes',
+    # sw tanda 4
+    'coursera-lean-six-sigma','katana-mrp','the-lean-six-sigma-company',
+    'realwear','rockwell-automation','azure-iot-central','sepasoft-mes-suite',
+    'odoo-manufacturing','oracle-advanced-supply-chain-planning','jobboss-eci','zebra-technologies',
 ]
 
 
