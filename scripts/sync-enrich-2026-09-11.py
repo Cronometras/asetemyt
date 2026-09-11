@@ -45,6 +45,20 @@ ENRICHED_SLUGS = [
     'daniel-penn','pa-consulting','camara-badajoz-f','kaizen-integral','tmg-consulting',
     # tanda 6 (final, ad-hoc)
     'movint','proyecta79',
+    # tanda 7: Class 2 freelancers with real names (honest descriptions, no LinkedIn guessed)
+    'rosa-maria-gutierrez-alonso','maria-del-carmen-rico-berenguer','meritxell-bosch-clua',
+    'jorge-ruiz-consultor-oee','miguel-angel-herrero-procesos','lucia-pons-villalonga',
+    'antonio-ferrandez-martinez','antonio-rivas-molina','marta-iborra-santolaria',
+    'francisco-javier-artieda-aliaga','ricardo-gomez-peiro','koldo-etxeberria-lekuona',
+    'carlos-domenech-ferrer','javier-calatayud-ortuno','nuria-ferre-ballester',
+    'miguel-angel-martin-consultor-lean','isabel-navarro-campos','anna-maria-torra-pla',
+    'pilar-ruiz-lafuente','juan-carlos-herrero-velasco','francisco-javier-torres-vega',
+    'pau-vidal-farre','marta-sole-castellvi','andreu-mascaro-ferragut',
+    'carlos-mendez-lean','elena-delgado-martinez','lucia-fernandez-moreno',
+    'rafael-gomez-pena','javier-ruiz-simulacion','jordi-pujol-masip',
+    'laura-sanchez-ergonomia','pedro-gutierrez-oee','ignacio-sanchez-catalan',
+    'maria-del-carmen-pena-serrano','ainhoa-ruiz-de-larramendi','juan-manuel-castillo-ruiz',
+    'mikel-aldama-etxebarria',
 ]
 
 
