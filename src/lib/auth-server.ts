@@ -19,8 +19,7 @@ export async function getAuthUser(request: Request, apiKey: string): Promise<{ u
   // Resolve the Firebase Web API key. Order:
   //   1. Runtime env binding `FIREBASE_API_KEY` (set in CF Pages dashboard)
   //   2. Build-time inlined `PUBLIC_FIREBASE_API_KEY` (Astro replaces import.meta.env at SSR build time)
-  // If neither is configured, the caller will get a 401 — that's the right signal
-  // because it means the deploy is misconfigured (we have no safe default key to use).
+  // Missing configuration is reported separately from an expired session.
   const resolvedApiKey = apiKey || import.meta.env?.PUBLIC_FIREBASE_API_KEY || '';
   if (!resolvedApiKey) return { user: null, error: 'missing_firebase_api_key' };
 
@@ -32,8 +31,9 @@ export async function getAuthUser(request: Request, apiKey: string): Promise<{ u
     });
 
     if (!resp.ok) {
-      const errBody = await resp.text().catch(() => '');
-      return { user: null, error: `lookup_failed_${resp.status}: ${errBody.slice(0, 200)}` };
+      const body = await resp.json().catch(() => null);
+      const code = body?.error?.message || 'UNKNOWN';
+      return { user: null, error: `lookup_failed_${resp.status}: ${code}` };
     }
 
     const data = await resp.json();
@@ -54,6 +54,21 @@ export async function getAuthUser(request: Request, apiKey: string): Promise<{ u
   } catch (err: any) {
     return { user: null, error: 'lookup_error: ' + (err.message || err) };
   }
+}
+
+/** Keep server failures distinct from login failures, with no credentials in responses. */
+export function authFailureResponse(error?: string): Response {
+  const configuration = error === 'missing_firebase_api_key'
+    || /API_KEY|API key|PROJECT_NOT_FOUND|CONFIGURATION_NOT_FOUND|lookup_failed_403/.test(error || '');
+  const unavailable = configuration || /lookup_error|lookup_failed_(429|5\d\d)/.test(error || '');
+  return Response.json({
+    error: configuration
+      ? 'El servidor no tiene una configuración válida de Firebase para validar tu sesión.'
+      : unavailable
+        ? 'No se puede validar tu sesión temporalmente. Reinténtalo más tarde.'
+        : 'Tu sesión no es válida o ha caducado. Vuelve a iniciar sesión.',
+    code: configuration ? 'auth_configuration_error' : unavailable ? 'auth_service_unavailable' : 'session_invalid',
+  }, { status: unavailable ? 503 : 401, headers: { 'Cache-Control': 'no-store' } });
 }
 
 // Get auth user or throw 401

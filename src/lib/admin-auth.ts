@@ -23,15 +23,25 @@ export async function initAdmin(): Promise<{
         const data = await res.json();
         if (data.admin) {
           // Cookie-based API caller
-          const cookieApi = (url: string, options: RequestInit = {}) => {
+          const cookieApi = async (url: string, options: RequestInit = {}) => {
             const headers = new Headers(options.headers);
-            headers.set('Authorization', `Bearer ${token}`);
+            const currentToken = document.cookie.match(/(?:^|;\s*)asetemyt_token=([^;]+)/)?.[1] || token;
+            headers.set('Authorization', `Bearer ${currentToken}`);
+            const response = await fetch(url, { ...options, headers });
+            if (response.status !== 401) return response;
+            const { auth } = await import('./auth');
+            await auth.authStateReady();
+            if (!auth.currentUser) return response;
+            const refreshedToken = await auth.currentUser.getIdToken(true);
+            document.cookie = `asetemyt_token=${refreshedToken}; path=/; max-age=3600; SameSite=Lax`;
+            headers.set('Authorization', `Bearer ${refreshedToken}`);
             return fetch(url, { ...options, headers });
           };
           return { ok: true, api: cookieApi };
         }
       } else if (res.status >= 500) {
-        return { ok: false, error: 'No se pudo comprobar el acceso. El servidor no está disponible temporalmente.', api: window.fetch.bind(window) };
+        const data = await res.json().catch(() => null);
+        return { ok: false, error: data?.error || 'No se pudo comprobar el acceso. El servidor no está disponible temporalmente.', api: window.fetch.bind(window) };
       }
     } catch { checkError = 'No se pudo conectar con el servidor para comprobar el acceso.'; }
   }

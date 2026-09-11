@@ -10,6 +10,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { app } from './firebase';
+import { fetchWithUserToken } from './auth-fetch';
 
 // Lazy auth — getAuth(app) is deferred to first property access.
 // This prevents auth/invalid-api-key crashes on Cloudflare Pages
@@ -96,10 +97,7 @@ export async function logOut() {
 export async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const user = auth.currentUser;
   if (!user) throw new Error('No authenticated user');
-  const token = await user.getIdToken();
-  const headers = new Headers(options.headers);
-  headers.set('Authorization', `Bearer ${token}`);
-  return fetch(url, { ...options, headers });
+  return fetchWithUserToken(user, url, options);
 }
 
 export { onAuthStateChanged };

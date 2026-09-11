@@ -42,11 +42,11 @@ test('session validation uses the configured public key when the runtime binding
   assert.equal(calls[0].url.endsWith('?key=test-public-key'), true);
 });
 
-test('bootstrap access requires a verified, exactly allowed email and never reads Firestore', async () => {
+test('bootstrap access follows the configured email policy from GitHub and never reads Firestore', async () => {
   mockFetch();
   assert.equal(await isAdmin(env, owner), true);
   assert.equal(calls.length, 0);
-  assert.equal(isBootstrapAdmin(env, { ...owner, emailVerified: false }), false);
+  assert.equal(isBootstrapAdmin(env, { ...owner, emailVerified: false }), true);
   assert.equal(isBootstrapAdmin(env, { ...owner, email: 'attacker@gmail.com' }), false);
   assert.equal(isBootstrapAdmin({ BOOTSTRAP_ADMIN_EMAILS: '' }, owner), false);
   assert.equal(isBootstrapAdmin({ BOOTSTRAP_ADMIN_EMAILS: ' ADMIN@example.com ' }, { email: 'admin@example.com', emailVerified: true }), true);

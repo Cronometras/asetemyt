@@ -1,6 +1,6 @@
 // GET /api/user/data — Get current user's subscriptions and claimed fichas
 import type { APIRoute } from 'astro';
-import { getAuthUser } from '../../../lib/auth-server';
+import { getAuthUser, authFailureResponse } from '../../../lib/auth-server';
 import { firestoreGet, firestoreCreate, firestoreUpdate, firestoreQuery, findListingBySlug } from '../../../lib/firestore-rest';
 
 export const GET: APIRoute = async ({ request, locals }) => {
@@ -8,7 +8,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const apiKey = env.FIREBASE_API_KEY || '';
 
   const { user, error: authError } = await getAuthUser(request, apiKey);
-  if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
+  if (!user) return authFailureResponse(authError);
 
   try {
     // 1. Get user doc + subscriptions in parallel

@@ -126,11 +126,22 @@ import Layout from '../layouts/Layout.astro';
     try {
       const adminResp = await authFetch('/api/admin/status');
       const adminData = await adminResp.json();
+      if (!adminResp.ok) {
+        dashboard.classList.remove('hidden');
+        fichasList.textContent = adminData.error || 'No se pudo validar tu sesión.';
+        subInfo.textContent = 'No se ha podido comprobar tu suscripción.';
+        return;
+      }
       if (adminData.admin) {
         window.location.href = '/admin';
         return; // Stop — redirect in progress
       }
-    } catch {}
+    } catch {
+      dashboard.classList.remove('hidden');
+      fichasList.textContent = 'No se pudo validar tu sesión. Vuelve a iniciar sesión o reinténtalo más tarde.';
+      subInfo.textContent = 'No se ha podido comprobar tu suscripción.';
+      return;
+    }
 
     // Not an admin — show regular dashboard
     dashboard.classList.remove('hidden');
@@ -141,7 +152,7 @@ import Layout from '../layouts/Layout.astro';
       if (!resp.ok) {
         const errData = await resp.json().catch(() => null);
         fichasList.innerHTML = `<p class="text-red-500 text-sm">Error cargando fichas: ${errData?.error || resp.status}</p>`;
-        subInfo.innerHTML = '<p class="text-steel-500 text-sm">No tienes suscripción activa.</p>';
+        subInfo.innerHTML = '<p class="text-steel-500 text-sm">No se ha podido comprobar tu suscripción.</p>';
         return;
       }
 
