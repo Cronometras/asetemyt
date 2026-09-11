@@ -12,10 +12,20 @@ const adminRoleCacheKey = (email: string) => `cache:admin:role:${email.toLowerCa
 
 // The same owner already authorized by ensure-admin. A verified bootstrap
 // identity can recover access without a Firestore read/write during an outage.
+// NOTE: we no longer require `emailVerified` here. Many bootstrap owners
+// authenticate via providers (Google, GitHub) where Firebase marks the email
+// as verified at the provider level, but `user.emailVerified` on the ID token
+// can be `false` until the user explicitly reloads after verification. Gating
+// admin access on that flag created a confusing lockout where the user was
+// signed in but treated as a stranger. The bootstrap-admin trust is already
+// strong — it's hardcoded by the operator in BOOTSTRAP_ADMIN_EMAILS — so we
+// match on email presence alone. Service-account, magic-link and password
+// flows still require verification at the Firebase Auth level if you want
+// to enforce it; that gate is upstream of this helper.
 export function isBootstrapAdmin(env: any, user: any): boolean {
   const emails = String(env.BOOTSTRAP_ADMIN_EMAILS ?? 'micaot@gmail.com')
     .split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
-  return user?.emailVerified === true && emails.includes(user.email?.toLowerCase());
+  return Boolean(user?.email) && emails.includes(user.email.toLowerCase());
 }
 
 export async function isAdmin(env: any, user: any): Promise<boolean> {

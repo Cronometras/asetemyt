@@ -16,9 +16,11 @@ export async function getAuthUser(request: Request, apiKey: string): Promise<{ u
     return { user: null, error: 'no_token_found' };
   }
 
-  // Astro .env values are available at build time; local Cloudflare bindings
-  // only expose .dev.vars. Reuse the configured public Auth key when the
-  // separate runtime FIREBASE_API_KEY binding is absent.
+  // Resolve the Firebase Web API key. Order:
+  //   1. Runtime env binding `FIREBASE_API_KEY` (set in CF Pages dashboard)
+  //   2. Build-time inlined `PUBLIC_FIREBASE_API_KEY` (Astro replaces import.meta.env at SSR build time)
+  // If neither is configured, the caller will get a 401 — that's the right signal
+  // because it means the deploy is misconfigured (we have no safe default key to use).
   const resolvedApiKey = apiKey || import.meta.env?.PUBLIC_FIREBASE_API_KEY || '';
   if (!resolvedApiKey) return { user: null, error: 'missing_firebase_api_key' };
 
@@ -30,7 +32,8 @@ export async function getAuthUser(request: Request, apiKey: string): Promise<{ u
     });
 
     if (!resp.ok) {
-      return { user: null, error: `lookup_failed_${resp.status}` };
+      const errBody = await resp.text().catch(() => '');
+      return { user: null, error: `lookup_failed_${resp.status}: ${errBody.slice(0, 200)}` };
     }
 
     const data = await resp.json();
