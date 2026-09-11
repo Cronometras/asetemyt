@@ -61,6 +61,8 @@ ENRICHED_SLUGS = [
     'mikel-aldama-etxebarria',
     # tanda 8: scraping batch 1+2 OI sector (4 reales scrapeados)
     'productionteam-tpt','ergotime','technical-change-associates','know-industrial-engineering-factovare-llp',
+    # tanda 9: scraping batch 3-6 OI sector (3 reales scrapeados)
+    'caprock-global-solutions','uk-mtm-methods-time-measurement','eficindu',
 ]
 
 
