@@ -1,0 +1,93 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Criterios de Inclusión" description="Criterios editoriales y técnicos para incluir software, consultoras y profesionales en el directorio ASETEMYT.">
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <nav class="mb-4 text-sm text-steel-500">
+      <a href="/" class="hover:text-accent-600">Inicio</a>
+      <span class="mx-2">/</span>
+      <span class="text-steel-700">Criterios de Inclusión</span>
+    </nav>
+
+    <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">Criterios de Inclusión</h1>
+    <p class="text-steel-500 text-lg mb-8">Cómo se decide qué herramientas, profesionales y consultoras forman parte de ASETEMYT.</p>
+
+    <div class="prose prose-steel max-w-none">
+      <h2 class="text-2xl font-bold text-primary-800 mt-8 mb-4">1. Criterios para software</h2>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        Para que un software sea incluido en el directorio de ASETEMYT debe
+        cumplir, al menos, los siguientes criterios:
+      </p>
+      <ul class="list-disc pl-6 text-steel-600 mb-4 space-y-2">
+        <li>Estar orientado a cronometraje industrial, métodos y tiempos, MTM, MOST, OEE, balanceo de líneas o Lean Manufacturing.</li>
+        <li>Estar disponible comercialmente (incluye versiones gratuitas, freemium y SaaS).</li>
+        <li>Tener presencia web verificable con información de la empresa detrás del producto.</li>
+        <li>Ofrecer documentación técnica accesible (manual, ayuda, web del fabricante).</li>
+        <li>Estar operativo y accesible a usuarios en el mercado de habla hispana (idioma, soporte, facturación).</li>
+      </ul>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        No se incluye software que se encuentre en estado alpha, beta privado
+        o sin presencia pública verificable.
+      </p>
+
+      <h2 class="text-2xl font-bold text-primary-800 mt-8 mb-4">2. Criterios para profesionales y consultoras</h2>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        Para que un profesional o consultora sea incluido en el directorio debe:
+      </p>
+      <ul class="list-disc pl-6 text-steel-600 mb-4 space-y-2">
+        <li>Prestar servicios reales y verificables en cronometraje industrial, métodos y tiempos, o disciplinas relacionadas.</li>
+        <li>Tener experiencia acreditable (proyectos, certificaciones, publicaciones, formación específica).</li>
+        <li>Identificarse con nombre o razón social verificables.</li>
+        <li>Proporcionar datos de contacto profesionales (email corporativo, web o LinkedIn).</li>
+        <li>Estar dispuesto a figurar públicamente como proveedor de estos servicios.</li>
+      </ul>
+
+      <h2 class="text-2xl font-bold text-primary-800 mt-8 mb-4">3. Proceso de revisión</h2>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        Las fichas se envían a través del formulario de alta. ASETEMYT revisa
+        manualmente cada propuesta antes de publicarla. El plazo habitual de
+        revisión es de 5 a 10 días laborables.
+      </p>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        Si la ficha cumple los criterios, se publica en el directorio. Si no
+        los cumple, se notifica al solicitante con la razón.
+      </p>
+
+      <h2 class="text-2xl font-bold text-primary-800 mt-8 mb-4">4. Comparador de software</h2>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        El comparador de ASETEMYT muestra las características de cada software
+        según la información publicada por el propio proveedor o, en su
+        defecto, según la documentación técnica accesible. Las características
+        se actualizan periódicamente.
+      </p>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        La presencia en el comparador no implica una recomendación de ASETEMYT.
+        El usuario debe evaluar cada herramienta según sus necesidades y
+        contexto.
+      </p>
+
+      <h2 class="text-2xl font-bold text-primary-800 mt-8 mb-4">5. Verificación y distintivo</h2>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        Las fichas marcadas como "Verificadas" corresponden a empresas o
+        profesionales que han confirmado datos de contacto y servicios. La
+        verificación no implica un aval técnico: solo acredita que los datos
+        publicados son correctos a fecha de verificación.
+      </p>
+
+      <h2 class="text-2xl font-bold text-primary-800 mt-8 mb-4">6. Modificaciones y bajas</h2>
+      <p class="text-steel-600 leading-relaxed mb-4">
+        Cualquier empresa o profesional incluido puede solicitar la
+        modificación o baja de su ficha a través del formulario de contacto.
+      </p>
+    </div>
+
+    <div class="mt-12">
+      <a href="/politica-editorial" class="inline-flex items-center text-accent-600 hover:text-accent-700 font-medium">
+        Ver política editorial completa
+        <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </section>
+</Layout>

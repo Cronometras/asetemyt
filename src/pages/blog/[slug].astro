@@ -59,6 +59,11 @@ const bodyHtml = marked.parse(contentWithoutH1) as string;
 const canonicalUrl = `https://asetemyt.com/blog/${article.slug}`;
 const formattedDate = formatDate(article.publishedAt);
 
+// Disclosure automático: aparece cuando el artículo menciona proyectos del ecosistema.
+const hasAffiliateMention = /(cronometras\.com|worksamp\.com|induly\.com|\bcronometras\b|\bworksamp\b|\binduly\b)/i.test(
+  `${article.title || ''} ${article.excerpt || ''} ${article.content || ''}`
+);
+
 // JSON-LD BlogPosting (build-time, improves SEO)
 const blogPostingSchema = {
   '@context': 'https://schema.org',
@@ -147,6 +152,21 @@ const breadcrumbSchema = {
       )}
 
       <div class="prose prose-lg prose-slate max-w-none prose-headings:text-primary-800 prose-a:text-accent-600 prose-p:leading-relaxed prose-p:my-4 prose-li:my-1.5 prose-h2:mt-10 prose-h2:mb-3 prose-h3:mt-8 prose-h3:mb-2" set:html={bodyHtml} />
+
+      {hasAffiliateMention && (
+        <aside class="mt-10 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg text-sm">
+          <p class="text-steel-600">
+            <strong class="text-primary-800">Aviso editorial:</strong>
+            Este artículo menciona proyectos del ecosistema de ASETEMYT
+            (Cronometras, WorkSamp, Induly). La mención se realiza conforme
+            a la
+            <a href="/politica-editorial" class="text-accent-600 hover:underline font-medium">política editorial</a>
+            y los
+            <a href="/criterios-inclusion" class="text-accent-600 hover:underline font-medium">criterios de inclusión</a>
+            publicados.
+          </p>
+        </aside>
+      )}
 
       <footer class="mt-12 pt-8 border-t border-steel-200">
         <div class="mb-8">

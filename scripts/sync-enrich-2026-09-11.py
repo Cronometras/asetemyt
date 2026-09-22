@@ -63,6 +63,8 @@ ENRICHED_SLUGS = [
     'productionteam-tpt','ergotime','technical-change-associates','know-industrial-engineering-factovare-llp',
     # tanda 9: scraping batch 3-6 OI sector (3 reales scrapeados)
     'caprock-global-solutions','uk-mtm-methods-time-measurement','eficindu',
+    # tanda 10: scraping batch 3-6 borderline + web_search verification (3 reales)
+    'pmc','pmi-corp-india','shinten-consulting',
 ]
 
 
