@@ -1,5 +1,6 @@
 // POST /api/ficha/update — Update a claimed listing (only by owner)
 import type { APIRoute } from 'astro';
+import { validateListingUpdates } from '../../../lib/listing-validation';
 import { getAuthUser } from '../../../lib/auth-server';
 import { firestoreUpdate, toFirestoreValue, findListingBySlug } from '../../../lib/firestore-rest';
 
@@ -13,6 +14,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const { slug, updates } = await request.json();
   if (!slug || !updates) return new Response(JSON.stringify({ error: 'Datos incompletos' }), { status: 400 });
 
+  const validationError = validateListingUpdates(updates);
+  if (validationError) return Response.json({ error: validationError }, { status: 400 });
   // Find the document by slug in either collection
   const found = await findListingBySlug(env, slug);
   if (!found) return new Response(JSON.stringify({ error: 'Ficha no encontrada' }), { status: 404 });

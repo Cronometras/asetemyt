@@ -57,7 +57,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
         })
       );
       for (const found of results) {
-        if (!found) continue;
+        if (!found || found.listing.ownerUid !== user.user_id) continue;
         const slug = found.listing.slug || found.listing.id;
         fichasMap.set(slug, {
           id: found.listing.id,
@@ -70,7 +70,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     }
 
     // 3. Fallback: search by ownerUid for any fichas not in fichasReclamadas (backwards compat)
-    if (fichasMap.size === 0) {
+    {
       const [byUidC, byUidS] = await Promise.all([
         firestoreQuery(env, 'directorio_consultores_asetemyt', 'ownerUid', 'EQUAL', { stringValue: user.user_id }),
         firestoreQuery(env, 'directorio_software_asetemyt', 'ownerUid', 'EQUAL', { stringValue: user.user_id }),

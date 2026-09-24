@@ -2,6 +2,7 @@
 // Cached per-slug (24h TTL) — case studies are write-rare, read-often.
 // Cache is invalidated when a new case is published via POST in this same file.
 import type { APIRoute } from 'astro';
+import { getAuthUser, authFailureResponse } from '../../../lib/auth-server';
 import { firestoreQuery, firestoreCreate, findListingBySlug } from '../../../lib/firestore-rest';
 import { getCached, invalidate } from '../../../lib/cache';
 
@@ -11,6 +12,8 @@ const CASES_CACHE_TTL = 86400; // 24h
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
 
+  const { user, error } = await getAuthUser(request, env.FIREBASE_API_KEY || '');
+  if (!user) return authFailureResponse(error);
   try {
     const body = await request.json();
     const { slug, title, description, results, industry, method, authorUid } = body;
@@ -25,28 +28,30 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: 'Ficha no encontrada.' }), { status: 404 });
     }
 
+    if (found.listing.ownerUid !== user.user_id) return Response.json({ error: 'Solo el propietario puede publicar.' }, { status: 403 });
     if (!found.listing.verificado) {
       return new Response(JSON.stringify({ error: 'Solo fichas verificadas pueden publicar casos de estudio.' }), { status: 403 });
     }
 
     const docId = `${slug}_${Date.now()}`;
 
-    await firestoreCreate(env, 'casos_estudio_asetemyt', docId, {
+    const saved = await firestoreCreate(env, 'casos_estudio_asetemyt', docId, {
       slug: { stringValue: slug },
       title: { stringValue: title.trim().substring(0, 200) },
       description: { stringValue: description.trim().substring(0, 2000) },
       results: { stringValue: (results || '').trim().substring(0, 1000) },
       industry: { stringValue: (industry || '').trim().substring(0, 100) },
       method: { stringValue: (method || '').trim().substring(0, 100) },
-      authorUid: { stringValue: authorUid || '' },
-      status: { stringValue: 'published' },
+      authorUid: { stringValue: user.user_id },
+      status: { stringValue: 'pending' },
       createdAt: { timestampValue: new Date().toISOString() },
     });
 
+    if (!saved) return Response.json({ error: 'No se ha podido guardar.' }, { status: 503 });
     // Invalidate the per-slug cases cache so the new case shows up immediately.
     await invalidate(env, [`${CASES_CACHE_KEY_PREFIX}:${slug}`]);
 
-    return new Response(JSON.stringify({ success: true, message: 'Caso de estudio publicado.' }), { status: 201 });
+    return new Response(JSON.stringify({ success: true, message: 'Caso enviado para revisión.' }), { status: 201 });
   } catch (err: any) {
     console.error('Case study submit error:', err);
     return new Response(JSON.stringify({ error: 'Error interno.' }), { status: 500 });

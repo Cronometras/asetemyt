@@ -41,6 +41,7 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
+import DOMPurify from "dompurify";
     import { t, getLang, type Lang } from '../../lib/firebase';
     // NOTE: previously used `db, COLLECTION_SOFTWARE, getDocs, query, orderBy`
     // here to read software directly from Firestore. Replaced with fetch to
@@ -66,7 +67,7 @@ import Layout from '../../layouts/Layout.astro';
 
       const container = document.getElementById('software-content')!;
 
-      container.innerHTML = `
+      container.innerHTML = DOMPurify.sanitize(`
         <div class="mb-10">
           <nav class="mb-4 text-sm text-steel-500">
             <a href="/" class="hover:text-accent-600">${tr('home')}</a>
@@ -150,7 +151,7 @@ import Layout from '../../layouts/Layout.astro';
             `).join('')}
           </div>
         `}
-      `;
+      `);
 
       // Client-side filtering
       const searchInput = document.getElementById('search-input') as HTMLInputElement;

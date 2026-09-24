@@ -15,7 +15,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
     // cache is invalidated when an admin approves a new review (see reviews/submit.ts).
     const payload = await getCached(
       env,
-      `${CACHE_KEYS.reviewsAll}:${slug}`,
+      `${CACHE_KEYS.reviewsAll}:${slug}:public-v2`,
       async () => {
         const allDocs = await firestoreQuery(env, 'reviews_asetemyt', 'slug', 'EQUAL', { stringValue: slug });
         const reviews = allDocs
@@ -35,7 +35,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
         });
 
         return {
-          reviews,
+          reviews: reviews.map(({ rating, authorName, comment, createdAt }: any) => ({ rating, authorName, comment, createdAt })),
           aggregate: { totalReviews, avgRating, ratingDistribution },
         };
       },

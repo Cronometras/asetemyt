@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // Create user document
   const ok = await firestoreCreate(env, 'users_asetemyt', user.user_id, {
     uid: { stringValue: user.user_id },
-    email: { stringValue: email || user.email || '' },
+    email: { stringValue: user.email || '' },
     nombre: { stringValue: nombre || user.name || '' },
     createdAt: { timestampValue: new Date().toISOString() },
     stripeCustomerId: { stringValue: '' },

@@ -38,14 +38,12 @@ export const PUT: APIRoute = async ({ request, locals }) => {
     if (!file || !data) return new Response(JSON.stringify({ error: 'file y data requeridos' }), { status: 400 });
     if (!VALID_FILES.includes(file)) return new Response(JSON.stringify({ error: 'Archivo inválido' }), { status: 400 });
 
-    // Write to public/data/{file}.json
-    // In production (CF Workers), this writes to a temp location — persisted via git
-    const fs = await import('fs');
-    const path = await import('path');
-    const filePath = path.join(process.cwd(), 'public', 'data', `${file}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-
-    return new Response(JSON.stringify({ success: true, message: `${file}.json actualizado. Haz commit y deploy para publicar.` }), { status: 200 });
+    // Static assets are published through Git; never pretend a Worker file write persists.
+    return new Response(JSON.stringify(data, null, 2), { headers: {
+      'Content-Type': 'application/json',
+      'Content-Disposition': `attachment; filename="${file}.json"`,
+      'Cache-Control': 'no-store',
+    } });
   } catch (e: any) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }

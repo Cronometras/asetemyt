@@ -40,7 +40,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Save review (pending moderation) — use email as doc ID for idempotency
     const docId = `${slug}_${(authorEmail || authorName).toLowerCase().trim().replace(/[^a-zA-Z0-9@._-]/g, '_')}_${Date.now()}`;
 
-    await firestoreCreate(env, 'reviews_asetemyt', docId, {
+    const saved = await firestoreCreate(env, 'reviews_asetemyt', docId, {
       slug: { stringValue: slug },
       rating: { integerValue: String(Math.round(rating)) },
       authorName: { stringValue: stripHtml(authorName.trim().substring(0, 100)) },
@@ -51,6 +51,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       ip: { stringValue: request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown' },
     });
 
+    if (!saved) return Response.json({ error: 'No se ha podido guardar.' }, { status: 503 });
     return new Response(JSON.stringify({ success: true, message: 'Reseña enviada. Será publicada tras revisión.' }), { status: 201 });
   } catch (err: any) {
     console.error('Review submit error:', err);

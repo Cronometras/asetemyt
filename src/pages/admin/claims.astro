@@ -49,6 +49,7 @@ import Layout from '../../layouts/Layout.astro';
 </Layout>
 
 <script>
+import DOMPurify from "dompurify";
   import { initAdmin } from '../../lib/admin-auth';
 
   const loading = document.getElementById('loading')!;
@@ -72,11 +73,11 @@ import Layout from '../../layouts/Layout.astro';
             <p class="text-xs text-steel-400 mt-2">${new Date(c.createdAt).toLocaleString('es-ES')}</p>
           </div>
           <div class="flex gap-2">
-            <button onclick="handleClaim('${c.id}', 'approve')"
+            <button data-claim="${encodeURIComponent(c.id)}" data-action="approve"
               class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-bold rounded-lg transition-colors">
               Aprobar
             </button>
-            <button onclick="handleClaim('${c.id}', 'reject')"
+            <button data-claim="${encodeURIComponent(c.id)}" data-action="reject"
               class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors">
               Rechazar
             </button>
@@ -98,7 +99,7 @@ import Layout from '../../layouts/Layout.astro';
             ${c.reviewedAt ? `<p class="text-xs text-steel-400 mt-1">Aprobado: ${new Date(c.reviewedAt).toLocaleString('es-ES')}</p>` : ''}
           </div>
           <div class="flex gap-2 flex-shrink-0">
-            <button onclick="copyPaymentLink('${paymentLink}')"
+            <button data-payment-link="${encodeURIComponent(paymentLink)}"
               class="px-4 py-2 bg-accent-500 hover:bg-accent-600 text-white text-sm font-bold rounded-lg transition-colors">
               Copiar enlace de pago
             </button>
@@ -137,19 +138,21 @@ import Layout from '../../layouts/Layout.astro';
       if (pending.length === 0) {
         pendingList.innerHTML = '<p class="text-steel-500 text-sm">No hay solicitudes pendientes.</p>';
       } else {
-        pendingList.innerHTML = pending.map(renderPendingClaim).join('');
+        pendingList.innerHTML = DOMPurify.sanitize(pending.map(renderPendingClaim).join(''));
       }
 
       if (approved.length === 0) {
         approvedList.innerHTML = '<p class="text-steel-500 text-sm">No hay solicitudes aprobadas.</p>';
       } else {
-        approvedList.innerHTML = approved.map(renderApprovedClaim).join('');
+        approvedList.innerHTML = DOMPurify.sanitize(approved.map(renderApprovedClaim).join(''));
       }
     } catch (err) {
       pendingList.innerHTML = '<p class="text-red-500 text-sm">Error cargando solicitudes.</p>';
     }
   })();
 
+  approvedList.addEventListener('click', (event) => { const button = (event.target as Element).closest<HTMLButtonElement>('button[data-payment-link]'); if (button) (window as any).copyPaymentLink(decodeURIComponent(button.dataset.paymentLink!)); });
+  pendingList.addEventListener('click', (event) => { const button = (event.target as Element).closest<HTMLButtonElement>('button[data-claim]'); if (button) (window as any).handleClaim(decodeURIComponent(button.dataset.claim!), button.dataset.action); });
   (window as any).handleClaim = async (claimId: string, action: string) => {
     try {
       const resp = await api('/api/admin/claim-action', {

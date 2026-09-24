@@ -120,14 +120,14 @@ const { slug, entryName, isOwner = false } = Astro.props;
     };
 
     try {
-      const res = await fetch('/api/cases', {
+      const res = await authFetch('/api/cases', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (res.ok) {
-        statusEl.textContent = '✓ Publicado';
+        statusEl.textContent = '✓ Enviado para revisión';
         statusEl.className = 'text-sm text-green-600';
         f.reset();
         f.classList.add('hidden');

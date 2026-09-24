@@ -78,6 +78,7 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <script>
+import DOMPurify from "dompurify";
   import { logOut, authFetch } from '../lib/auth';
 
   const loading = document.getElementById('loading')!;
@@ -175,8 +176,8 @@ import Layout from '../layouts/Layout.astro';
       const resp = await authFetch('/api/user/data');
       if (!resp.ok) {
         const errData = await resp.json().catch(() => null);
-        fichasList.innerHTML = `<p class="text-red-500 text-sm">Error cargando fichas: ${errData?.error || resp.status}</p>`;
-        subInfo.innerHTML = '<p class="text-steel-500 text-sm">No se ha podido comprobar tu suscripción.</p>';
+        fichasList.innerHTML = DOMPurify.sanitize(`<p class="text-red-500 text-sm">Error cargando fichas: ${errData?.error || resp.status}</p>`);
+        subInfo.innerHTML = DOMPurify.sanitize('<p class="text-steel-500 text-sm">No se ha podido comprobar tu suscripción.</p>');
         return;
       }
 
@@ -184,7 +185,7 @@ import Layout from '../layouts/Layout.astro';
 
       // Render fichas
       if (data.fichas && data.fichas.length > 0) {
-        fichasList.innerHTML = data.fichas.map((f: any) => `
+        fichasList.innerHTML = DOMPurify.sanitize(data.fichas.map((f: any) => `
           <div class="flex items-center justify-between p-4 bg-steel-50 rounded-xl">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 ${f.verificado ? 'bg-green-100' : 'bg-amber-100'} rounded-lg flex items-center justify-center">
@@ -202,9 +203,9 @@ import Layout from '../layouts/Layout.astro';
               <a href="/editar/${f.slug}" class="text-xs bg-accent-500 hover:bg-accent-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Editar</a>
             </div>
           </div>
-        `).join('');
+        `).join(''));
       } else {
-        fichasList.innerHTML = `
+        fichasList.innerHTML = DOMPurify.sanitize(`
           <div class="flex items-center gap-3 p-4 bg-steel-50 rounded-xl">
             <div class="w-10 h-10 bg-steel-200 rounded-lg flex items-center justify-center text-steel-500 font-bold">?</div>
             <div>
@@ -215,16 +216,17 @@ import Layout from '../layouts/Layout.astro';
           <a href="/directorio" class="inline-block mt-3 text-sm text-accent-600 hover:text-accent-700 font-semibold">
             Explorar directorio →
           </a>
-        `;
+        `);
       }
 
       // Render subscription
       if (data.subscriptions && data.subscriptions.length > 0) {
-        const sub = data.subscriptions[0]; // Show most recent
+        const sections: string[] = [];
+        for (const sub of data.subscriptions) {
         const statusInfo = statusLabels[sub.status] || { label: sub.status, color: 'bg-steel-100 text-steel-700' };
         const periodEnd = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A';
 
-        subInfo.innerHTML = `
+        sections.push(DOMPurify.sanitize(`
           <div class="flex items-center gap-3">
             <span class="inline-block text-xs font-bold px-3 py-1 rounded-full ${statusInfo.color}">
               ${statusInfo.label}
@@ -234,15 +236,17 @@ import Layout from '../layouts/Layout.astro';
           <p class="text-sm text-steel-500 mt-2">
             ${sub.status === 'active' ? `Próxima renovación: ${periodEnd}` : `Válido hasta: ${periodEnd}`}
           </p>
-        `;
+        `));
+        }
+        subInfo.innerHTML = sections.join('<hr class="my-4">');
         portalBtn.classList.remove('hidden');
       } else {
-        subInfo.innerHTML = '<p class="text-steel-500 text-sm">No tienes suscripción activa.</p>';
+        subInfo.innerHTML = DOMPurify.sanitize('<p class="text-steel-500 text-sm">No tienes suscripción activa.</p>');
       }
 
     } catch (err) {
-      fichasList.innerHTML = '<p class="text-red-500 text-sm">Error cargando datos.</p>';
-      subInfo.innerHTML = '<p class="text-red-500 text-sm">Error cargando datos.</p>';
+      fichasList.innerHTML = DOMPurify.sanitize('<p class="text-red-500 text-sm">Error cargando datos.</p>');
+      subInfo.innerHTML = DOMPurify.sanitize('<p class="text-red-500 text-sm">Error cargando datos.</p>');
     }
   })();
 
@@ -255,9 +259,10 @@ import Layout from '../layouts/Layout.astro';
     try {
       const resp = await authFetch('/api/stripe/portal', { method: 'POST' });
       const data = await resp.json();
-      if (data.url) window.location.href = data.url;
+      if (!resp.ok || !data.url) throw new Error(data.error || 'No se puede abrir la gestión de suscripción.');
+      window.location.href = data.url;
     } catch (err) {
-      console.error('Error opening portal:', err);
+      alert(err instanceof Error ? err.message : 'No se puede abrir la gestión de suscripción.');
     }
   });
 

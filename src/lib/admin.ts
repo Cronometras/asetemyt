@@ -12,24 +12,15 @@ const adminRoleCacheKey = (email: string) => `cache:admin:role:${email.toLowerCa
 
 // The same owner already authorized by ensure-admin. A verified bootstrap
 // identity can recover access without a Firestore read/write during an outage.
-// NOTE: we no longer require `emailVerified` here. Many bootstrap owners
-// authenticate via providers (Google, GitHub) where Firebase marks the email
-// as verified at the provider level, but `user.emailVerified` on the ID token
-// can be `false` until the user explicitly reloads after verification. Gating
-// admin access on that flag created a confusing lockout where the user was
-// signed in but treated as a stranger. The bootstrap-admin trust is already
-// strong — it's hardcoded by the operator in BOOTSTRAP_ADMIN_EMAILS — so we
-// match on email presence alone. Service-account, magic-link and password
-// flows still require verification at the Firebase Auth level if you want
-// to enforce it; that gate is upstream of this helper.
+// Administrative access requires a verified Firebase identity.
 export function isBootstrapAdmin(env: any, user: any): boolean {
   const emails = String(env.BOOTSTRAP_ADMIN_EMAILS ?? 'micaot@gmail.com')
     .split(',').map(email => email.trim().toLowerCase()).filter(Boolean);
-  return Boolean(user?.email) && emails.includes(user.email.toLowerCase());
+  return user?.emailVerified === true && Boolean(user?.email) && emails.includes(user.email.toLowerCase());
 }
 
 export async function isAdmin(env: any, user: any): Promise<boolean> {
-  if (!user) return false;
+  if (!user || user.emailVerified !== true) return false;
   const email = user.email?.toLowerCase();
   if (!email) return false;
   if (isBootstrapAdmin(env, user)) return true;
@@ -40,7 +31,8 @@ export async function isAdmin(env: any, user: any): Promise<boolean> {
       adminRoleCacheKey(email),
       async () => {
         const doc = await firestoreGet(env, 'admins_asetemyt', email);
-        return doc?.role === 'admin';
+        const uid = user.user_id || user.uid || user.localId;
+        return typeof uid === 'string' && !!uid && doc?.role === 'admin' && doc.uid === uid;
       },
       ADMIN_ROLE_CACHE_TTL
     );

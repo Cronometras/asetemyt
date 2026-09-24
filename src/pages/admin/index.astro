@@ -216,6 +216,7 @@ import Layout from '../../layouts/Layout.astro';
         { href: '/admin/leads', label: 'Ver Leads', desc: 'Solicitudes de presupuesto recibidas', badge: d.leads.new === null ? 'No disponible' : d.leads.new > 0 ? `${d.leads.new} nuevos` : 'Sin novedades', urgent: d.leads.new > 0 },
         { href: '/admin/subscribers', label: 'Suscriptores', desc: 'Gestionar altas y bajas del newsletter', badge: d.subscriptions.active === null ? 'No disponible' : `${d.subscriptions.active} activos` },
         { href: '/admin/status', label: 'Estado del Sistema', desc: 'Base de datos, Stripe, Resend', badge: 'Monitor' },
+        { href: '/admin/moderacion', label: 'Moderación', desc: 'Revisar reseñas, ofertas y casos de estudio', badge: 'Revisión' },
         { href: '/admin/newsletter', label: 'Newsletter Preview', desc: 'Previsualizar el boletín mensual', badge: 'HTML' },
       ];
       document.getElementById('quickActions')!.innerHTML = actions.map(a => `

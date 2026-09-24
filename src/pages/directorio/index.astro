@@ -30,6 +30,7 @@ import Layout from '../../layouts/Layout.astro';
   </section>
 
   <script>
+import DOMPurify from "dompurify";
     import { t, getLang, type Lang } from '../../lib/firebase';
     // NOTE: previously used `db, COLLECTION_CONSULTORES, getDocs, query, orderBy`
     // here to read consultores directly from Firestore. That was replaced
@@ -90,7 +91,7 @@ import Layout from '../../layouts/Layout.astro';
 
       const container = document.getElementById('directory-content')!;
 
-      container.innerHTML = `
+      container.innerHTML = DOMPurify.sanitize(`
         <div class="mb-10">
           <nav class="mb-4 text-sm text-steel-500">
             <a href="/" class="hover:text-accent-600">${tr('home')}</a>
@@ -198,7 +199,7 @@ import Layout from '../../layouts/Layout.astro';
             `).join('')}
           </div>
         `}
-      `;
+      `);
 
       // Client-side filtering
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
@@ -210,8 +211,16 @@ import Layout from '../../layouts/Layout.astro';
       const cards = document.querySelectorAll('.directory-card') as NodeListOf<HTMLElement>;
       const countEl = document.getElementById('results-count');
 
-      function applyFilters() {
-        const search = searchInput?.value?.toLowerCase() || '';
+      let page = 1;
+      const pageSize = 24;
+      const controls = document.createElement('div');
+      controls.className = 'flex flex-wrap items-center gap-4 my-6';
+      controls.innerHTML = '<button id="previous-page" class="px-4 py-2 border rounded">Anterior</button><span id="page-info" role="status"></span><button id="next-page" class="px-4 py-2 border rounded">Siguiente</button><button id="clear-filters" class="px-4 py-2 border rounded">Limpiar filtros</button>';
+      container.append(controls);
+      const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      function applyFilters(event?: Event) {
+        if (event) page = 1;
+        const search = normalize(searchInput?.value || '');
         const tipo = filterTipo?.value?.toLowerCase() || '';
         const esp = filterEsp?.value?.toLowerCase() || '';
         const loc = filterLoc?.value?.toLowerCase() || '';
@@ -227,7 +236,7 @@ import Layout from '../../layouts/Layout.astro';
           const cardProv = card.dataset.provincia || '';
           const cardCiudad = card.dataset.ciudad || '';
 
-          const matchSearch = !search || name.includes(search) || cardEsp.includes(search);
+          const matchSearch = !search || normalize(name).includes(search) || normalize(cardEsp).includes(search);
           const matchTipo = !tipo || cardTipo === tipo;
           const matchEsp = !esp || cardEsp.includes(esp);
           const matchLoc = !loc || cardLoc.includes(loc);
@@ -235,10 +244,19 @@ import Layout from '../../layouts/Layout.astro';
           const matchCiudad = !ciudad || cardCiudad.includes(ciudad);
 
           const show = matchSearch && matchTipo && matchEsp && matchLoc && matchProv && matchCiudad;
-          card.style.display = show ? '' : 'none';
           if (show) visible++;
+          card.style.display = show && visible > (page - 1) * pageSize && visible <= page * pageSize ? '' : 'none';
         });
 
+        const pages = Math.max(1, Math.ceil(visible / pageSize));
+        (document.getElementById('previous-page') as HTMLButtonElement).disabled = page <= 1;
+        (document.getElementById('next-page') as HTMLButtonElement).disabled = page >= pages;
+        document.getElementById('page-info')!.textContent = visible ? `Página ${page} de ${pages}` : 'No hay coincidencias. Prueba otros filtros.';
+        const query = new URLSearchParams(window.location.search);
+        for (const [key, element] of [['q', searchInput], ['tipo', filterTipo], ['especialidad', filterEsp], ['ubicacion', filterLoc], ['provincia', filterProv], ['ciudad', filterCiudad]] as const) {
+          if (element.value) query.set(key, element.value); else query.delete(key);
+        }
+        history.replaceState(null, '', window.location.pathname + (query.size ? '?' + query : ''));
         if (countEl) {
           countEl.textContent = `${visible} ${visible === 1 ? tr('result') : tr('results')}`;
         }
@@ -251,6 +269,9 @@ import Layout from '../../layouts/Layout.astro';
       filterProv?.addEventListener('change', applyFilters);
       filterCiudad?.addEventListener('change', applyFilters);
 
+      document.getElementById('previous-page')!.addEventListener('click', () => { page--; applyFilters(); });
+      document.getElementById('next-page')!.addEventListener('click', () => { page++; applyFilters(); });
+      document.getElementById('clear-filters')!.addEventListener('click', () => { for (const input of [searchInput, filterTipo, filterEsp, filterLoc, filterProv, filterCiudad]) input.value = ''; page = 1; applyFilters(); });
       // Apply URL params
       const params = new URLSearchParams(window.location.search);
       if (params.get('tipo') && filterTipo) filterTipo.value = params.get('tipo')!;
@@ -258,7 +279,8 @@ import Layout from '../../layouts/Layout.astro';
       if (params.get('ubicacion') && filterLoc) filterLoc.value = params.get('ubicacion')!;
       if (params.get('provincia') && filterProv) filterProv.value = params.get('provincia')!.toLowerCase();
       if (params.get('ciudad') && filterCiudad) filterCiudad.value = params.get('ciudad')!.toLowerCase();
-      if (params.toString()) applyFilters();
+      searchInput.value = params.get('q') || '';
+      applyFilters();
     }
 
     function updateLabels() {

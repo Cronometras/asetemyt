@@ -15,6 +15,13 @@ const { GET: leads } = await server.ssrLoadModule('/src/pages/api/admin/leads.ts
 const { GET: subscribers } = await server.ssrLoadModule('/src/pages/api/admin/subscribers.ts');
 const { GET: coupons } = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: outreach } = await server.ssrLoadModule('/src/pages/api/admin/outreach/list.ts');
+const casesApi = await server.ssrLoadModule('/src/pages/api/cases/index.ts');
+const jobsApi = await server.ssrLoadModule('/src/pages/api/jobs/index.ts');
+const reviewsApi = await server.ssrLoadModule('/src/pages/api/reviews/get.ts');
+const claimActions = await server.ssrLoadModule('/src/pages/api/admin/claim-action.ts');
+const moderation = await server.ssrLoadModule('/src/pages/api/admin/moderation.ts');
+const { validateListingUpdates } = await server.ssrLoadModule('/src/lib/listing-validation.ts');
+
 const realFetch = globalThis.fetch;
 let user = { email: 'micaot@gmail.com', emailVerified: true, localId: 'owner' };
 globalThis.fetch = async (url) => {
@@ -118,9 +125,9 @@ test('projection constraints roll back failed writes and bulk transactions', asy
 
 test('other admins and revocation use D1, ignoring stale KV permissions', async () => {
   const { DB, sqlite } = database(); const env = { DB, BOOTSTRAP_ADMIN_EMAILS: '', CACHE: { get: async () => { throw new Error('KV should not be read'); } } };
-  const other = { email: 'other@example.com', emailVerified: true };
+  const other = { email: 'other@example.com', emailVerified: true, uid: 'other-user' };
   assert.equal(await isAdmin(env, other), false);
-  await store.firestoreCreate(env, 'admins_asetemyt', other.email, fields({ role: 'admin' }));
+  await store.firestoreCreate(env, 'admins_asetemyt', other.email, fields({ role: 'admin', uid: other.uid }));
   assert.equal(await isAdmin(env, other), true);
   await store.firestoreDelete(env, 'admins_asetemyt', other.email);
   assert.equal(await isAdmin(env, other), false);
@@ -188,4 +195,54 @@ test('contact visibility changes on the next request after bulk actions without 
   assert.deepEqual(await locked.json(), { locked: true, contacto: null });
   assert.equal((await (await read('existing')).json()).locked, false, 'Verified listings remain visible');
   sqlite.close();
+});
+test('admin identities must be verified and match the stored uid', async () => {
+ const { DB, sqlite } = database(); const env = { DB, BOOTSTRAP_ADMIN_EMAILS: '' };
+ await store.firestoreCreate(env, 'admins_asetemyt', 'admin@example.com', fields({ role:'admin', uid:'real' }));
+ assert.equal(await isAdmin(env,{email:'admin@example.com',emailVerified:false,uid:'real'}),false);
+ assert.equal(await isAdmin(env,{email:'admin@example.com',emailVerified:true,uid:'other'}),false);
+ assert.equal(await isAdmin(env,{email:'admin@example.com',emailVerified:true}),false);
+ assert.equal(await isAdmin(env,{email:'admin@example.com',emailVerified:true,uid:'real'}),true);
+ sqlite.close();
+});
+test('case publication requires a session and listing ownership, and queues moderation', async () => {
+ const { DB, sqlite }=database(); const env={DB}; user={email:'owner@example.com',emailVerified:true,localId:'owner'};
+ const noAuth=context(env,'POST',{slug:'existing',title:'Case',description:'Description'}); noAuth.request.headers.delete('Authorization');
+ assert.equal((await casesApi.POST(noAuth)).status,401);
+ assert.equal((await casesApi.POST(context(env,'POST',{slug:'existing',title:'Case',description:'Description',authorUid:'owner'}))).status,403);
+ await store.firestoreUpdate(env,'directorio_consultores_asetemyt','existing',fields({ownerUid:'owner'}));
+ assert.equal((await casesApi.POST(context(env,'POST',{slug:'existing',title:'Case',description:'Description',authorUid:'forged'}))).status,201);
+ const rows=await store.firestoreListAll(env,'casos_estudio_asetemyt'); assert.equal(rows[0].authorUid,'owner'); assert.equal(rows[0].status,'pending');
+ sqlite.close();
+});
+test('public jobs and reviews exclude private fields and expired jobs',async()=>{
+ const {DB,sqlite}=database(); const env={DB};
+ for(const [id,date] of [['future','2099-01-01'],['expired','2000-01-01']]) await store.firestoreCreate(env,'jobs_asetemyt',id,fields({status:'active',title:id,ip:'private-ip',expiresAt:date}));
+ await store.firestoreCreate(env,'reviews_asetemyt','email@example.com',fields({slug:'existing',status:'approved',rating:5,authorName:'Public name',authorEmail:'private@example.com',ip:'private-ip'}));
+ const jobs=await (await jobsApi.GET(context(env))).json(); assert.equal(jobs.jobs.length,1);assert.equal(jobs.jobs[0].ip,undefined);
+ const reviews=await (await reviewsApi.GET(context(env,'GET',null,'/api/reviews/get?slug=existing'))).json();assert.equal(reviews.reviews[0].authorEmail,undefined);assert.equal(reviews.reviews[0].ip,undefined);assert.equal(reviews.reviews[0].id,undefined);
+ sqlite.close();
+});
+test('claim approval changes ownership atomically without granting a paid verification',async()=>{
+ const {DB,sqlite}=database(); const env={DB};user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
+ await store.firestoreUpdate(env,'directorio_consultores_asetemyt','existing',fields({verificado:false}));
+ await store.firestoreCreate(env,'claims_asetemyt','claim',fields({slug:'existing',uid:'new-owner',estado:'pending'}));
+ assert.equal((await claimActions.POST(context(env,'POST',{claimId:'claim',action:'approve'}))).status,200);
+ const listing=await store.firestoreGet(env,'directorio_consultores_asetemyt','existing');assert.equal(listing.ownerUid,'new-owner');assert.equal(listing.verificado,false);
+ assert.deepEqual((await store.firestoreGet(env,'users_asetemyt','new-owner')).fichasReclamadas,['existing']);
+ await store.firestoreCreate(env,'claims_asetemyt','conflict',fields({slug:'existing',uid:'intruder',estado:'pending'}));
+ assert.equal((await claimActions.POST(context(env,'POST',{claimId:'conflict',action:'approve'}))).status,409);
+ assert.equal((await store.firestoreGet(env,'claims_asetemyt','conflict')).estado,'pending'); sqlite.close();
+});
+test('moderation requires admin and records approval audit',async()=>{
+ const {DB,sqlite}=database();const env={DB};user={email:'user@example.com',emailVerified:true,localId:'normal'};
+ assert.equal((await moderation.POST(context(env,'POST',{kind:'jobs',id:'job',action:'approve'}))).status,403);
+ user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
+ await store.firestoreCreate(env,'jobs_asetemyt','job',fields({status:'pending',title:'Job'}));
+ assert.equal((await moderation.POST(context(env,'POST',{kind:'jobs',id:'job',action:'approve'}))).status,200);
+ assert.equal((await store.firestoreGet(env,'jobs_asetemyt','job')).status,'active');assert.equal((await store.firestoreListAll(env,'admin_audit')).length,1);sqlite.close();
+});
+test('listing validation rejects executable URLs and malformed fields',()=>{
+ assert.ok(validateListingUpdates({logo:'javascript:alert(1)'}));assert.ok(validateListingUpdates({especialidades:'not-array'}));assert.ok(validateListingUpdates({contacto:{web:'data:text/html,x'}}));
+ assert.equal(validateListingUpdates({descripcion:'Text',especialidades:['Lean'],contacto:{web:'https://example.com',email:'user@example.com'}}),null);
 });

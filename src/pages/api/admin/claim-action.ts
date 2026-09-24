@@ -4,6 +4,8 @@ import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
 import { firestoreGet, firestoreUpdate, firestoreQuery } from '../../../lib/firestore-rest';
+import { paymentTransaction, PaymentError, paymentFailure } from '../../../lib/payment-store';
+import { findListingBySlug } from '../../../lib/firestore-rest';
 import { getCached } from '../../../lib/cache';
 
 // Admin cache TTL: short (60s) — admin sees fresh-ish data on refresh, but
@@ -29,12 +31,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!claim) return new Response(JSON.stringify({ error: 'Solicitud no encontrada' }), { status: 404 });
 
   const newStatus = action === 'approve' ? 'approved' : 'rejected';
-  await firestoreUpdate(env, 'claims_asetemyt', claimId, {
-    estado: { stringValue: newStatus },
-    reviewedAt: { timestampValue: new Date().toISOString() },
-  });
+  try {
+    const found = await findListingBySlug(env, claim.slug);
+    if (!found) throw new PaymentError(404, 'Ficha no encontrada.');
+    await paymentTransaction(env, async tx => {
+      const current = await tx.get('claims_asetemyt', claimId);
+      if (!current || current.estado !== 'pending') throw new PaymentError(409, 'La solicitud ya ha sido revisada.');
+      if (action === 'approve') {
+        const listing = await tx.get(found.collection, found.listing.id);
+        if (!listing || (listing.ownerUid && listing.ownerUid !== current.uid)) throw new PaymentError(409, 'La ficha ya tiene otro propietario.');
+        const profile = await tx.get('users_asetemyt', current.uid) || {};
+        await tx.put(found.collection, found.listing.id, { ...listing, ownerUid: current.uid, ownerEmail: current.email || '' });
+        await tx.put('users_asetemyt', current.uid, { ...profile, fichasReclamadas: [...new Set([...(profile.fichasReclamadas || []), current.slug])] });
+      }
+      await tx.put('claims_asetemyt', claimId, { ...current, estado: newStatus, reviewedAt: new Date().toISOString(), reviewedBy: user.user_id });
+      await tx.put('admin_audit', crypto.randomUUID(), { action: 'claim-' + action, target: claimId, uid: user.user_id, createdAt: new Date().toISOString() });
+    });
+    return Response.json({ success: true, status: newStatus });
+  } catch (error) { return paymentFailure(error); }
 
-  return new Response(JSON.stringify({ success: true, status: newStatus }), { status: 200 });
 };
 
 // GET /api/admin/claims — List pending and approved claims (admin only)

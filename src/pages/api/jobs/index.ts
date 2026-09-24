@@ -18,6 +18,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: 'Título, empresa, descripción y email son obligatorios.' }), { status: 400 });
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail) || (contactUrl && !/^https?:\/\//i.test(contactUrl))) return Response.json({ error: 'Correo o enlace no válido.' }, { status: 400 });
+    if (contactUrl) { try { const link = new URL(contactUrl); if (!['https:', 'http:'].includes(link.protocol) || link.username || link.password) throw new Error(); } catch { return Response.json({ error: 'Enlace no válido.' }, { status: 400 }); } }
     // Rate limit: max 3 jobs per IP per day
     const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
     const oneDayAgo = new Date(Date.now() - 86400000).toISOString();
@@ -32,7 +34,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Save job
     const docId = `${company.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`;
 
-    await firestoreCreate(env, 'jobs_asetemyt', docId, {
+    const saved = await firestoreCreate(env, 'jobs_asetemyt', docId, {
       title: { stringValue: stripHtml(title.trim().substring(0, 200)) },
       company: { stringValue: stripHtml(company.trim().substring(0, 200)) },
       location: { stringValue: stripHtml((location || '').trim().substring(0, 200)) },
@@ -42,7 +44,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       type: { stringValue: type || 'full-time' },
       contactEmail: { stringValue: contactEmail.toLowerCase().trim() },
       contactUrl: { stringValue: (contactUrl || '').trim() },
-      status: { stringValue: 'active' },
+      status: { stringValue: 'pending' },
       ip: { stringValue: ip },
       createdAt: { timestampValue: new Date().toISOString() },
       expiresAt: { timestampValue: new Date(Date.now() + 90 * 86400000).toISOString() },
@@ -51,7 +53,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Invalidate the public active-jobs cache so the new offer shows up immediately
     await invalidate(env, [CACHE_KEYS.jobsActive]);
 
-    return new Response(JSON.stringify({ success: true, message: 'Oferta publicada correctamente.' }), { status: 201 });
+    if (!saved) return Response.json({ error: 'No se ha podido guardar.' }, { status: 503 });
+    return new Response(JSON.stringify({ success: true, message: 'Oferta enviada para revisión.' }), { status: 201 });
   } catch (err: any) {
     console.error('Job submit error:', err);
     return new Response(JSON.stringify({ error: 'Error interno.' }), { status: 500 });
@@ -75,18 +78,19 @@ export const GET: APIRoute = async ({ url, locals }) => {
       async () => {
         const all = await firestoreListAll(env, 'jobs_asetemyt');
         return all
-          .filter((j: any) => j.status === 'active')
+          .filter((j: any) => j.status === 'active' && (!j.expiresAt || Date.parse(j.expiresAt) > Date.now()))
           .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
           .slice(0, 100);
       },
       3600 // 1h TTL — jobs are time-sensitive, refresh more often than 24h
     );
 
+    jobs = jobs.filter((j: any) => !j.expiresAt || Date.parse(j.expiresAt) > Date.now());
     // Apply optional filters (post-cache — they're cheap)
     if (type) jobs = jobs.filter((j: any) => j.type === type);
     if (location) jobs = jobs.filter((j: any) => j.location?.toLowerCase().includes(location.toLowerCase()));
 
-    return new Response(JSON.stringify({ jobs }), {
+    return new Response(JSON.stringify({ jobs: jobs.map(({ title, company, location, description, requirements, salary, type, contactEmail, contactUrl, createdAt, expiresAt }: any) => ({ title, company, location, description, requirements, salary, type, contactEmail, contactUrl, createdAt, expiresAt })) }), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

@@ -1,0 +1,41 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Moderación — Asetemyt" description="Revisión de contenido del directorio">
+<section class="max-w-5xl mx-auto px-4 py-12">
+<a href="/admin">← Administración</a><h1 class="text-3xl font-bold my-6">Moderación</h1>
+<label>Contenido <select id="kind" class="border rounded p-2"><option value="reviews">Reseñas</option><option value="jobs">Ofertas de empleo</option><option value="cases">Casos de estudio</option><option value="history">Historial de moderación</option></select></label>
+<p id="status" role="status" class="my-4">Comprobando acceso…</p><div id="items" class="space-y-4"></div>
+</section></Layout>
+<script>
+import { initAdmin } from '../../lib/admin-auth';
+const state = document.getElementById('status')!;
+const list = document.getElementById('items')!;
+const kind = document.getElementById('kind') as HTMLSelectElement;
+(async () => {
+const access = await initAdmin();
+async function load() {
+ try {
+  state.textContent = 'Cargando…'; list.replaceChildren();
+  const response = await access.api('/api/admin/moderation?kind=' + kind.value);
+  const data = await response.json(); if (!response.ok) throw new Error(data.error);
+  for (const item of data.items) {
+   const card = document.createElement('article'); card.className = 'border rounded p-4';
+   const title = document.createElement('h2'); title.className = 'font-bold'; title.textContent = item.title || item.authorName || item.slug || item.action;
+   const body = document.createElement('p'); body.textContent = item.description || item.comment || item.target || '';
+   const status = document.createElement('p'); status.textContent = item.status ? 'Estado: ' + item.status : 'Fecha: ' + item.createdAt + ' · Administrador: ' + item.uid;
+   card.append(title, body, status);
+   for (const [action,label] of (kind.value === 'history' ? [] : [['approve','Publicar'],['reject','Retirar / rechazar']])) {
+    const button = document.createElement('button'); button.textContent = label; button.className = 'border rounded px-3 py-2 mr-3 mt-3';
+    button.addEventListener('click', async () => {
+     button.disabled = true;
+     try { const res = await access.api('/api/admin/moderation', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: kind.value, id: item.id, action }) }); const result = await res.json(); if (!res.ok) throw new Error(result.error); await load(); }
+     catch (e) { state.textContent = e instanceof Error ? e.message : 'No se ha podido guardar.'; button.disabled = false; }
+    }); card.append(button);
+   } list.append(card);
+  } state.textContent = data.items.length ? `${data.items.length} elementos` : 'No hay contenido para revisar.';
+ } catch(e) { state.textContent = e instanceof Error ? e.message : 'No se pudo cargar.'; }
+}
+if (access.ok) { kind.addEventListener('change', load); load(); } else state.textContent = 'Necesitas una cuenta de administrador con correo verificado.';
+})();
+</script>
