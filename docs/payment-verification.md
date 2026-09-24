@@ -10,10 +10,12 @@ El webhook comprueba la firma, el estado del pago y la prueba de propiedad. Fich
 
 ## Configuración de producción pendiente
 
-La consulta a Cloudflare Pages realizada durante esta corrección solo mostró `CRON_SECRET` en las variables de producción y preview. Es necesario configurar en Pages → asetemyt → Settings → Variables and Secrets:
+La consulta inicial a Cloudflare Pages solo mostraba `CRON_SECRET`. Se ha recuperado desde Stripe el precio `price_1TTlFILE2XlCZ8Rr3sg26MZ5` (Ficha Verificada - ASETEMYT, 50 EUR al año, impuestos excluidos) y se ha configurado `STRIPE_PRICE_ID` en Pages. El endpoint existente `we_1TTljvLE2XlCZ8Rr5qRXmdsJ` ya recibe todos los eventos indicados abajo. No se han creado precios nuevos ni realizado cargos.
+
+Siguen pendientes las tres claves privadas. Configuración en Pages / asetemyt / Settings / Variables and Secrets:
 
 - `STRIPE_SECRET_KEY`: clave restringida o secreta del entorno correcto, con permisos de Checkout, suscripciones, cupones y portal.
-- `STRIPE_PRICE_ID`: ya configurado en producci�n con el precio existente indicado arriba.
+- `STRIPE_PRICE_ID`: ya configurado en producción con el precio existente indicado arriba.
 - `STRIPE_WEBHOOK_SECRET`: secreto del endpoint `https://asetemyt.com/api/stripe/webhook`.
 - `RESEND_API_KEY`: clave del servicio de correo; el dominio asetemyt.com debe estar verificado y permitir `noreply@asetemyt.com`.
 
