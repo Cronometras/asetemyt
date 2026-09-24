@@ -15,11 +15,13 @@ La consulta inicial a Cloudflare Pages solo mostraba `CRON_SECRET`. Se ha recupe
 Siguen pendientes las tres claves privadas. Configuración en Pages / asetemyt / Settings / Variables and Secrets:
 
 - `STRIPE_SECRET_KEY`: clave restringida o secreta del entorno correcto, con permisos de Checkout, suscripciones, cupones y portal.
-- `STRIPE_PRICE_ID`: ya configurado en producción con el precio existente indicado arriba.
+- `STRIPE_PRICE_ID`: ya configurado en producción como secreto de Pages con el precio existente indicado arriba. El despliegue desde Wrangler reemplaza las variables de texto del panel; los secretos persisten.
 - `STRIPE_WEBHOOK_SECRET`: secreto del endpoint `https://asetemyt.com/api/stripe/webhook`.
 - `RESEND_API_KEY`: clave del servicio de correo; el dominio asetemyt.com debe estar verificado y permitir `noreply@asetemyt.com`.
 
 Mantener el binding D1 `DB`. El proyecto ya usa automatic_tax: comprobar la configuración de Stripe Tax y los registros fiscales; esta corrección no crea ni modifica registros. Se mantiene la versión de API existente para evitar una migración no verificada. Las renovaciones aceptan los formatos de factura y periodo antiguo y nuevo.
+
+La consulta a Stripe confirmó un registro fiscal activo en España. Esto comprueba la configuración existente, no sustituye la revisión de las obligaciones fiscales del negocio.
 
 Eventos del endpoint: `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`, `invoice.paid`, `invoice.payment_succeeded`, `invoice.payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted`.
 
