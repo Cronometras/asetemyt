@@ -13,7 +13,7 @@ El webhook comprueba la firma, el estado del pago y la prueba de propiedad. Fich
 La consulta a Cloudflare Pages realizada durante esta corrección solo mostró `CRON_SECRET` en las variables de producción y preview. Es necesario configurar en Pages → asetemyt → Settings → Variables and Secrets:
 
 - `STRIPE_SECRET_KEY`: clave restringida o secreta del entorno correcto, con permisos de Checkout, suscripciones, cupones y portal.
-- `STRIPE_PRICE_ID`: precio recurrente anual en EUR de la ficha. Comprobar importe y tratamiento fiscal en Stripe.
+- `STRIPE_PRICE_ID`: ya configurado en producci�n con el precio existente indicado arriba.
 - `STRIPE_WEBHOOK_SECRET`: secreto del endpoint `https://asetemyt.com/api/stripe/webhook`.
 - `RESEND_API_KEY`: clave del servicio de correo; el dominio asetemyt.com debe estar verificado y permitir `noreply@asetemyt.com`.
 
