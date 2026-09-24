@@ -88,6 +88,7 @@ const finalDescription = description.length > 160
             <a href="/glosario" class="hover:text-accent-400 transition-colors font-medium" data-nav="glossary">Glosario</a>
             <a href="/comparador" class="hover:text-accent-400 transition-colors font-medium" data-nav="compare">Comparador</a>
             <a href="/empleo" class="hover:text-accent-400 transition-colors font-medium" data-nav="jobs">Empleo</a>
+            <a href="/contact" class="hover:text-accent-400 transition-colors font-medium" data-nav="contact">Contacto</a>
             <a href="/anadir" class="bg-accent-500 hover:bg-accent-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors" data-nav="add">
               Añadir Empresa
             </a>
@@ -114,6 +115,7 @@ const finalDescription = description.length > 160
           <a href="/glosario" class="block py-2 hover:text-accent-400" data-nav="glossary">Glosario</a>
           <a href="/comparador" class="block py-2 hover:text-accent-400" data-nav="compare">Comparador</a>
           <a href="/empleo" class="block py-2 hover:text-accent-400" data-nav="jobs">Empleo</a>
+          <a href="/contact" class="block py-2 hover:text-accent-400" data-nav="contact">Contacto</a>
           <a href="/anadir" class="block py-2 text-accent-400 font-semibold" data-nav="add">Añadir Empresa</a>
           <div id="mob-auth-link" class="border-t border-steel-700 mt-2 pt-2">
             <a href="/login" class="block py-2 hover:text-accent-400" data-nav="login">Iniciar Sesión</a>
@@ -152,6 +154,7 @@ const finalDescription = description.length > 160
               <li><a href="/glosario" class="hover:text-accent-400 transition-colors" data-nav="glossary">Glosario</a></li>
               <li><a href="/comparador" class="hover:text-accent-400 transition-colors" data-nav="compare">Comparador</a></li>
               <li><a href="/empleo" class="hover:text-accent-400 transition-colors" data-nav="jobs">Empleo</a></li>
+              <li><a href="/contact" class="hover:text-accent-400 transition-colors" data-nav="contact">Contacto</a></li>
             </ul>
           </div>
           <div>
@@ -179,8 +182,8 @@ const finalDescription = description.length > 160
       import { getLang, type Lang } from '../lib/firebase';
 
       const navLabels: Record<Lang, Record<string, string>> = {
-        es: { home: 'Inicio', prof: 'Profesionales', soft: 'Software', blog: 'Blog', add: 'Añadir Empresa', login: 'Iniciar Sesión', account: 'Mi Cuenta', glossary: 'Glosario', compare: 'Comparador', jobs: 'Empleo' },
-        en: { home: 'Home', prof: 'Professionals', soft: 'Software', blog: 'Blog', add: 'Add Company', login: 'Log In', account: 'My Account', glossary: 'Glossary', compare: 'Compare', jobs: 'Jobs' },
+        es: { home: 'Inicio', prof: 'Profesionales', soft: 'Software', blog: 'Blog', add: 'Añadir Empresa', login: 'Iniciar Sesión', account: 'Mi Cuenta', glossary: 'Glosario', compare: 'Comparador', jobs: 'Empleo', contact: 'Contacto' },
+        en: { home: 'Home', prof: 'Professionals', soft: 'Software', blog: 'Blog', add: 'Add Company', login: 'Log In', account: 'My Account', glossary: 'Glossary', compare: 'Compare', jobs: 'Jobs', contact: 'Contact' },
       };
 
       const footerLabels: Record<Lang, Record<string, string>> = {
