@@ -77,13 +77,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const sessionParams: any = {
       mode: 'subscription',
-      payment_method_types: ['card'],
       customer_email: normalizedEmail,
       metadata: {
         type: 'newsletter',
         email: normalizedEmail,
         company: (company || '').trim(),
-        couponCode: couponCode || '',
+        couponCode: couponData?.code || '',
       },
       line_items: [lineItem],
       automatic_tax: { enabled: true },
@@ -91,9 +90,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       cancel_url: `${origin}/newsletter?canceled=1`,
     };
 
+    sessionParams.subscription_data = { metadata: sessionParams.metadata };
+
     // If trial coupon, add trial period
     if (couponData?.type === 'trial') {
       sessionParams.subscription_data = {
+        metadata: sessionParams.metadata,
         trial_period_days: couponData.value * 30,
       };
     }

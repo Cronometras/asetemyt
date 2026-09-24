@@ -2,6 +2,7 @@
 import type { APIRoute } from 'astro';
 import { getAuthUser, authFailureResponse } from '../../../lib/auth-server';
 import { firestoreGet, firestoreCreate, firestoreUpdate, firestoreQuery, findListingBySlug } from '../../../lib/firestore-rest';
+import { paymentTransaction } from '../../../lib/payment-store';
 
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
@@ -93,29 +94,36 @@ export const GET: APIRoute = async ({ request, locals }) => {
     }
 
     // 4. Also check by ownerEmail if still no results
-    if (fichasMap.size === 0 && user.email) {
+    if (fichasMap.size === 0 && user.email && user.emailVerified === true) {
       const [byEmailC, byEmailS] = await Promise.all([
         firestoreQuery(env, 'directorio_consultores_asetemyt', 'ownerEmail', 'EQUAL', { stringValue: user.email }),
         firestoreQuery(env, 'directorio_software_asetemyt', 'ownerEmail', 'EQUAL', { stringValue: user.email }),
       ]);
 
-      for (const f of [...byEmailC, ...byEmailS]) {
+      for (const f of [
+        ...byEmailC.map(f => ({ ...f, _from: 'directorio_consultores_asetemyt' })),
+        ...byEmailS.map(f => ({ ...f, _from: 'directorio_software_asetemyt' })),
+      ]) {
+        // Email-based legacy recovery must never replace an existing owner.
+        if (f.ownerUid) continue;
         const slug = f.slug;
         if (!slug || fichasMap.has(slug)) continue;
+        const recovered = await paymentTransaction(env, async tx => {
+          const current = await tx.get(f._from, f.id);
+          if (!current || current.ownerUid || current.ownerEmail !== user.email) return false;
+          const profile = await tx.get('users_asetemyt', user.user_id) || {};
+          await tx.put(f._from, f.id, { ...current, ownerUid: user.user_id });
+          await tx.put('users_asetemyt', user.user_id, { ...profile,
+            fichasReclamadas: [...new Set([...(profile.fichasReclamadas || []), slug])] });
+          return true;
+        });
+        if (!recovered) continue;
         fichasMap.set(slug, {
           id: f.id, slug,
           nombre: f.nombre || slug,
           verificado: f.verificado || false,
           collection: f._from || 'directorio_consultores_asetemyt',
         });
-        // Backfill ownerUid + fichasReclamadas
-        const collection = f._from || 'directorio_consultores_asetemyt';
-        await firestoreUpdate(env, collection, f.id, {
-          ownerUid: { stringValue: user.user_id },
-        }).catch(() => {});
-        await firestoreUpdate(env, 'users_asetemyt', user.user_id, {
-          fichasReclamadas: { arrayValue: { values: [...fichasReclamadas, slug].map(s => ({ stringValue: s })) } },
-        }).catch(() => {});
       }
     }
 

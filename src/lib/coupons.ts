@@ -21,6 +21,7 @@
 import { firestoreQuery, firestoreGet, firestoreUpdate, toFirestoreValue } from './firestore-rest';
 
 export interface Coupon {
+  id: string;
   code: string;
   type: 'free' | 'discount' | 'trial';
   value: number;
@@ -48,6 +49,7 @@ export async function validateCoupon(env: any, code: string): Promise<{ valid: b
   // firestoreQuery returns already-parsed objects — flat properties, no .fields
   const doc = results[0];
   const coupon: Coupon = {
+    id: doc.id,
     code: doc.code || '',
     type: (doc.type || 'free') as Coupon['type'],
     value: Number(doc.value || 0),
@@ -62,6 +64,12 @@ export async function validateCoupon(env: any, code: string): Promise<{ valid: b
 
   if (!coupon.activo) {
     return { valid: false, error: 'Este cupón ya no está activo' };
+  }
+
+  if (!['free', 'discount', 'trial'].includes(coupon.type) ||
+      (coupon.type === 'discount' && (!Number.isFinite(coupon.value) || coupon.value <= 0 || coupon.value > 100)) ||
+      (coupon.type === 'trial' && (!Number.isInteger(coupon.value) || coupon.value < 1 || coupon.value > 24))) {
+    return { valid: false, error: 'El cupón tiene una configuración no válida' };
   }
 
   if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {

@@ -2,6 +2,7 @@
 // migration 0003 keeps these public-only tables synchronized with SQL triggers.
 // Private document fields are intentionally not returned by these readers.
 
+import type { D1Database } from '@cloudflare/workers-types';
 type D1Binding = D1Database;
 
 /**

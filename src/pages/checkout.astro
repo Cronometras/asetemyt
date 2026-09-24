@@ -30,7 +30,9 @@ import Layout from '../layouts/Layout.astro';
         body: JSON.stringify({ slug }),
       });
       const data = await resp.json();
-      if (data.url) {
+      if (data.verificationUrl) {
+        window.location.href = data.verificationUrl;
+      } else if (data.url) {
         window.location.href = data.url;
       } else {
         errorEl.textContent = data.error || 'Error creando sesión de pago.';

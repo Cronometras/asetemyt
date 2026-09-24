@@ -24,6 +24,20 @@ test('Cloudflare D1 binding executes migrations, parameterized patches and proje
     const found = await store.findListingBySlug({ DB }, 'test');
     assert.equal(found.listing.ownerUid, 'private');
     assert.equal(found.listing.contactoDesbloqueado, false);
+    const { paymentTransaction } = await server.ssrLoadModule('/src/lib/payment-store.ts');
+    await paymentTransaction({ DB }, async tx => {
+      await tx.put('audit_payments', 'counter', { value: 0 });
+    });
+    await Promise.all([1, 2].map(() => paymentTransaction({ DB }, async tx => {
+      const record = await tx.get('audit_payments', 'counter');
+      await tx.put('audit_payments', 'counter', { value: record.value + 1 });
+    })));
+    assert.equal((await store.firestoreGet({ DB }, 'audit_payments', 'counter')).value, 2);
+    await assert.rejects(paymentTransaction({ DB }, async tx => {
+      await tx.put('audit_payments', 'rollback', { value: 1 });
+      await tx.put(collection, 'invalid-payment-listing', { nombre: 'Missing required slug' });
+    }));
+    assert.equal(await store.firestoreGet({ DB }, 'audit_payments', 'rollback'), null);
     await store.firestoreDelete({ DB }, collection, 'test');
     assert.equal(await DB.prepare('SELECT id FROM consultores WHERE id = ?').bind('test').first(), null);
   } finally {

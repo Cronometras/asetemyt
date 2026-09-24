@@ -38,7 +38,7 @@ import Layout from '../layouts/Layout.astro';
 
       <!-- Success alert -->
       <div id="successAlert" class="hidden mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-        ✅ Pago completado. Tu ficha ha sido verificada correctamente.
+        Estamos comprobando la confirmación del pago.
       </div>
 
       <!-- Fichas verificadas -->
@@ -92,9 +92,11 @@ import Layout from '../layouts/Layout.astro';
 
   // Check for success param from Stripe
   const params = new URLSearchParams(window.location.search);
-  if (params.get('success') === 'true' || params.get('success') === '1') {
+  const paymentReturn = params.get('success') === 'true' || params.get('success') === '1';
+  const sessionId = params.get('session_id');
+  if (paymentReturn) {
     successAlert.classList.remove('hidden');
-    window.history.replaceState({}, '', '/mi-cuenta');
+    successAlert.textContent = 'Estamos comprobando la confirmación del pago.';
   }
 
   const statusLabels: Record<string, { label: string; color: string }> = {
@@ -133,7 +135,7 @@ import Layout from '../layouts/Layout.astro';
         subInfo.textContent = 'No se ha podido comprobar tu suscripción.';
         return;
       }
-      if (adminData.admin) {
+      if (adminData.admin && !paymentReturn) {
         window.location.href = '/admin';
         return; // Stop — redirect in progress
       }
@@ -146,6 +148,27 @@ import Layout from '../layouts/Layout.astro';
 
     // Not an admin — show regular dashboard
     dashboard.classList.remove('hidden');
+
+    if (paymentReturn) {
+      successAlert.textContent = 'La confirmación sigue pendiente. Tu ficha aparecerá cuando se registre el pago.';
+      if (sessionId) {
+        for (let attempt = 0; attempt < 6; attempt++) {
+          try {
+            const response = await authFetch(`/api/stripe/status?session_id=${encodeURIComponent(sessionId)}`);
+            const payment = await response.json();
+            if (!response.ok) { successAlert.textContent = payment.error || 'No se pudo comprobar el pago.'; break; }
+            if (payment.status === 'verified') {
+              successAlert.textContent = '✅ Pago confirmado. Tu ficha está verificada.';
+              window.history.replaceState({}, '', '/mi-cuenta');
+              break;
+            }
+            if (payment.status === 'expired') { successAlert.textContent = 'La sesión de pago ha caducado.'; break; }
+            if (payment.status === 'inactive') { successAlert.textContent = 'La suscripción ya no está activa. Consulta su estado abajo.'; break; }
+          } catch { successAlert.textContent = 'No se pudo comprobar el pago. Vuelve a cargar tu cuenta en unos minutos.'; break; }
+          if (attempt < 5) await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+    }
 
     // Load user data from API
     try {

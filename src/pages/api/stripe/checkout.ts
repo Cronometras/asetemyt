@@ -1,28 +1,12 @@
-// POST /api/stripe/checkout — Create Stripe Checkout session for verified listing
+// Legacy entry point: every new payment must pass the authenticated email flow.
 import type { APIRoute } from 'astro';
-import { getAuthUser } from '../../../lib/auth-server';
-import { getStripe, createCheckoutSession } from '../../../lib/stripe-server';
-
+import { getAuthUser, authFailureResponse } from '../../../lib/auth-server';
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
-  const apiKey = env.FIREBASE_API_KEY || '';
-
-  const { user, error: authError } = await getAuthUser(request, apiKey);
-  if (!user) return new Response(JSON.stringify({ error: 'No autorizado' }), { status: 401 });
-
-  const { slug } = await request.json();
-  if (!slug) return new Response(JSON.stringify({ error: 'Slug requerido' }), { status: 400 });
-
-  const stripe = getStripe(env.STRIPE_SECRET_KEY);
-  const origin = new URL(request.url).origin;
-  const priceId = env.STRIPE_PRICE_ID;
-
-  if (!priceId) return new Response(JSON.stringify({ error: 'STRIPE_PRICE_ID no configurado' }), { status: 500 });
-
-  try {
-    const session = await createCheckoutSession(stripe, slug, user.user_id, user.email || '', origin, priceId);
-    return new Response(JSON.stringify({ url: session.url }), { status: 200 });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
-  }
+  const { user, error } = await getAuthUser(request, env.FIREBASE_API_KEY);
+  if (!user) return authFailureResponse(error);
+  const body = await request.json().catch(() => null);
+  if (typeof body?.slug !== 'string' || !body.slug) return Response.json({ error: 'Ficha requerida.' }, { status: 400 });
+  return Response.json({ error: 'Verifica primero el correo de la ficha.',
+    verificationUrl: `/reclamar/${encodeURIComponent(body.slug)}` }, { status: 409 });
 };

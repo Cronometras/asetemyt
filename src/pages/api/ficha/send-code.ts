@@ -1,189 +1,62 @@
-// POST /api/ficha/send-code — Send email verification code for claim flow
 import type { APIRoute } from 'astro';
-import { firestoreCreate, firestoreDelete, firestoreQuery, findListingBySlug } from '../../../lib/firestore-rest';
-import { toFirestoreValue } from '../../../lib/firestore-rest';
-
-const FREE_DOMAINS = new Set([
-  'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'protonmail.com',
-  'icloud.com', 'mail.com', 'live.com', 'aol.com', 'zoho.com', 'yandex.com',
-  'tutanota.com', 'gmail.es', 'hotmail.es', 'yahoo.es',
-]);
+import { getAuthUser, authFailureResponse } from '../../../lib/auth-server';
+import { findListingBySlug } from '../../../lib/firestore-rest';
+import { paymentTransaction, PaymentError, paymentFailure } from '../../../lib/payment-store';
+import { VERIFICATIONS, activeReservation, digest, verificationId, normalizedEmail, ownsListingEmail, requireAvailableListing } from '../../../lib/claim-verification';
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
-
-  let body: any;
+  const { user, error } = await getAuthUser(request, env.FIREBASE_API_KEY);
+  if (!user) return authFailureResponse(error);
   try {
-    body = await request.json();
-  } catch {
-    return new Response(JSON.stringify({ error: 'JSON inválido' }), { status: 400 });
-  }
-
-  const { slug, nombre, email, mensaje, uid } = body;
-
-  if (!slug || !nombre || !email) {
-    return new Response(JSON.stringify({ error: 'Faltan campos obligatorios: slug, nombre, email' }), { status: 400 });
-  }
-
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return new Response(JSON.stringify({ error: 'Email no válido' }), { status: 400 });
-  }
-
-  // Reject free email providers
-  const domain = email.split('@')[1]?.toLowerCase();
-  if (!domain || FREE_DOMAINS.has(domain)) {
-    return new Response(JSON.stringify({ error: 'Debes usar un email corporativo (no se aceptan proveedores gratuitos como Gmail, Outlook, etc.)' }), { status: 400 });
-  }
-
-  // Verify the listing exists
-  const found = await findListingBySlug(env, slug);
-  if (!found) {
-    return new Response(JSON.stringify({ error: 'Ficha no encontrada' }), { status: 404 });
-  }
-
-  if (found.listing.verificado) {
-    return new Response(JSON.stringify({ error: 'Esta ficha ya está verificada' }), { status: 409 });
-  }
-
-  // Generate 6-digit code
-  const code = String(Math.floor(100000 + Math.random() * 900000));
-
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + 10 * 60 * 1000); // 10 minutes
-
-  // Store in Firestore — delete any previous code for this email first
-  const docId = email.replace(/[^a-zA-Z0-9@._-]/g, '_');
-  try {
-    const existing = await firestoreQuery(env, 'verification_codes_asetemyt', 'email', 'EQUAL', { stringValue: email });
-    for (const d of existing) {
-      if (d.id) {
-        await firestoreDelete(env, 'verification_codes_asetemyt', d.id);
+    const body = await request.json().catch(() => null);
+    const slug = body?.slug;
+    const email = normalizedEmail(body?.email);
+    if (typeof slug !== 'string' || !slug || slug.length > 200 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+      throw new PaymentError(400, 'Ficha o email no válido.');
+    }
+    if (!env.RESEND_API_KEY) throw new PaymentError(503, 'El envío de correo no está configurado.');
+    const found = await findListingBySlug(env, slug);
+    if (!found) throw new PaymentError(404, 'Ficha no encontrada.');
+    const id = await verificationId(user.user_id, slug);
+    const code = String(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000);
+    const nonce = crypto.randomUUID();
+    const codeHash = await digest(nonce + ':' + code);
+    const rateId = await digest(email);
+    const now = Date.now();
+    const outcome = await paymentTransaction(env, async tx => {
+      const listing = await tx.get(found.collection, found.listing.id);
+      requireAvailableListing(listing, user.user_id);
+      if (!ownsListingEmail(listing, email)) throw new PaymentError(403,
+        'Usa el correo publicado en la ficha o uno de su dominio corporativo. Si no tienes acceso, solicita una revisión a info@asetemyt.com.');
+      const reservation = await activeReservation(tx, env, slug);
+      if (reservation) {
+        if (reservation.uid !== user.user_id) throw new PaymentError(409, 'Esta ficha tiene un pago en curso.');
+        const existing = await tx.get(VERIFICATIONS, id);
+        if (reservation.pending) throw new PaymentError(409, 'El pago está pendiente de confirmación. Consulta Mi cuenta.');
+        if (existing?.checkoutUrl) return { success: true, checkoutUrl: existing.checkoutUrl };
+        throw new PaymentError(409, 'La verificación está en curso. Reintenta con el código recibido.');
       }
-    }
-  } catch (_) { /* ignore cleanup errors */ }
-
-  let ok: boolean;
-  try {
-    ok = await firestoreCreate(env, 'verification_codes_asetemyt', docId, {
-      code: { stringValue: code },
-      slug: { stringValue: slug },
-      nombre: { stringValue: nombre },
-      email: { stringValue: email },
-      mensaje: { stringValue: mensaje || '' },
-      uid: { stringValue: uid || '' },
-      createdAt: { timestampValue: now.toISOString() },
-      expiresAt: { timestampValue: expiresAt.toISOString() },
-      attempts: { integerValue: '0' },
+      const rate = await tx.get('ficha_email_limits', rateId);
+      if (rate?.lastSent > now - 60000) throw new PaymentError(429, 'Espera un minuto antes de solicitar otro código.');
+      const count = rate?.windowStart > now - 3600000 ? Number(rate.count || 0) : 0;
+      if (count >= 5) throw new PaymentError(429, 'Has alcanzado el límite de envíos. Inténtalo dentro de una hora.');
+      await tx.put('ficha_email_limits', rateId, { lastSent: now, windowStart: count ? rate.windowStart : now, count: count + 1 });
+      await tx.put(VERIFICATIONS, id, { uid: user.user_id, slug, email, nonce, codeHash,
+        nombre: typeof body.nombre === 'string' ? body.nombre.trim().slice(0, 200) : '',
+        mensaje: typeof body.mensaje === 'string' ? body.mensaje.trim().slice(0, 2000) : '',
+        collection: found.collection, listingId: found.listing.id,
+        createdAt: now, expiresAt: now + 10 * 60000, attempts: 0 });
+      return { success: true, checkoutUrl: undefined };
     });
-  } catch (e: any) {
-    console.error('firestoreCreate threw:', e?.message || e);
-    return new Response(JSON.stringify({ error: 'Error guardando el código', detail: e?.message || 'unknown' }), { status: 500 });
-  }
-
-  if (!ok) {
-    return new Response(JSON.stringify({ error: 'Error guardando el código', detail: 'firestoreCreate returned false' }), { status: 500 });
-  }
-
-  // Send email via Resend
-  const resendKey = env.RESEND_API_KEY;
-  if (!resendKey) {
-    return new Response(JSON.stringify({ error: 'RESEND_API_KEY no configurada' }), { status: 500 });
-  }
-
-  let fromAddress = 'ASETEMYT <noreply@asetemyt.com>';
-  const emailHtml = `
-    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #1a2332;">Tu código de verificación</h2>
-      <p style="font-size: 18px;">Introduce este código para verificar tu ficha en ASETEMYT:</p>
-      <div style="background: #f3f4f6; border-radius: 12px; padding: 20px; text-align: center; margin: 20px 0;">
-        <span style="font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #1a2332;">${code}</span>
-      </div>
-      <p style="color: #6b7280; font-size: 14px;">Este código caduca en 10 minutos. Si no has solicitado este email, puedes ignorarlo.</p>
-      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-      <p style="color: #9ca3af; font-size: 12px;">ASETEMYT — Directorio de Cronometraje Industrial</p>
-    </div>
-  `;
-
-  async function sendEmail(from: string, to: string[], subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
-    const resp = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ from, to, subject, html }),
+    if (outcome.checkoutUrl) return Response.json(outcome);
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST', headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from: 'ASETEMYT <noreply@asetemyt.com>', to: [email],
+        subject: 'Código de verificación ASETEMYT',
+        text: `Tu código de verificación es ${code}. Caduca en 10 minutos. Si no has solicitado este correo, puedes ignorarlo.` }),
     });
-    if (resp.ok) return { ok: true };
-    try {
-      const err = await resp.json();
-      return { ok: false, error: err.message || `HTTP ${resp.status}` };
-    } catch {
-      return { ok: false, error: `HTTP ${resp.status}` };
-    }
-  }
-
-  // Helper to try custom domain first, fallback to resend.dev
-  async function sendWithFallback(to: string[], subject: string, html: string): Promise<{ ok: boolean; error?: string }> {
-    let result = await sendEmail(fromAddress, to, subject, html);
-    if (!result.ok) {
-      const fallbackFrom = 'ASETEMYT <onboarding@resend.dev>';
-      result = await sendEmail(fallbackFrom, to, subject, html);
-    }
-    return result;
-  }
-
-  // 1) Send verification code to claimant
-  const result = await sendWithFallback(
-    [email],
-    'Código de verificación ASETEMYT',
-    emailHtml,
-  );
-
-  if (!result.ok) {
-    console.error('Resend error:', result.error);
-    return new Response(JSON.stringify({ error: 'Error enviando el email de verificación. Inténtalo de nuevo en unos minutos.' }), { status: 500 });
-  }
-
-  // 2) Notify the ficha's published email (if any, and different from claimant)
-  const fichaEmail = found.listing.contacto?.email;
-  if (fichaEmail && fichaEmail.toLowerCase() !== email.toLowerCase()) {
-    const notifyHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #1a2332;">Solicitud de reclamación de ficha</h2>
-        <p style="font-size: 16px; color: #374151;">
-          Un usuario ha solicitado reclamar y verificar la ficha <strong>${found.listing.nombre || slug}</strong> en el directorio ASETEMYT.
-        </p>
-        <div style="background: #f9fafb; border-radius: 8px; padding: 16px; margin: 16px 0; border-left: 4px solid #6366f1;">
-          <p style="margin: 0 0 8px;"><strong>Datos del solicitante:</strong></p>
-          <p style="margin: 0; color: #4b5563;">Nombre: ${nombre}</p>
-          <p style="margin: 0; color: #4b5563;">Email: ${email}</p>
-          ${mensaje ? `<p style="margin: 8px 0 0; color: #4b5563;">Mensaje: ${mensaje}</p>` : ''}
-        </div>
-        <p style="color: #6b7280; font-size: 14px;">
-          Si tú eres el propietario y reconoces esta solicitud, no necesitas hacer nada: el solicitante está verificando la propiedad mediante su email corporativo.
-        </p>
-        <p style="color: #6b7280; font-size: 14px;">
-          Si no reconoces esta solicitud o consideras que alguien ajeno está intentando reclamar tu ficha, contacta con nosotros en <a href="mailto:info@asetemyt.com">info@asetemyt.com</a>.
-        </p>
-        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
-        <p style="color: #9ca3af; font-size: 12px;">ASETEMYT — Directorio de Cronometraje Industrial</p>
-      </div>
-    `;
-
-    // Fire-and-forget — don't block the claim flow if this fails
-    sendWithFallback(
-      [fichaEmail],
-      `Reclamación de ficha: ${found.listing.nombre || slug}`,
-      notifyHtml,
-    ).catch((err) => console.error('Error notifying ficha email:', err));
-
-    // Notify admin
-    const adminNotifyHtml = `<div style="font-family:Arial,sans-serif;max-width:480px;padding:16px"><h2 style="color:#1a2332">🔔 Nueva solicitud de reclamación</h2><p><strong>Ficha:</strong> ${found.listing.nombre || slug} (/${slug})</p><p><strong>Solicitante:</strong> ${nombre} — ${email}</p>${mensaje ? `<p><strong>Mensaje:</strong> ${mensaje}</p>` : ''}<p style="margin-top:16px"><a href="https://asetemyt.com/admin/claims" style="background:#e8a838;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;font-weight:700">Gestionar en el panel →</a></p></div>`;
-    sendWithFallback(['info@asetemyt.com'], `🔔 Reclamación: ${found.listing.nombre || slug}`, adminNotifyHtml)
-      .catch(() => {});
-  }
-
-  return new Response(JSON.stringify({ success: true, message: 'Código enviado' }), { status: 200 });
+    if (!response.ok) throw new PaymentError(503, 'No se pudo enviar el correo. Espera un minuto y solicita otro código.');
+    return Response.json({ success: true, message: 'Código enviado' });
+  } catch (error) { return paymentFailure(error); }
 };
