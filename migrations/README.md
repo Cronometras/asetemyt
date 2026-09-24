@@ -16,7 +16,9 @@ npm run db:migrate:local
 npx wrangler d1 migrations apply DB --remote
 ```
 
-`npm run dev` y `npm start` aplican automáticamente las migraciones locales.
+`npm run dev` y `npm start` usan la D1 remota de producción (`remote = true`)
+después de autenticarse con `npx wrangler login`. No aplican migraciones al arrancar.
+`db:migrate:local` solo modifica una base aislada que la web local no utiliza.
 La migración 0003 conserva las fichas públicas que ya hubiera en la base.
 
 El historial privado que solo estuviera en Firestore requiere una importación

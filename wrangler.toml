@@ -3,16 +3,13 @@ compatibility_date = "2025-09-01"
 pages_build_output_dir = "dist"
 compatibility_flags = ["nodejs_compat"]
 
-# NOTA: Este wrangler.toml existe para el flujo LOCAL de wrangler (migrations,
-# wrangler d1 execute --local). El binding para PRODUCTION se configura en
-# CF Dashboard > Pages > asetemyt > Settings > Functions > D1 database bindings.
-#
-# Si en el futuro migras a deploy via wrangler CLI en vez de git integration,
-# este archivo también controla el deploy remoto. Por ahora solo se usa para
-# D1 local y como documentación.
+# Astro local utiliza la misma D1 remota que producción. Requiere wrangler login.
+# Las escrituras desde localhost también modifican los datos de producción.
+# El binding de Pages debe apuntar a esta misma base en Cloudflare Dashboard.
 
 [[d1_databases]]
 binding = "DB"
 database_name = "asetemyt-directorio"
 database_id = "9047e833-5b98-4859-b234-774905843e78"
+remote = true
 migrations_dir = "migrations"

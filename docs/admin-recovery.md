@@ -27,9 +27,15 @@ contenidos prerenderizados conservan su flujo de compilación.
 
 ## Desarrollo local
 
-`npm run dev` y `npm start` aplican las migraciones locales antes de iniciar Astro.
-También se pueden aplicar con `npm run db:migrate:local`.
-La migración 0003 ya está aplicada en esta copia local. No borra las fichas previas.
+`npm run dev` y `npm start` conectan Astro con la D1 de producción
+`asetemyt-directorio` mediante `remote = true` en `wrangler.toml`.
+Primero ejecutar `npx wrangler login` con acceso a esa base. Reiniciar Astro
+tras cambiar el binding. Las ediciones desde localhost afectan a producción.
+No se aplican migraciones automáticamente al arrancar.
+
+Git sincroniza el código; no copia datos de D1. Esta conexión remota evita
+mantener una copia local distinta. `npm run db:migrate:local` queda disponible
+para una base aislada, pero esa base no alimenta la web en esta configuración.
 
 El propietario inicial puede acceder con `micaot@gmail.com` verificado.
 `BOOTSTRAP_ADMIN_EMAILS` permite sustituir esa lista en el servidor (separada por
