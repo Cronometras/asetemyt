@@ -20,7 +20,83 @@ if (!entry) {
 const tipoColors: Record<string, string> = {
   empresa: 'bg-blue-100 text-blue-700',
   consultor: 'bg-green-100 text-green-700',
+  software: 'bg-purple-100 text-purple-700',
 };
+
+// Ficha de software: parámetros comparables (migración 0004) y vocabulario de
+// valores enumerados — docs/parametros-comparador-software.md
+const isSoftware = entry.seccion === 'software';
+const P: any = isSoftware ? (entry.parametros || {}) : {};
+const PR: any = isSoftware ? (entry.pricing || {}) : {};
+const DASH = '—';
+const deployKeys: Record<string, string> = { nube: 'vCloud', local: 'vLocal', hibrido: 'vHybrid' };
+const boolKeys: Record<string, string> = { si: 'yes', no: 'no', parcial: 'vPartial' };
+const licenseKeys: Record<string, string> = {
+  suscripcion: 'vSubscription', 'licencia-perpetua': 'vPerpetual', gratuito: 'vFree',
+  freemium: 'vFreemium', 'por-contacto': 'vContact',
+};
+const targetKeys: Record<string, string> = {
+  consultor: 'vConsultant', pyme: 'vSmb', 'gran-empresa': 'vEnterprise', 'pyme-gran-empresa': 'vSmbEnterprise',
+};
+const trialKeys: Record<string, string> = { si: 'yes', no: 'no', 'demo-a-solicitud': 'vTrialRequest' };
+
+function keyOr(value: string, map: Record<string, string>): string | null {
+  return (value && map[value]) || null;
+}
+function rawOr(value: string): string {
+  return (value && String(value)) || DASH;
+}
+
+const catLabels: Record<string, string> = {
+  'medicion-tiempos': 'Medición de tiempos',
+  'metodos-predeterminados': 'Métodos predeterminados',
+  'ergonomia': 'Ergonomía',
+  'oee-monitoreo': 'OEE y monitorización',
+  'mes': 'MES',
+  'erp': 'ERP',
+  'wms': 'WMS',
+  'cmms': 'CMMS',
+  'aps': 'APS',
+  'scada-iot': 'SCADA / IoT',
+  'calidad-spc': 'Calidad / SPC',
+  'calidad-qms': 'Calidad / QMS',
+  'simulacion': 'Simulación',
+  'mineria-procesos': 'Minería de procesos',
+  'cad-plm': 'CAD / PLM',
+  'formacion-lean': 'Formación Lean',
+  'robotica-vision': 'Robótica y visión',
+  'auditorias': 'Auditorias',
+  'dms-gestion-diaria': 'DMS y gestión diaria',
+  'tableros-visuales': 'Tableros visuales',
+  'cmms-mantenimiento': 'CMMS y mantenimiento',
+  'mejora-continua': 'Mejora continua',
+  'almacenes-logistica': 'Almacén y logística',
+  'despliegue-estrategico': 'Despliegue estratégico',
+  'prevencion-prl': 'Prevención y PRL',
+  'evaluacion-ergonomia': 'Evaluación ergonómica',
+  'lms-gestion-jornada': 'Jornada y LMS',
+  'kpi-estrategia': 'KPI y estrategia',
+  'connected-worker': 'Operario conectado',
+  'twi-habilidades': 'TWI y habilidades',
+};
+
+type TechRow = { label: string; labelKey: string; value: string; valueKey: string | null };
+const techRows: TechRow[] = isSoftware ? [
+  { label: 'Plataforma', labelKey: 'platform', value: rawOr(P.plataforma), valueKey: null },
+  { label: 'Despliegue', labelKey: 'deployment', value: rawOr(P.despliegue), valueKey: keyOr(P.despliegue, deployKeys) },
+  { label: 'Datos', labelKey: 'dataStorage', value: rawOr(P.datos), valueKey: keyOr(P.datos, deployKeys) },
+  { label: 'Sin conexión', labelKey: 'offline', value: rawOr(P.offline), valueKey: keyOr(P.offline, boolKeys) },
+  { label: 'App móvil', labelKey: 'mobileApp', value: rawOr(P.app_movil), valueKey: keyOr(P.app_movil, boolKeys) },
+  { label: 'Licenciamiento', labelKey: 'license', value: rawOr(PR.modelo), valueKey: keyOr(PR.modelo, licenseKeys) },
+  { label: 'Precio desde', labelKey: 'priceFrom', value: rawOr(PR.precio_desde), valueKey: null },
+  { label: 'Prueba gratuita', labelKey: 'trial', value: rawOr(PR.prueba_gratuita), valueKey: keyOr(PR.prueba_gratuita, trialKeys) },
+  { label: 'Idiomas', labelKey: 'languages', value: (P.idiomas || []).length ? (P.idiomas as string[]).join(', ') : DASH, valueKey: null },
+  { label: 'Empresa objetivo', labelKey: 'target', value: rawOr(P.target), valueKey: keyOr(P.target, targetKeys) },
+  { label: 'API', labelKey: 'apiInt', value: rawOr(P.api), valueKey: keyOr(P.api, boolKeys) },
+  { label: 'Vídeo', labelKey: 'video', value: rawOr(P.video), valueKey: keyOr(P.video, boolKeys) },
+  { label: 'Código abierto', labelKey: 'openSource', value: rawOr(P.codigo_abierto), valueKey: keyOr(P.codigo_abierto, boolKeys) },
+  { label: 'Fabricante', labelKey: 'vendor', value: [entry.fabricante, P.pais_origen].filter(Boolean).join(' · ') || DASH, valueKey: null },
+].filter((r) => r.value !== DASH) : [];
 
 // JSON-LD (build-time) — schema.org BreadcrumbList
 const breadcrumbSchema = {
@@ -36,7 +112,7 @@ const breadcrumbSchema = {
 // JSON-LD (build-time) — schema.org Organization | Person
 const entitySchema: Record<string, unknown> = {
   "@context": "https://schema.org",
-  "@type": entry.tipo === 'empresa' ? 'Organization' : 'Person',
+  "@type": isSoftware ? 'SoftwareApplication' : (entry.tipo === 'empresa' ? 'Organization' : 'Person'),
   "name": entry.nombre,
   "url": `https://asetemyt.com/directorio/${entry.slug}/`,
   "description": entry.descripcion || '',
@@ -88,8 +164,8 @@ if (entry.tipo === 'empresa') {
               )}
               <PartnerBadge tools={entry.herramientas || []} />
             </div>
-            <span class={`inline-block text-sm font-semibold px-3 py-1 rounded-full ${tipoColors[entry.tipo] || 'bg-steel-100 text-steel-600'}`}>
-              <span data-field={entry.tipo || 'sinTipo'}>{entry.tipo === 'empresa' ? 'Empresa' : 'Consultor'}</span>
+            <span class={`inline-block text-sm font-semibold px-3 py-1 rounded-full ${isSoftware ? tipoColors.software : (tipoColors[entry.tipo] || 'bg-steel-100 text-steel-600')}`}>
+              <span data-field={isSoftware ? 'softwareBadge' : (entry.tipo || 'sinTipo')}>{isSoftware ? 'Software' : (entry.tipo === 'empresa' ? 'Empresa' : 'Consultor')}</span>
             </span>
           </div>
         </div>
@@ -101,6 +177,60 @@ if (entry.tipo === 'empresa') {
           <div class="mb-8">
             <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="about">Acerca de</h2>
             <p class="text-steel-600 leading-relaxed">{entry.descripcion}</p>
+          </div>
+        )}
+
+        {/* Ficha técnica (software): parámetros comunes del comparador */}
+        {isSoftware && (
+          <div class="mb-8">
+            <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="techSheet">Ficha técnica</h2>
+
+            {entry.categorias?.length > 0 && (
+              <div class="mb-4">
+                <h3 class="text-sm font-semibold text-steel-700 mb-2" data-field="categoriesLabel">Categorías</h3>
+                <div class="flex flex-wrap gap-2">
+                  {entry.categorias.map((c: string) => (
+                    <span class="bg-steel-100 text-steel-700 px-3 py-1 rounded-lg text-sm font-medium">{catLabels[c] || c}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {P.metodos?.length > 0 && (
+              <div class="mb-4">
+                <h3 class="text-sm font-semibold text-steel-700 mb-2" data-field="methodsLabel">Métodos</h3>
+                <div class="flex flex-wrap gap-2">
+                  {P.metodos.map((m: string) => (
+                    <span class="bg-primary-50 text-primary-700 px-3 py-1 rounded-lg text-sm font-medium">{m}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+              {techRows.map((row) => (
+                <div class="flex items-baseline justify-between gap-3 border-b border-steel-100 pb-2">
+                  <dt class="text-sm font-medium text-steel-500 shrink-0" data-field={row.labelKey}>{row.label}</dt>
+                  <dd class="text-sm text-steel-700 text-right" data-field={row.valueKey || undefined}>{row.value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            {entry.funcionalidades?.length > 0 && (
+              <div class="mt-5">
+                <h3 class="text-sm font-semibold text-steel-700 mb-2" data-field="keyFeatures">Funciones clave</h3>
+                <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {entry.funcionalidades.map((f: string) => (
+                    <li class="flex items-start gap-2 text-steel-600">
+                      <svg class="w-5 h-5 text-accent-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 

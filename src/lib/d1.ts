@@ -161,7 +161,8 @@ export async function getConsultorBySlug(db: D1Binding, slug: string): Promise<a
 export async function listSoftware(db: D1Binding): Promise<any[]> {
   const stmt = db.prepare(
     'SELECT id, slug, nombre, tipo, lang, descripcion, categorias, funcionalidades, ' +
-    'pricing, fabricante, contacto, logo, verificado, destacado, created_at, updated_at ' +
+    'pricing, fabricante, contacto, logo, verificado, destacado, created_at, updated_at, ' +
+    'parametros ' +
     'FROM software ORDER BY nombre ASC'
   );
   const res = await stmt.all();
@@ -174,7 +175,8 @@ export async function listSoftware(db: D1Binding): Promise<any[]> {
 export async function getSoftwareBySlug(db: D1Binding, slug: string): Promise<any | null> {
   const stmt = db.prepare(
     'SELECT id, slug, nombre, tipo, lang, descripcion, categorias, funcionalidades, ' +
-    'pricing, fabricante, contacto, logo, verificado, destacado, created_at, updated_at ' +
+    'pricing, fabricante, contacto, logo, verificado, destacado, created_at, updated_at, ' +
+    'parametros ' +
     'FROM software WHERE slug = ? LIMIT 1'
   );
   const row = await stmt.bind(slug).first();
@@ -238,6 +240,9 @@ function rowToSoftware(r: any): any {
     funcionalidades: safeParse(r.funcionalidades, []),
     pricing: safeParse(r.pricing, {}),
     fabricante: r.fabricante,
+    // Parámetros comparables del comparador (migración 0004). {} si la ficha
+    // todavía no los tiene publicados.
+    parametros: safeParse(r.parametros, {}),
     contacto: safeParse(r.contacto, {}),
     logo: r.logo,
     verificado: !!r.verificado,

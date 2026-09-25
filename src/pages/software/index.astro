@@ -126,7 +126,7 @@ import DOMPurify from "dompurify";
             ${software.map((entry: any) => `
               <a href="/directorio/${entry.slug}" class="software-card relative bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group ${entry.destacado ? 'ring-2 ring-amber-400 border-amber-300' : ''}"
                 data-name="${(entry.nombre || '').toLowerCase()}"
-                data-especialidades="${(entry.especialidades || []).join(',').toLowerCase()}"
+                data-especialidades="${[...new Set([...(entry.parametros?.metodos || []), ...(entry.especialidades || []), ...(entry.categorias || [])])].join(',').toLowerCase()}"
                 data-ubicacion="${`${entry.ubicacion?.pais || ''} ${entry.ubicacion?.ciudad || ''}`.toLowerCase()}">
                 ${entry.destacado ? '<span class="absolute top-3 right-3 text-amber-500" title="Destacado">⭐</span>' : ''}
                 <div class="flex items-start gap-4 mb-4">
@@ -141,12 +141,17 @@ import DOMPurify from "dompurify";
                 </div>
                 ${entry.descripcion ? `<p class="text-steel-500 text-sm line-clamp-2 mb-3">${entry.descripcion}</p>` : ''}
                 <div class="flex flex-wrap gap-1.5 mb-3">
-                  ${(entry.especialidades || []).slice(0, 4).map((esp: string) => `<span class="text-xs bg-accent-50 text-accent-700 px-2 py-0.5 rounded font-medium">${esp}</span>`).join('')}
+                  ${((entry.parametros?.metodos || []).length ? entry.parametros.metodos : (entry.especialidades || [])).slice(0, 5).map((esp: string) => `<span class="text-xs bg-accent-50 text-accent-700 px-2 py-0.5 rounded font-medium">${esp}</span>`).join('')}
                 </div>
+                ${entry.seccion === 'software' ? `
+                <div class="flex items-center text-sm text-steel-400">
+                  <span class="font-medium text-steel-500 mr-1">${tr('platform')}:</span>
+                  <span>${entry.parametros?.plataforma || '—'}</span>
+                </div>` : `
                 <div class="flex items-center text-sm text-steel-400">
                   <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                   ${[entry.ubicacion?.ciudad, entry.ubicacion?.pais].filter(Boolean).join(', ') || tr('noLocation')}
-                </div>
+                </div>`}
               </a>
             `).join('')}
           </div>
