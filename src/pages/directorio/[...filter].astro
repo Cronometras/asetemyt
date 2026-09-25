@@ -1,90 +1,23 @@
 ---
-// Landing pages SEO: /directorio/[...filter]
-// Handles: /directorio/espana, /directorio/barcelona, /directorio/cronometraje,
-//          /directorio/espana/cronometraje, etc.
-export const prerender = true;
+// Country landing pages read the same live directory as profiles and the sitemap.
+export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
-import { getDirectoryEntries } from '../../lib/firebase';
+import { getDB, listConsultores } from '../../lib/d1';
+import { countrySlug } from '../../lib/seo';
 
-export async function getStaticPaths() {
-  let entries: any[] = [];
-  try {
-    entries = await getDirectoryEntries();
-  } catch (e) {
-    console.error('Error fetching entries for filter paths:', e);
-  }
-
-  const paths: any[] = [];
-
-  // Collect all countries and cities
-  const countries = new Map<string, number>();
-  const cities = new Map<string, number>();
-  const specialties = new Map<string, number>();
-
-  entries.forEach((e: any) => {
-    const country = e.ubicacion?.pais?.toLowerCase()?.trim();
-    const city = e.ubicacion?.ciudad?.toLowerCase()?.trim();
-    if (country) countries.set(country, (countries.get(country) || 0) + 1);
-    if (city) cities.set(city, (cities.get(city) || 0) + 1);
-    (e.especialidades || []).forEach((esp: string) => {
-      const key = esp.toLowerCase().trim();
-      specialties.set(key, (specialties.get(key) || 0) + 1);
-    });
-  });
-
-  // Country pages: /directorio/pais/[slug]
-  for (const [country, count] of countries) {
-    if (count >= 2) { // Only generate pages with enough entries
-      const slug = country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
-      paths.push({
-        params: { filter: `pais/${slug}` },
-        props: { type: 'country', value: country, entries: entries.filter((e: any) => e.ubicacion?.pais?.toLowerCase()?.trim() === country) },
-      });
-    }
-  }
-
-  // Specialty pages: /directorio/especialidad/[slug]
-  const espLabels: Record<string, string> = {
-    cronometraje: 'Cronometraje Industrial',
-    mtm: 'MTM (Methods-Time Measurement)',
-    most: 'MOST (Maynard Operation Sequence Technique)',
-    oee: 'OEE (Overall Equipment Effectiveness)',
-    lean: 'Lean Manufacturing',
-    estudio_trabajo: 'Estudio del Trabajo',
-  };
-
-  for (const [esp, count] of specialties) {
-    if (count >= 2) {
-      paths.push({
-        params: { filter: `especialidad/${esp}` },
-        props: { type: 'specialty', value: esp, entries: entries.filter((e: any) => (e.especialidades || []).some((s: string) => s.toLowerCase() === esp)) },
-      });
-    }
-  }
-
-  // Country + specialty combo: /directorio/pais/[country]/[specialty]
-  for (const [country, cCount] of countries) {
-    if (cCount < 3) continue;
-    const countrySlug = country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
-    for (const [esp, eCount] of specialties) {
-      if (eCount < 2) continue;
-      const matching = entries.filter((e: any) =>
-        e.ubicacion?.pais?.toLowerCase()?.trim() === country &&
-        (e.especialidades || []).some((s: string) => s.toLowerCase() === esp)
-      );
-      if (matching.length >= 1) {
-        paths.push({
-          params: { filter: `pais/${countrySlug}/${esp}` },
-          props: { type: 'country_specialty', value: `${country}|${esp}`, entries: matching },
-        });
-      }
-    }
-  }
-
-  return paths;
+const segments = (Astro.params.filter || '').split('/');
+if (segments[0] !== 'pais' || !segments[1] || segments.length > 3) {
+  return new Response('Página no encontrada', { status: 404 });
 }
-
-const { type, value, entries } = Astro.props;
+const all = await listConsultores(getDB(Astro.locals));
+const countryEntries = all.filter(entry => entry.ubicacion?.pais && countrySlug(entry.ubicacion.pais) === segments[1]);
+const entries = segments[2]
+  ? countryEntries.filter(entry => (entry.especialidades || []).some((esp: string) => esp.toLowerCase().trim() === segments[2]))
+  : countryEntries;
+if (!entries.length) return new Response('Página no encontrada', { status: 404 });
+const type = segments[2] ? 'country_specialty' : 'country';
+const country = countryEntries[0].ubicacion.pais.toLowerCase().trim();
+const value = segments[2] ? `${country}|${segments[2]}` : country;
 
 let title = '';
 let description = '';
@@ -176,7 +109,7 @@ const breadcrumbSchema = {
     ) : (
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {entries.map((entry: any) => (
-          <a href={`/directorio/${entry.slug}`} class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group">
+          <a href={`/directorio/${entry.slug}/`} class="bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group">
             <div class="flex items-start gap-4 mb-4">
               {entry.logo ? (
                 <img src={entry.logo} alt={entry.nombre} class="w-14 h-14 rounded-lg object-cover shadow-sm" loading="lazy" />

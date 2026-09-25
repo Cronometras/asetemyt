@@ -34,7 +34,7 @@ const collectionSchema = {
   "itemListElement": consultores.slice(0, 20).map((c, i) => ({
     "@type": "ListItem",
     "position": i + 1,
-    "url": `https://asetemyt.com/directorio/${c.slug}`,
+    "url": `https://asetemyt.com/directorio/${c.slug}/`,
     "name": c.nombre,
   })),
 };
@@ -116,7 +116,7 @@ const byTipo = {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {consultores.map((c) => (
           <a
-            href={`/directorio/${c.slug}`}
+            href={`/directorio/${c.slug}/`}
             class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 block"
           >
             <div class="flex items-start gap-4 mb-4">

@@ -29,7 +29,7 @@ const breadcrumbSchema = {
   "itemListElement": [
     { "@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://asetemyt.com/" },
     { "@type": "ListItem", "position": 2, "name": "Directorio", "item": "https://asetemyt.com/directorio" },
-    { "@type": "ListItem", "position": 3, "name": entry.nombre, "item": `https://asetemyt.com/directorio/${entry.slug}` },
+    { "@type": "ListItem", "position": 3, "name": entry.nombre, "item": `https://asetemyt.com/directorio/${entry.slug}/` },
   ],
 };
 
@@ -38,13 +38,13 @@ const entitySchema: Record<string, unknown> = {
   "@context": "https://schema.org",
   "@type": entry.tipo === 'empresa' ? 'Organization' : 'Person',
   "name": entry.nombre,
-  "url": `https://asetemyt.com/directorio/${entry.slug}`,
+  "url": `https://asetemyt.com/directorio/${entry.slug}/`,
   "description": entry.descripcion || '',
 };
 if (entry.tipo === 'empresa') {
-  entitySchema['@id'] = `https://asetemyt.com/directorio/${entry.slug}#organization`;
+  entitySchema['@id'] = `https://asetemyt.com/directorio/${entry.slug}/#organization`;
 } else {
-  entitySchema['@id'] = `https://asetemyt.com/directorio/${entry.slug}#person`;
+  entitySchema['@id'] = `https://asetemyt.com/directorio/${entry.slug}/#person`;
 }
 ---
 

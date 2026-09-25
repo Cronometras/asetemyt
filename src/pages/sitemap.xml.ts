@@ -1,21 +1,33 @@
-// Build-time static sitemap. Prerendered to dist/sitemap.xml.
-export const prerender = true;
+// Live sitemap: use the same D1 projections as the public profile routes.
+export const prerender = false;
 import type { APIRoute } from 'astro';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import { getDirectoryEntries } from '../lib/firebase';
+import { getDB, listConsultores, listSoftware } from '../lib/d1';
+import { canonicalPath, countrySlug } from '../lib/seo';
+import glossaryTerms from '../../public/data/glossary.json';
+import articles from '../../public/data/articles.json';
 
-export const GET: APIRoute = async () => {
-  let entries: any[] = [];
+export const GET: APIRoute = async ({ locals }) => {
+  let consultores: any[];
+  let entries: any[];
   try {
-    entries = await getDirectoryEntries();
-  } catch (e) {
-    console.error('Error fetching entries for sitemap:', e);
+    const db = getDB(locals);
+    const [people, software] = await Promise.all([listConsultores(db), listSoftware(db)]);
+    consultores = people;
+    entries = [...people, ...software];
+  } catch (error) {
+    // Do not replace a valid sitemap with an empty one during a database outage.
+    console.error('Error fetching entries for sitemap:', error);
+    return new Response('Sitemap temporalmente no disponible', {
+      status: 503,
+      headers: { 'Cache-Control': 'no-store', 'Retry-After': '300' },
+    });
   }
 
   const staticPages = [
     { url: '', priority: '1.0', changefreq: 'weekly' },
     { url: '/directorio', priority: '0.9', changefreq: 'daily' },
+    { url: '/directorio/especialidades', priority: '0.7', changefreq: 'weekly' },
+    { url: '/directorio/ciudades', priority: '0.7', changefreq: 'weekly' },
     { url: '/blog', priority: '0.8', changefreq: 'weekly' },
     { url: '/anadir', priority: '0.5', changefreq: 'monthly' },
     { url: '/glosario', priority: '0.8', changefreq: 'weekly' },
@@ -37,13 +49,13 @@ export const GET: APIRoute = async () => {
           if (!isNaN(date.getTime())) lastmod = date.toISOString().split('T')[0];
         }
       } catch {}
-      return { url: `/directorio/${e.slug}`, priority: '0.7', changefreq: 'monthly', lastmod };
+      return { url: `/directorio/${encodeURIComponent(e.slug)}`, priority: '0.7', changefreq: 'monthly', lastmod };
     });
 
   // Landing pages: countries and specialties
   const countries = new Map<string, number>();
   const specialties = new Map<string, number>();
-  entries.forEach((e: any) => {
+  consultores.forEach((e: any) => {
     const country = e.ubicacion?.pais?.toLowerCase()?.trim();
     if (country) countries.set(country, (countries.get(country) || 0) + 1);
     (e.especialidades || []).forEach((esp: string) => {
@@ -55,50 +67,31 @@ export const GET: APIRoute = async () => {
   const landingPages: any[] = [];
   for (const [country, count] of countries) {
     if (count >= 2) {
-      const slug = country.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '-');
-      landingPages.push({ url: `/directorio/pais/${slug}`, priority: '0.7', changefreq: 'weekly' });
+      const slug = countrySlug(country);
+      landingPages.push({ url: `/directorio/pais/${encodeURIComponent(slug)}`, priority: '0.7', changefreq: 'weekly' });
     }
   }
   for (const [esp, count] of specialties) {
     if (count >= 2) {
-      landingPages.push({ url: `/directorio/especialidad/${esp}`, priority: '0.7', changefreq: 'weekly' });
+      landingPages.push({ url: `/directorio/especialidad/${encodeURIComponent(esp)}`, priority: '0.7', changefreq: 'weekly' });
     }
   }
 
-  // Glossary pages — read from filesystem (build-time safe, no self-fetch)
-  let glossaryPages: any[] = [];
-  try {
-    const raw = readFileSync(join(process.cwd(), 'public', 'data', 'glossary.json'), 'utf-8');
-    const glossaryTerms = JSON.parse(raw);
-    glossaryPages = glossaryTerms.map((t: any) => ({
-      url: `/glosario/${t.slug}`,
-      priority: '0.6',
-      changefreq: 'monthly',
-    }));
-  } catch (e) {
-    console.error('Error reading glossary.json for sitemap:', e);
-  }
-
-  const allPages = [...staticPages, ...directoryPages, ...landingPages, ...glossaryPages];
+  // JSON is bundled at build time; no filesystem access in the edge runtime.
+  const glossaryPages = glossaryTerms.map(t => ({
+    url: `/glosario/${encodeURIComponent(t.slug)}`, priority: '0.6', changefreq: 'monthly',
+  }));
+  const blogPages = articles.filter(article => article.status === 'published').map(article => ({
+    url: `/blog/${encodeURIComponent(article.slug)}`, priority: '0.7', changefreq: 'monthly',
+  }));
+  const allPages = [...staticPages, ...directoryPages, ...landingPages, ...glossaryPages, ...blogPages];
 
   const xmlEscape = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
-  // ──────────────────────────────────────────────────────────────────────────
-  // Fix indexación (2026-09-02): sitemap must point to the same URL the page
-  // serves + declares as canonical. Astro/Cloudflare Pages normalizes everything
-  // to trailing-slash via 308, so emitting without-slash causes Google to flag
-  // every URL as "Página con redirección" (1.734 casos en Search Console).
-  // We: (1) ensure trailing slash, (2) dedupe so the same URL never appears
-  // twice (mix of slash/no-slash variants), (3) skip obviously empty paths.
-  // ──────────────────────────────────────────────────────────────────────────
   const seen = new Set<string>();
   const normalizedPages = allPages
-    .map((p) => {
-      const clean = (p.url || '').replace(/\/+$/, '');
-      const withSlash = clean ? `${clean}/` : '/';
-      return { ...p, url: withSlash };
-    })
+    .map(p => ({ ...p, url: canonicalPath(p.url) }))
     .filter((p) => {
       if (seen.has(p.url)) return false;
       seen.add(p.url);
@@ -120,6 +113,9 @@ ${normalizedPages
 </urlset>`;
 
   return new Response(xml, {
-    headers: { 'Content-Type': 'application/xml; charset=utf-8' },
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=0, must-revalidate',
+    },
   });
 };

@@ -4,6 +4,7 @@ export interface Props {
   description?: string;
   image?: string;
   ogType?: 'website' | 'article' | 'profile' | 'product';
+  canonical?: string;
 }
 
 const {
@@ -14,8 +15,9 @@ const {
 } = Astro.props;
 import Analytics from '../components/Analytics.astro';
 import CookieConsent from '../components/CookieConsent.astro';
+import { canonicalUrl as getCanonicalUrl } from '../lib/seo';
 
-const canonicalUrl = `https://asetemyt.com${Astro.url.pathname}`;
+const canonicalUrl = getCanonicalUrl(Astro.props.canonical || Astro.url.pathname);
 
 // Title: cap at 60 chars so Google SERPs don't truncate. " | ASETEMYT" suffix (12 chars) is part of the cap.
 const titleWithBrand = title.includes('ASETEMYT') ? title : `${title} | ASETEMYT`;
