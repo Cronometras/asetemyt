@@ -161,6 +161,34 @@
       "deployment": "local"
     },
     {
+      "name": "ASM Soft",
+      "slug": "asm-soft",
+      "pricing": "Contacto",
+      "platform": "—",
+      "methods": [
+        "OEE",
+        "Lean"
+      ],
+      "features": [
+        "Implanta ERP sobre Microsoft Dynamics 365 Business Central, antes Dynamics NAV, para la gestión del negocio.",
+        "Ofrece soluciones MES-MOM conectadas a los equipos y a las líneas de fabricación de la planta.",
+        "El sistema MES monitoriza y controla los procesos y gestiona el flujo de datos de planta en tiempo real.",
+        "Intercambia información entre el MES y el ERP para mantener sincronizadas la oficina y la fábrica.",
+        "Desarrolla asmLims, software para la gestión de los laboratorios de producción.",
+        "Incluye módulos sectoriales como asmBodegas, asmMar, asmProyectos, asmQuesos y asmLácteo.",
+        "Aporta analítica con Power BI y gestión de relaciones con clientes mediante CRM.",
+        "Aborda la mejora continua con datos de planta e indicadores de OEE, paradas y microparadas."
+      ],
+      "languages": [],
+      "targetSize": "PYME",
+      "freeTrial": "—",
+      "videoSupport": true,
+      "apiIntegration": false,
+      "notes": "La web no publica importes; cita las ayudas Kit Digital y Kit Consulting para la digitalización de pymes españolas y un canal de contacto comercial directo.",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
       "name": "AVIX Suite (Kummerk / Solmeva)",
       "slug": "avix-suite",
       "pricing": "Contacto comercial",
@@ -576,6 +604,32 @@
       "deployment": "hibrido"
     },
     {
+      "name": "Azur SIS",
+      "slug": "azur-sis",
+      "pricing": "Contacto",
+      "platform": "—",
+      "methods": [],
+      "features": [
+        "Desarrolla aplicaciones web y móviles a medida según los procesos de cada cliente.",
+        "Implanta y personaliza sistemas de CRM y ERP para la gestión de la empresa.",
+        "Integra inteligencia artificial en los procesos de negocio existentes.",
+        "Crea análisis de datos y cuadros de mando para el seguimiento de la actividad.",
+        "Ofrece servicios de desarrollo nearshore con equipo propio de programadores.",
+        "Imparte formación en herramientas de hoja de cálculo para los equipos del cliente.",
+        "Acompaña la modernización y automatización de procesos durante toda la vida del proyecto."
+      ],
+      "languages": [
+        "es"
+      ],
+      "targetSize": "",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
       "name": "Azure IoT Central",
       "slug": "azure-iot-central",
       "pricing": "Contacto",
@@ -625,6 +679,33 @@
       "notes": "Sin precios publicados; la web no muestra formulario de pago ni planes.",
       "dataStorage": "nube",
       "deployment": "nube"
+    },
+    {
+      "name": "BeOEE",
+      "slug": "beoee",
+      "pricing": "Demo a solicitud",
+      "platform": "—",
+      "methods": [
+        "OEE"
+      ],
+      "features": [
+        "Capta automáticamente señales de máquina como ciclos, estados y cantidades de producción.",
+        "Registra desde planta la orden, la actividad, el paro, las unidades y la calidad del producto.",
+        "Calcula disponibilidad, rendimiento y calidad para componer el indicador OEE por periodo.",
+        "Permite detectar la pérdida durante el turno y bajar al periodo, actividad o paro que la explica.",
+        "Ofrece una aplicación de gestión, una tablet de operario y un monitor de planta con la misma producción.",
+        "Agrupa en una misma vista máquinas conectadas y máquinas de registro manual identificando el origen del dato.",
+        "Recibe productos y órdenes del ERP y publica avances y cambios de estado para su consulta.",
+        "Incluye trazabilidad con lotes y etiquetas, planificación de secuencia y planes de acción de mejora."
+      ],
+      "languages": [],
+      "targetSize": "",
+      "freeTrial": "Demo a solicitud",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web no publica importes; propone una demostración preparada con el tipo de proceso y las preguntas de producción del cliente.",
+      "dataStorage": "",
+      "deployment": ""
     },
     {
       "name": "Blue Yonder WMS",
@@ -735,6 +816,34 @@
       "deployment": "nube"
     },
     {
+      "name": "Celestia TST",
+      "slug": "celestia-tst",
+      "pricing": "Contacto",
+      "platform": "Web (SaaS)",
+      "methods": [],
+      "features": [
+        "La plataforma NebulaLink centraliza los datos del proyecto y se accede desde cualquier lugar y dispositivo.",
+        "Las soluciones verticales cubren nivel de combustibles y líquidos, silos de pienso, contadores de agua, energía y localización de activos.",
+        "La integración conecta la solución con los sistemas ERP, MES y BI ya presentes en la empresa.",
+        "El hardware propio se fabrica en España e implanta sobre la infraestructura existente del cliente.",
+        "El servicio integra consultoría, diseño, fabricación, conectividad y puesta en marcha con un único equipo.",
+        "La gestión energética y la telelectura atienden a utilities, administraciones públicas y grandes consumidores.",
+        "El seguimiento RTLS localiza activos en tiempo real en el interior de las instalaciones.",
+        "El proyecto se implanta sin interrumpir la operación y escala con el crecimiento del uso."
+      ],
+      "languages": [
+        "es",
+        "en"
+      ],
+      "targetSize": "",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web no publica precios y dirige a contactar con su equipo para valorar el proyecto.",
+      "dataStorage": "nube",
+      "deployment": "nube"
+    },
+    {
       "name": "Celonis Process Mining",
       "slug": "celonis-process-mining",
       "pricing": "Contacto",
@@ -808,6 +917,31 @@
       "deployment": ""
     },
     {
+      "name": "Commet GMAO",
+      "slug": "commet-gmao",
+      "pricing": "Contacto",
+      "platform": "Web (SaaS)",
+      "methods": [],
+      "features": [
+        "Clasifica los activos en un árbol por tipo de operación y criticidad, incluyendo máquinas, naves, vehículos e instalaciones de servicios.",
+        "Crea planes de mantenimiento correctivo, preventivo, predictivo y de mejora con fechas, frecuencias y responsables asignados.",
+        "Envía cada orden de trabajo en tiempo real al terminal móvil del operario con el detalle de la avería y la documentación auxiliar.",
+        "Permite al operario consultar en movilidad sus órdenes pendientes y urgentes y marcar la tarea como realizada.",
+        "Registra los repuestos y consumos de cada mantenimiento para conocer el material utilizado en cada intervención.",
+        "Analiza horas, costes y frecuencias de los mantenimientos para tomar decisiones basadas en datos objetivos.",
+        "Funciona en portátiles, tabletas y móviles con sistemas Windows, Android, Mac o Linux gracias a su tecnología web.",
+        "Agrupa sus funciones en cuatro fases: identificación, planificación, ejecución y análisis de las operaciones."
+      ],
+      "languages": [],
+      "targetSize": "",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web organiza el producto en tres ediciones: commet GMAO Cloud, en la nube y sin instalación; commet GMAO Estándar, con todas las funciones y módulos; y commet GMAO Avanzada, personalizada a requisitos concretos. Publica una tabla comparativa de precios sin importes.",
+      "dataStorage": "nube",
+      "deployment": "nube"
+    },
+    {
       "name": "ComplianceQuest",
       "slug": "compliancequest",
       "pricing": "Contacto",
@@ -831,6 +965,35 @@
       "notes": "La web ofrece un calculador de retorno de la inversión y seminarios web, sin precios en la fuente.",
       "dataStorage": "nube",
       "deployment": "nube"
+    },
+    {
+      "name": "CondorVision",
+      "slug": "condorvision",
+      "pricing": "Demo a solicitud",
+      "platform": "Híbrido",
+      "methods": [
+        "OEE"
+      ],
+      "features": [
+        "Inspección visual automatizada con inteligencia artificial que detecta defectos a velocidad de línea.",
+        "Conteo automático de productos fabricados y medición de tiempos de ciclo en cada línea.",
+        "Cálculo automático de indicadores de rendimiento y alertas de desviaciones en la producción.",
+        "Rechazo automático de la pieza defectuosa mediante el actuador conectado al PLC de la línea.",
+        "Panel de métricas en tiempo real con histórico de producción y de calidad por lote y por producto.",
+        "Integración con PLC Siemens y Allen-Bradley, sensores, encoders y señales de 24 voltios.",
+        "Despliegue con servidor local sin conexión a internet o servidor en la nube, con modo de operación sin red.",
+        "Trazabilidad completa de la producción con documentación automática para auditorías."
+      ],
+      "languages": [
+        "es"
+      ],
+      "targetSize": "",
+      "freeTrial": "Demo a solicitud",
+      "videoSupport": true,
+      "apiIntegration": false,
+      "notes": "Sin precios publicados; la web ofrece solicitar demostración y una calculadora de retorno de inversión.",
+      "dataStorage": "hibrido",
+      "deployment": "hibrido"
     },
     {
       "name": "Coursera (Lean Six Sigma)",
@@ -1125,6 +1288,35 @@
       "deployment": ""
     },
     {
+      "name": "ERP Genes (CEINOR)",
+      "slug": "erp-genes-ceinor",
+      "pricing": "Demo a solicitud",
+      "platform": "Web (SaaS)",
+      "methods": [],
+      "features": [
+        "Identifica el vehículo por matrícula o por marca, modelo y tipo y recupera sus datos oficiales.",
+        "Elabora presupuestos con la ficha técnica, las piezas y las alternativas originales o equivalentes.",
+        "Trabaja con una base de datos de referencias de automoción de cientos de marcas y fabricantes.",
+        "Publica tiendas para la venta a profesionales y para la venta al consumidor final con catálogo y stock.",
+        "Gestiona citas, partes de trabajo y la firma remota de documentos desde el móvil del cliente.",
+        "Ofrece área privada para que cada cliente consulte sus facturas, albaranes y vehículos.",
+        "Incluye portal del empleado para jornada, fichajes, turnos y correcciones de fichaje.",
+        "Nora digitaliza facturas y albaranes, conecta los bancos, concilia movimientos y envía informes de gestión."
+      ],
+      "languages": [
+        "es",
+        "en",
+        "pt"
+      ],
+      "targetSize": "PYME",
+      "freeTrial": "Demo a solicitud",
+      "videoSupport": true,
+      "apiIntegration": false,
+      "notes": "La web invita a pedir una demo; no publica tarifas.",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
       "name": "ERPNext Manufacturing",
       "slug": "erpnext-manufacturing",
       "pricing": "Gratuito · Sí",
@@ -1278,6 +1470,32 @@
       "videoSupport": false,
       "apiIntegration": false,
       "notes": "El taller en línea tiene un coste de 302 USD.",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
+      "name": "Enao Vision",
+      "slug": "enao-vision",
+      "pricing": "Sí",
+      "platform": "—",
+      "methods": [],
+      "features": [
+        "Detecta defectos del producto en tiempo real a partir de las imágenes capturadas con un iPhone.",
+        "Exige el cumplimiento de las reglas de calidad definidas para cada referencia fabricada.",
+        "Traza la calidad del producto desde la recepción de materiales hasta la salida de mercancía.",
+        "Permite entrenar los modelos de detección por el propio equipo, sin integrar visión artificial clásica.",
+        "Proporciona analítica de producción y una capa de realimentación del operario en la línea.",
+        "Cubre líneas de cerámica, embalaje, plástico, metal, textil, madera, vidrio, electrónica y alimentación.",
+        "Admite una prueba en una línea inicial antes de ampliar a más referencias, turnos y plantas."
+      ],
+      "languages": [
+        "en"
+      ],
+      "targetSize": "",
+      "freeTrial": "Sí",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web indica que los equipos pueden empezar con una prueba y después ampliar a más líneas, turnos y plantas; no publica precios.",
       "dataStorage": "",
       "deployment": ""
     },
@@ -1823,6 +2041,34 @@
       "deployment": ""
     },
     {
+      "name": "Holded",
+      "slug": "holded",
+      "pricing": "Suscripción · desde 15 €/mes · Sí",
+      "platform": "Móvil + web",
+      "methods": [
+        "Kanban"
+      ],
+      "features": [
+        "Emite presupuestos y facturas y convierte un presupuesto aceptado en factura enviándola por correo.",
+        "Contabiliza cada factura, cobro o pago al momento y propone los asientos con ayuda de inteligencia artificial.",
+        "Conecta más de 200 bancos y categoriza tarjetas, suscripciones y facturas de proveedores con previsión de tesorería.",
+        "Gestiona el inventario con stock en tiempo real, alertas de reposición y sincronización con tiendas en línea.",
+        "Incluye módulos de CRM, proyectos con tableros kanban, control horario con fichado móvil y nóminas.",
+        "Añade manufactura, punto de venta y cartera de pagos dentro de la misma plataforma.",
+        "Permite trabajar desde el navegador o desde las aplicaciones móviles con los datos en la nube."
+      ],
+      "languages": [
+        "en"
+      ],
+      "targetSize": "PYME",
+      "freeTrial": "Sí",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "Prueba gratuita de 14 días; la web anuncia además un descuento del 50 % durante los tres primeros meses por tiempo limitado.",
+      "dataStorage": "nube",
+      "deployment": "nube"
+    },
+    {
       "name": "Honeywell Forge",
       "slug": "honeywell-forge",
       "pricing": "Contacto",
@@ -1899,6 +2145,30 @@
       "videoSupport": false,
       "apiIntegration": false,
       "notes": "La web publica una lista de precios y un formulario de pedido, sin planes ni periodo de prueba en la fuente.",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
+      "name": "IAMCAD",
+      "slug": "iamcad",
+      "pricing": "Contacto",
+      "platform": "—",
+      "methods": [],
+      "features": [
+        "Distribuye Mastercam para la programación CNC de torno, fresado y mecanizado multitarea.",
+        "Ofrece TopSolid como solución CAD/CAM para agilizar el diseño y la producción.",
+        "Implementa RPS, un ERP industrial para mejorar la planificación y el control de producción en fábrica.",
+        "Despliega un sistema MES para controlar en tiempo real cada fase de la producción.",
+        "Mejora la trazabilidad y la eficiencia operativa adaptándose a las demandas de cada cliente.",
+        "Trabaja el sector de la madera con soluciones integradas para digitalizar el diseño y la fabricación.",
+        "Presta servicios de implantación y soporte, con casos de éxito publicados en su blog."
+      ],
+      "languages": [],
+      "targetSize": "",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web no publica precios ni planes; las soluciones se presupuestan a través del formulario de contacto o por teléfono.",
       "dataStorage": "",
       "deployment": ""
     },
@@ -2707,6 +2977,31 @@
       "deployment": ""
     },
     {
+      "name": "MPsoftware",
+      "slug": "mpsoftware",
+      "pricing": "Freemium · Sí",
+      "platform": "Web (SaaS)",
+      "methods": [],
+      "features": [
+        "MPindustries funciona como CMMS en la nube para gestionar el mantenimiento de los activos de la organización.",
+        "MPservices es un software de gestión de servicios (FSM) para empresas que prestan mantenimiento a clientes externos.",
+        "Incluye aplicaciones descargables en Google Play y App Store para trabajar desde el teléfono.",
+        "Permite integrar el software con otras aplicaciones y dispositivos IoT para monitorizar los equipos en tiempo real.",
+        "Ofrece un consultor dedicado que acompaña la implementación mediante sesiones en línea.",
+        "Dispone de centro de aprendizaje, canal de vídeos y soporte técnico por correo, llamada y chat.",
+        "Emplea tecnologías como Amazon Web Services, OAuth y JWT para proteger la información del cliente.",
+        "Incluye una versión gratuita de mantenimiento para estudiantes."
+      ],
+      "languages": [],
+      "targetSize": "",
+      "freeTrial": "Sí",
+      "videoSupport": true,
+      "apiIntegration": false,
+      "notes": "La web permite crear una cuenta y comenzar gratis, y publica una sección de precios y planes sin importes. También ofrece software de mantenimiento gratuito para estudiantes.",
+      "dataStorage": "nube",
+      "deployment": "nube"
+    },
+    {
       "name": "MRPeasy",
       "slug": "mrpeasy",
       "pricing": "Sí",
@@ -2778,6 +3073,33 @@
       "videoSupport": false,
       "apiIntegration": false,
       "notes": "Sin precios publicados; la web ofrece demo a solicitud.",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
+      "name": "MadeSoft",
+      "slug": "madesoft",
+      "pricing": "Contacto",
+      "platform": "—",
+      "methods": [
+        "OEE"
+      ],
+      "features": [
+        "Monitoriza las máquinas para saber qué ocurre y por qué se paran durante el turno.",
+        "Mide la eficiencia real de la producción mediante el indicador OEE.",
+        "Digitaliza los partes de producción que hoy se registran en papel o en Excel.",
+        "Registra el tiempo que dedica cada operario a cada tarea, con su lote y su operación.",
+        "Muestra los indicadores consolidados de la fábrica en un panel en tiempo real.",
+        "Conecta el ERP con las máquinas y con los sistemas SCADA y PLC de la planta.",
+        "Diseña y despliega la red industrial OT e integra herramientas de terceros en esa capa.",
+        "Ofrece consultoría con análisis funcional, diagnóstico de infraestructura y hoja de ruta de digitalización."
+      ],
+      "languages": [],
+      "targetSize": "PYME",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web no publica precios; el proceso arranca con una llamada de diagnóstico de quince a treinta minutos y la propuesta se presenta después, sobre un documento con lo entendido.",
       "dataStorage": "",
       "deployment": ""
     },
@@ -3068,6 +3390,34 @@
       "notes": "La web ofrece demostración y recorrido guiado del producto; sin precios publicados.",
       "dataStorage": "nube",
       "deployment": "nube"
+    },
+    {
+      "name": "Overtel",
+      "slug": "overtel",
+      "pricing": "Demo a solicitud",
+      "platform": "—",
+      "methods": [],
+      "features": [
+        "Implanta un ERP industrial para gestionar la parte administrativa y de recursos de la pyme fabricante.",
+        "Despliega un sistema MES/MOM que controla la fabricación en planta y la trazabilidad del producto.",
+        "Ofrece un CRM y analítica de datos para conectar la fábrica con el resto de la organización.",
+        "Integra identificación en tiempo real y automatización de tareas con software de robotización de procesos.",
+        "Aplica una metodología propia de cuatro fases: planificación, implantación ágil, seguimiento y soporte.",
+        "Arranca cada proyecto con un diagnóstico gratuito de la situación digital de la fábrica del cliente.",
+        "Presta servicios de TI, almacenamiento y ciberseguridad para la infraestructura de la empresa.",
+        "Mantiene soporte permanente después de la puesta en marcha de las soluciones implantadas."
+      ],
+      "languages": [
+        "es",
+        "en"
+      ],
+      "targetSize": "PYME",
+      "freeTrial": "Demo a solicitud",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web ofrece demo con diagnóstico gratuito y no publica tarifas.",
+      "dataStorage": "",
+      "deployment": ""
     },
     {
       "name": "PTC Windchill",
@@ -3384,6 +3734,31 @@
       "notes": "Prueba gratuita a petición; precios no publicados en la web.",
       "dataStorage": "hibrido",
       "deployment": "hibrido"
+    },
+    {
+      "name": "Quimel",
+      "slug": "quimel",
+      "pricing": "Contacto",
+      "platform": "—",
+      "methods": [],
+      "features": [
+        "Implementa sistemas PLC y SCADA a medida para automatizar y monitorizar las operaciones industriales.",
+        "Desarrolla su propio software MES, QPRO, para integrarse con los sistemas ya presentes en la planta.",
+        "Ofrece un GMAO, QMAX, para el mantenimiento correctivo y preventivo de las instalaciones industriales.",
+        "Integra el MES con los sistemas de la fábrica y trabaja la conectividad de datos de planta.",
+        "Aplica motion control y automatización de procesos sobre líneas de producción existentes.",
+        "Presta consultoría de transformación digital, eficiencia en la producción e integración de sistemas.",
+        "Da soporte técnico y mantenimiento continuo a los sistemas que instala.",
+        "Atiende sectores como alimentación, packaging, farmacéutico, papel, metal, plástico, construcción y químico."
+      ],
+      "languages": [],
+      "targetSize": "",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web no publica precios ni condiciones de licencia; el acceso a presupuesto es por formulario de contacto, correo o teléfono.",
+      "dataStorage": "",
+      "deployment": ""
     },
     {
       "name": "REBA (Rapid Entire Body Assessment)",
@@ -3735,6 +4110,32 @@
       "deployment": ""
     },
     {
+      "name": "Senspain",
+      "slug": "senspain",
+      "pricing": "Contacto",
+      "platform": "—",
+      "methods": [],
+      "features": [
+        "El sistema SAS detecta personas con tecnología UWB direccional para prevenir atropellos en obra, planta y muelle.",
+        "Las cámaras con algoritmo de inteligencia artificial cubren los ángulos muertos de la maquinaria pesada.",
+        "La plataforma NEKO reúne los algoritmos de la compañía y evoluciona con la aportación de sus clientes.",
+        "El dispositivo para trabajos en solitario avisa cuando cae el operario que trabaja aislado.",
+        "La gama incluye faros industriales, avisadores acústicos de marcha atrás y sistemas antiarranque.",
+        "Las soluciones se dirigen a puertos, minería y obras públicas, industria, ferrocarril y transporte por carretera.",
+        "El diseño y el desarrollo del producto los realiza la propia compañía, con fabricación en España y Europa."
+      ],
+      "languages": [
+        "es"
+      ],
+      "targetSize": "",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web no publica precios y habilita formularios de contacto para solicitar información.",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
       "name": "Sepasoft MES Suite",
       "slug": "sepasoft-mes-suite",
       "pricing": "Demo a solicitud",
@@ -3925,6 +4326,33 @@
       "deployment": ""
     },
     {
+      "name": "Singular Things",
+      "slug": "singular-things",
+      "pricing": "Contacto",
+      "platform": "Híbrido",
+      "methods": [],
+      "features": [
+        "La plataforma ingesta telemetría de los dispositivos desplegados y centraliza la gestión de la flota en la nube.",
+        "Los cuadros de mando supervisan señales, telemetría y alertas para seguir la operación de los activos.",
+        "Los gemelos digitales replican activos para simular, monitorizar y analizar su comportamiento.",
+        "La inferencia en el borde ejecuta modelos de inteligencia artificial en el propio dispositivo cuando hace falta baja latencia.",
+        "La gama de hardware propio comprende módulos centrales, pasarelas, nodos portátiles y sensores distribuidos.",
+        "El proceso de trabajo cubre alcance, prototipo, validación e industrialización hasta la producción en serie.",
+        "La propuesta se dirige a despliegues que van desde una prueba inicial hasta flotas de miles de dispositivos.",
+        "El equipo integra electrónica, firmware y diseño industrial en dispositivos de formato reducido fabricados en Madrid."
+      ],
+      "languages": [
+        "es"
+      ],
+      "targetSize": "",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "La web no publica precios: pide describir el proyecto para definir los siguientes pasos.",
+      "dataStorage": "hibrido",
+      "deployment": "hibrido"
+    },
+    {
       "name": "Software 5S y Auditoría Lean",
       "slug": "software-5s-y-auditor-a-lean",
       "pricing": "Demo a solicitud",
@@ -4072,6 +4500,33 @@
       "deployment": ""
     },
     {
+      "name": "TallGP",
+      "slug": "tallgp",
+      "pricing": "Suscripción · Demo a solicitud",
+      "platform": "Web (SaaS)",
+      "methods": [],
+      "features": [
+        "Gestiona las citas previas y la agenda del taller y de cada empleado con turnos y permisos.",
+        "Emite presupuestos, albaranes, facturas y órdenes de reparación desde la misma aplicación.",
+        "Envía campañas de marketing por correo electrónico y mensajes de texto a los clientes.",
+        "Controla el stock y el documental de albaranes de compra y fichas de vehículos.",
+        "Permite adjuntar fotografías a las órdenes desde un móvil o una tableta sin pasar por el ordenador.",
+        "Firma los documentos con una tableta de firma y avisa de la próxima revisión técnica del vehículo.",
+        "Se conecta con aplicaciones externas de contabilidad, pesaje y peritaje.",
+        "Publica una API para desarrolladores y trabaja con varios usuarios en tiempo real."
+      ],
+      "languages": [
+        "es"
+      ],
+      "targetSize": "PYME",
+      "freeTrial": "Demo a solicitud",
+      "videoSupport": true,
+      "apiIntegration": true,
+      "notes": "La web ofrece cuota fija mensual o pago mediante créditos en prepago, con posibilidad de cambiar de modalidad, y un acceso de demostración; no publica importes.",
+      "dataStorage": "nube",
+      "deployment": "nube"
+    },
+    {
       "name": "TeamGuru",
       "slug": "teamguru",
       "pricing": "Suscripción · Sí",
@@ -4120,6 +4575,36 @@
       "videoSupport": false,
       "apiIntegration": false,
       "notes": "La página dirige a contacto con Siemens y ofrece probar la solución, sin precios publicados.",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
+      "name": "Tecsidel",
+      "slug": "tecsidel",
+      "pricing": "Contacto",
+      "platform": "—",
+      "methods": [
+        "Simulación"
+      ],
+      "features": [
+        "Ofrece planificación de la cadena de suministros para coordinar aprovisionamiento y distribución.",
+        "Incluye gestión de almacén con módulo WMS y gestión de patio y de patio de contenedores.",
+        "Cubre la optimización de operaciones y la gestión del transporte de mercancías.",
+        "Desarrolla simulación de operaciones para probar escenarios antes de aplicarlos en la red logística.",
+        "Proporciona sistemas de localización en tiempo real para el seguimiento de activos y mercancías.",
+        "Desarrolla sistemas de peaje Stop & Go y en libre trayecto con back office de gestión.",
+        "Presta consultoría, gestión de proyectos, garantía de calidad, mantenimiento y monitorización de sistemas.",
+        "Incluye investigación, desarrollo e innovación aplicados a los sistemas que implanta."
+      ],
+      "languages": [
+        "es",
+        "en"
+      ],
+      "targetSize": "",
+      "freeTrial": "—",
+      "videoSupport": false,
+      "apiIntegration": false,
+      "notes": "",
       "dataStorage": "",
       "deployment": ""
     },
@@ -4728,6 +5213,33 @@
       "deployment": "nube"
     },
     {
+      "name": "ZEO Technology",
+      "slug": "zeo-technology",
+      "pricing": "Demo a solicitud",
+      "platform": "—",
+      "methods": [
+        "OEE"
+      ],
+      "features": [
+        "Monitoriza el OEE en tiempo real midiendo disponibilidad, rendimiento y calidad de cada puesto.",
+        "Digitaliza el control de calidad de producto y monitoriza los parámetros de proceso en una plataforma.",
+        "Garantiza la trazabilidad total del producto fabricado a lo largo del proceso productivo.",
+        "Secuencia los pedidos, avisa de los retrasos y muestra un Gantt con el estado de cada pedido.",
+        "Recoge datos automáticamente de las máquinas para detectar paradas, microparadas y cuellos de botella.",
+        "Ofrece una tablet para que el operario declare los defectuosos y los motivos de las paradas.",
+        "Comparte una sola pantalla con el rendimiento de todas las líneas para operarios, mandos y dirección.",
+        "Incluye analítica con cuadros de mando e indicadores para convertir los datos industriales en decisiones."
+      ],
+      "languages": [],
+      "targetSize": "",
+      "freeTrial": "Demo a solicitud",
+      "videoSupport": true,
+      "apiIntegration": false,
+      "notes": "La web no publica importes; invita a solicitar una demo y ofrece una calculadora de ROI de OEE con los datos de la propia planta.",
+      "dataStorage": "",
+      "deployment": ""
+    },
+    {
       "name": "Zebra Technologies",
       "slug": "zebra-technologies",
       "pricing": "Contacto",
@@ -4825,6 +5337,33 @@
       "notes": "Demo; importes no publicados en la web.",
       "dataStorage": "",
       "deployment": ""
+    },
+    {
+      "name": "myGESTIÓN",
+      "slug": "mygestion",
+      "pricing": "Sí",
+      "platform": "Web (SaaS)",
+      "methods": [],
+      "features": [
+        "Emite facturas electrónicas y las envía a la Agencia Tributaria adaptado al reglamento Verifactu.",
+        "Controla cobros y pagos y concilia automáticamente los movimientos bancarios con la facturación.",
+        "Gestiona el inventario de cada almacén con tarifas de precios, series, lotes y fechas de caducidad.",
+        "Incluye módulos opcionales de contabilidad, servicio técnico, producción, punto de venta, CRM y proyectos.",
+        "Permite acceder al ERP desde el móvil para preparar presupuestos, pedidos y facturas fuera de la oficina.",
+        "Ofrece cuadros de mando e informes exportables con los datos de compras, ventas y almacén.",
+        "Se conecta con tiendas PrestaShop y WooCommerce y con otras aplicaciones mediante su API.",
+        "Realiza copias de seguridad diarias y registra los accesos al software para proteger los datos."
+      ],
+      "languages": [
+        "es"
+      ],
+      "targetSize": "PYME y gran empresa",
+      "freeTrial": "Sí",
+      "videoSupport": false,
+      "apiIntegration": true,
+      "notes": "La web ofrece prueba gratuita y un descuento promocional en los primeros meses de uso; no publica tarifas.",
+      "dataStorage": "nube",
+      "deployment": "nube"
     }
   ]
 }
