@@ -215,8 +215,8 @@ function rowToConsultor(r: any): any {
     ubicacion: safeParse(r.ubicacion, {}),
     contacto: safeParse(r.contacto, {}),
     logo: r.logo,
-    verificado: !!r.verificado,
-    destacado: !!r.destacado,
+    verificado: boolField(r.verificado),
+    destacado: boolField(r.destacado),
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
@@ -245,11 +245,17 @@ function rowToSoftware(r: any): any {
     parametros: safeParse(r.parametros, {}),
     contacto: safeParse(r.contacto, {}),
     logo: r.logo,
-    verificado: !!r.verificado,
-    destacado: !!r.destacado,
+    verificado: boolField(r.verificado),
+    destacado: boolField(r.destacado),
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
+}
+
+// Coerción estricta de flags 0|1: solo valores booleanos explícitos cuentan.
+// Evita que TEXT 'false' (bug de inserciones antiguas) se lea como true.
+function boolField(v: any): boolean {
+  return v === true || v === 1 || v === '1' || v === 'true';
 }
 
 function safeParse(s: any, fallback: any): any {
