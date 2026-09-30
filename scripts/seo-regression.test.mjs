@@ -38,6 +38,7 @@ test('built directory serves crawlable live data and consistent canonical URLs',
       for (const statement of sql.split(';').filter(s => s.trim())) await db.prepare(statement).run();
     }
     await db.prepare('CREATE TABLE app_documents (collection TEXT NOT NULL, id TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(collection,id))').run();
+    await db.prepare('ALTER TABLE software ADD COLUMN parametros TEXT').run();
     const insert = async (id, slug, name = 'ACMP Lean') => db.prepare(
       'INSERT INTO consultores (id, slug, nombre, tipo, descripcion, especialidades, ubicacion, contacto, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).bind(id, slug, name, 'empresa', 'Procesos industriales </script><script>untrusted()</script>', '["lean"]', '{"pais":"España","ciudad":"Ansoáin"}', '{"email":"private@example.com"}', '2026-09-25T00:00:00Z').run();
