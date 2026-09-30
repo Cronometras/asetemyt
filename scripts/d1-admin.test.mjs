@@ -13,6 +13,7 @@ const { GET: health } = await server.ssrLoadModule('/src/pages/api/admin/system-
 const { GET: claims } = await server.ssrLoadModule('/src/pages/api/admin/claim-action.ts');
 const { GET: leads } = await server.ssrLoadModule('/src/pages/api/admin/leads.ts');
 const { GET: subscribers } = await server.ssrLoadModule('/src/pages/api/admin/subscribers.ts');
+const couponApi = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: coupons } = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: outreach } = await server.ssrLoadModule('/src/pages/api/admin/outreach/list.ts');
 const directorySubmit = await server.ssrLoadModule('/src/pages/api/directorio/submit.ts');
@@ -521,4 +522,41 @@ test('moderation rejects malformed requests and unsafe legacy listing proposals'
   assert.equal((await store.firestoreGet(env,'pending_consultores_asetemyt','legacy')).status,'pending');
   assert.equal((await moderation.POST(context(env,'POST',{kind:'listings',id:'legacy',action:'reject'}))).status,200);
  }finally{sqlite.close();}
+});
+
+
+test('coupon management validates benefits, preserves usage and protects used coupons', async () => {
+  const { DB, sqlite } = database(); const env = { DB, FIREBASE_API_KEY: 'test' };
+  user = { email: 'micaot@gmail.com', emailVerified: true, localId: 'owner' };
+  const payload = { code: 'TEST25', type: 'discount', value: 25, maxUses: 10, descripcion: 'Prueba' };
+  assert.equal((await couponApi.POST(context(env, 'POST', { ...payload, value: 101 }))).status, 400);
+  assert.equal((await couponApi.POST(context(env, 'POST', payload))).status, 201);
+  assert.equal((await couponApi.POST(context(env, 'POST', payload))).status, 409);
+  await store.firestoreUpdate(env, 'cupones_asetemyt', 'TEST25', fields({ usedCount: 1 }));
+  assert.equal((await couponApi.PATCH(context(env, 'PATCH', { id: 'TEST25', activo: false }))).status, 200);
+  assert.equal((await store.firestoreGet(env, 'cupones_asetemyt', 'TEST25')).usedCount, 1);
+  assert.equal((await couponApi.DELETE(context(env, 'DELETE', { id: 'TEST25' }))).status, 409);
+  await store.firestoreCreate(env, 'ficha_payment_intents', 'paid', fields({ fulfilled: true, coupon: { id: 'TEST25' }, email: 'ana@example.com', slug: 'existing' }));
+  await store.firestoreCreate(env, 'ficha_payment_intents', 'unpaid', fields({ fulfilled: false, coupon: { id: 'TEST25' }, email: 'pending@example.com' }));
+  const detail = await (await couponApi.GET(context(env, 'GET', undefined, '/api/admin/coupons?id=TEST25'))).json();
+  assert.equal(detail.uses.length, 1); assert.equal(detail.uses[0].email, 'ana@example.com');
+  assert.equal((await couponApi.POST(context(env, 'POST', { ...payload, code: 'REMOVE' }))).status, 201);
+  assert.equal((await couponApi.DELETE(context(env, 'DELETE', { id: 'REMOVE' }))).status, 200);
+  user = { email: 'visitor@example.com', emailVerified: true, localId: 'visitor' };
+  assert.equal((await couponApi.GET(context(env))).status, 403);
+  user = { email: 'micaot@gmail.com', emailVerified: true, localId: 'owner' }; sqlite.close();
+});
+
+
+test('public directories prioritize verified entries before featured unverified entries', async () => {
+  const { DB, sqlite } = database();
+  const env = { DB };
+  for (const collection of ['directorio_consultores_asetemyt', 'directorio_software_asetemyt']) {
+    await store.firestoreCreate(env, collection, 'first-alphabetically', fields({ slug: 'first-alphabetically', nombre: 'AAA unverified', tipo: 'consultor', lang: 'es', descripcion: '', destacado: true, verificado: false, especialidades: ['lean'], ubicacion: { ciudad: 'Madrid' } }));
+    await store.firestoreCreate(env, collection, 'last-alphabetically', fields({ slug: 'last-alphabetically', nombre: 'ZZZ verified', tipo: 'consultor', lang: 'es', descripcion: '', destacado: false, verificado: true, especialidades: ['lean'], ubicacion: { ciudad: 'Madrid' } }));
+  }
+  for (const entries of [await publicStore.listConsultores(DB), await publicStore.listSoftware(DB), await publicStore.listConsultoresByEspecialidad(DB, 'lean'), await publicStore.listConsultoresByCity(DB, 'Madrid')]) {
+    assert.ok(entries.findIndex(e => e.slug === 'last-alphabetically') < entries.findIndex(e => e.slug === 'first-alphabetically'));
+  }
+  sqlite.close();
 });

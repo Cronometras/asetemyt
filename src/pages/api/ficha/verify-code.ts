@@ -67,7 +67,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (coupon?.type === 'free') {
         await redeemCoupon(tx, coupon.id, true);
         await claimListing(tx, proof.collection, proof.listingId, proof, { verificationType: 'coupon_free', couponUsed: coupon.code });
-        await tx.put(VERIFICATIONS, id, { ...proof, fulfilled: true, free: true });
+        await tx.put(VERIFICATIONS, id, { ...proof, couponCode, coupon, fulfilled: true, free: true });
         return { free: true, proof };
       }
       if (!env.STRIPE_SECRET_KEY || !env.STRIPE_PRICE_ID || !env.STRIPE_WEBHOOK_SECRET) {

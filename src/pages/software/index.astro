@@ -42,6 +42,7 @@ import Layout from '../../layouts/Layout.astro';
 
   <script>
 import DOMPurify from "dompurify";
+    import { compareDirectoryEntries, validDirectoryOrder } from "../../lib/directory-order";
     import { t, getLang, type Lang } from '../../lib/firebase';
     // NOTE: previously used `db, COLLECTION_SOFTWARE, getDocs, query, orderBy`
     // here to read software directly from Firestore. Replaced with fetch to
@@ -60,7 +61,7 @@ import DOMPurify from "dompurify";
       let software = (data.software || []) as any[];
 
       // Sort: destacado first
-      software.sort((a, b) => (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0));
+      software.sort((a, b) => Number(b.verificado === true) - Number(a.verificado === true) || Number(b.destacado === true) - Number(a.destacado === true));
 
       const paises = [...new Set(software.map((e: any) => e.ubicacion?.pais).filter(Boolean))].sort();
       const especialidades = ['cronometraje', 'mtm', 'most', 'oee', 'lean'];
@@ -109,6 +110,15 @@ import DOMPurify from "dompurify";
           </div>
         </div>
 
+        <label for="directory-order" class="block text-sm font-medium mb-4">${lang === 'es' ? 'Ordenar por' : 'Sort by'}
+          <select id="directory-order" class="ml-2 border border-steel-300 rounded-lg px-3 py-2 bg-white">
+            <option value="recommended">${lang === 'es' ? 'Recomendadas (verificadas primero)' : 'Recommended (verified first)'}</option>
+            <option value="newest">${lang === 'es' ? 'Más recientes' : 'Newest first'}</option>
+            <option value="oldest">${lang === 'es' ? 'Más antiguas' : 'Oldest first'}</option>
+            <option value="name-asc">${lang === 'es' ? 'Nombre: A–Z' : 'Name: A–Z'}</option>
+            <option value="name-desc">${lang === 'es' ? 'Nombre: Z–A' : 'Name: Z–A'}</option>
+          </select>
+        </label>
         <p class="text-steel-500 mb-4" id="results-count">
           ${software.length} ${software.length === 1 ? tr('result') : tr('results')}
         </p>
@@ -158,6 +168,15 @@ import DOMPurify from "dompurify";
         `}
       `);
 
+      const orderSelect = document.getElementById('directory-order') as HTMLSelectElement;
+      orderSelect.value = validDirectoryOrder(new URLSearchParams(location.search).get('orden'));
+      const sortRecords = new Map(Array.from(document.querySelectorAll<HTMLElement>('.software-card')).map((card, index) => [card, software[index]]));
+      function sortCards() {
+        const grid = document.getElementById('directory-grid');
+        const sorted = Array.from(sortRecords.keys()).sort((a, b) => compareDirectoryEntries(sortRecords.get(a), sortRecords.get(b), validDirectoryOrder(orderSelect.value)));
+        sorted.forEach(card => grid?.appendChild(card));
+        return sorted;
+      }
       // Client-side filtering
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const filterEsp = document.getElementById('filter-especialidad') as HTMLSelectElement;
@@ -170,8 +189,13 @@ import DOMPurify from "dompurify";
         const esp = filterEsp?.value?.toLowerCase() || '';
         const loc = filterLoc?.value?.toLowerCase() || '';
 
+        const query = new URLSearchParams(location.search);
+        for (const [key, element] of [['q', searchInput], ['especialidad', filterEsp], ['ubicacion', filterLoc], ['orden', orderSelect]] as const) {
+          if (element.value && !(key === 'orden' && element.value === 'recommended')) query.set(key, element.value); else query.delete(key);
+        }
+        history.replaceState(null, '', location.pathname + (query.size ? '?' + query : ''));
         let visible = 0;
-        cards.forEach((card) => {
+        sortCards().forEach((card) => {
           const name = card.dataset.name || '';
           const cardEsp = card.dataset.especialidades || '';
           const cardLoc = card.dataset.ubicacion || '';
@@ -190,6 +214,7 @@ import DOMPurify from "dompurify";
         }
       }
 
+      orderSelect.addEventListener('change', applyFilters);
       searchInput?.addEventListener('input', applyFilters);
       filterEsp?.addEventListener('change', applyFilters);
       filterLoc?.addEventListener('change', applyFilters);
@@ -198,7 +223,8 @@ import DOMPurify from "dompurify";
       const params = new URLSearchParams(window.location.search);
       if (params.get('especialidad') && filterEsp) filterEsp.value = params.get('especialidad')!;
       if (params.get('ubicacion') && filterLoc) filterLoc.value = params.get('ubicacion')!;
-      if (params.toString()) applyFilters();
+      searchInput.value = params.get('q') || '';
+      applyFilters();
     }
 
     window.addEventListener('langChange', ((e: CustomEvent) => {

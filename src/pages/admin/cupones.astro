@@ -1,0 +1,115 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Administración — Cupones" description="Gestión de cupones de ASETEMYT">
+  <section class="max-w-6xl mx-auto px-4 py-12">
+    <a href="/admin" class="text-accent-700">← Administración</a>
+    <h1 class="text-3xl font-bold mt-4 mb-2">Cupones</h1>
+    <p class="mb-6 text-steel-600">Crea códigos para verificaciones gratuitas, descuentos o meses de prueba. Los códigos se introducen al verificar una ficha.</p>
+    <p id="feedback" role="status" aria-live="polite" class="mb-4"></p>
+    <div id="panel" class="hidden">
+      <div class="flex flex-wrap gap-3 mb-6"><button id="new" class="bg-accent-500 text-white rounded-lg px-4 py-2">Crear cupón</button><button id="refresh" class="border rounded-lg px-4 py-2">Actualizar listado</button><label class="flex items-center gap-2">Buscar <input id="search" type="search" placeholder="Código o nota" class="border rounded-lg p-2" /></label></div>
+      <form id="editor" class="hidden bg-white border rounded-xl p-6 mb-6 space-y-4">
+        <h2 id="formTitle" class="text-xl font-bold">Crear cupón</h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label>Código<input name="code" required pattern="[A-Za-z0-9_-]{1,64}" maxlength="64" class="block border rounded p-2 w-full" /><span class="text-sm text-steel-500">Letras, números y guiones. No se cambia después de crearlo.</span></label>
+          <label>Beneficio<select name="type" class="block border rounded p-2 w-full"><option value="free">Verificación gratuita</option><option value="discount">Descuento porcentual</option><option value="trial">Meses de prueba</option></select></label>
+          <label id="valueLabel">Valor<input name="value" type="number" min="0" max="100" step="1" value="0" required class="block border rounded p-2 w-full" /><span id="valueHelp" class="text-sm text-steel-500"></span></label>
+          <label>Límite de usos<input name="maxUses" type="number" min="0" step="1" value="0" required class="block border rounded p-2 w-full" /><span class="text-sm text-steel-500">0 significa ilimitados.</span></label>
+          <label>Caducidad (opcional)<input name="expiresAt" type="datetime-local" class="block border rounded p-2 w-full" /><span class="text-sm text-steel-500">Hora local de tu dispositivo.</span></label>
+          <label class="flex items-center gap-2"><input name="activo" type="checkbox" checked /> Activo</label>
+        </div>
+        <label class="block">Nota interna<textarea name="descripcion" maxlength="1000" class="block border rounded p-2 w-full"></textarea></label>
+        <div class="flex gap-3"><button type="submit" class="bg-accent-500 text-white rounded px-4 py-2">Guardar cupón</button><button id="cancel" type="button" class="border rounded px-4 py-2">Cancelar</button></div>
+      </form>
+      <div id="list" class="space-y-3"></div>
+      <section id="usesPanel" class="hidden mt-6 border rounded-xl p-6"><h2 id="usesTitle" class="text-xl font-bold mb-3"></h2><p class="text-sm text-steel-600 mb-3">Solo se muestran usos completados con un registro de verificación disponible. El contador puede incluir usos antiguos u otros servicios sin detalle asociado.</p><div id="uses"></div></section>
+    </div>
+  </section>
+</Layout>
+<script>
+  import { initAdmin } from '../../lib/admin-auth';
+  import DOMPurify from 'dompurify';
+  const el = (id: string) => document.getElementById(id)!;
+  const form = el('editor') as HTMLFormElement;
+  const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+  let api: (url: string, options?: RequestInit) => Promise<Response>;
+  let coupons: any[] = [], editing = '', busy = false;
+  const esc = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+  const say = (message: string) => { el('feedback').textContent = message; };
+  const date = (value: string) => value ? new Date(value).toLocaleString('es-ES') : 'Sin caducidad';
+  async function request(method: string, body?: any, query = '') {
+    const response = await api('/api/admin/coupons' + query, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'No se pudo completar la operación.');
+    return data;
+  }
+  function render() {
+    const term = (el('search') as HTMLInputElement).value.toLowerCase();
+    const filtered = coupons.filter(c => (c.code + ' ' + c.descripcion).toLowerCase().includes(term));
+    el('list').innerHTML = DOMPurify.sanitize(filtered.length ? filtered.map(c => {
+      const state = !c.activo ? 'Inactivo' : c.expiresAt && Date.parse(c.expiresAt) <= Date.now() ? 'Caducado' : c.maxUses > 0 && c.usedCount >= c.maxUses ? 'Agotado' : 'Activo';
+      const benefit = c.type === 'free' ? 'Verificación gratuita' : c.type === 'discount' ? `${c.value}% de descuento` : `${c.value} meses de prueba`;
+      return `<article class="border bg-white rounded-xl p-5"><h2 class="text-xl font-bold">${esc(c.code)} <span class="text-sm font-normal">${state}</span></h2><p>${esc(benefit)} · ${c.usedCount} usos / ${c.maxUses || 'sin límite'}</p><p class="text-sm">${esc(date(c.expiresAt))}</p><p class="text-steel-600">${esc(c.descripcion)}</p><div class="flex flex-wrap gap-3 mt-3"><button data-action="edit" data-id="${esc(c.id)}" class="underline">Editar</button><button data-action="toggle" data-id="${esc(c.id)}" class="underline">${c.activo ? 'Desactivar' : 'Activar'}</button><button data-action="uses" data-id="${esc(c.id)}" class="underline">Ver quién lo ha usado</button><button data-action="delete" data-id="${esc(c.id)}" class="text-red-700 underline">Eliminar</button></div></article>`;
+    }).join('') : '<p>No hay cupones que mostrar.</p>');
+  }
+  async function load() { coupons = (await request('GET')).coupons; render(); }
+  function benefit() {
+    const type = input('type').value, value = input('value');
+    value.disabled = type === 'free'; value.min = type === 'free' ? '0' : '1'; value.max = type === 'trial' ? '24' : '100';
+    if (type === 'free') value.value = '0';
+    else if (Number(value.value) < 1) value.value = type === 'discount' ? '25' : '1';
+    el('valueHelp').textContent = type === 'free' ? 'La verificación no requiere pago.' : type === 'discount' ? 'Porcentaje de descuento, de 1 a 100.' : 'De 1 a 24 meses; después se aplica el precio habitual.';
+  }
+  function edit(c?: any) {
+    form.reset(); editing = c?.id || '';
+    for (const name of ['code','type','value','maxUses','descripcion']) if (c) input(name).value = c[name];
+    input('code').disabled = !!c; input('type').disabled = !!c;
+    input('activo').checked = c ? c.activo : true; input('activo').disabled = !c;
+    if (c?.expiresAt) { const d = new Date(c.expiresAt); input('expiresAt').value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,16); }
+    el('formTitle').textContent = c ? 'Editar ' + c.code : 'Crear cupón';
+    benefit(); form.classList.remove('hidden'); input(c ? 'descripcion' : 'code').focus();
+  }
+  async function mutate(work: () => Promise<void>) {
+    if (busy) return; busy = true;
+    document.querySelectorAll<HTMLButtonElement>('#panel button').forEach(b => b.disabled = true);
+    try { await work(); } catch (error) { say(error instanceof Error ? error.message : 'Error de conexión. Reinténtalo.'); }
+    finally { busy = false; document.querySelectorAll<HTMLButtonElement>('#panel button').forEach(b => b.disabled = false); }
+  }
+  el('new').addEventListener('click', () => edit());
+  el('cancel').addEventListener('click', () => form.classList.add('hidden'));
+  input('type').addEventListener('change', benefit);
+  el('search').addEventListener('input', render);
+  el('refresh').addEventListener('click', () => mutate(async () => { await load(); say('Listado actualizado.'); }));
+  form.addEventListener('submit', event => { event.preventDefault(); void mutate(async () => {
+    const body = { value: Number(input('value').value), maxUses: Number(input('maxUses').value), expiresAt: input('expiresAt').value ? new Date(input('expiresAt').value).toISOString() : null, descripcion: input('descripcion').value };
+    await request(editing ? 'PATCH' : 'POST', editing ? { ...body, id: editing, activo: input('activo').checked } : { ...body, code: input('code').value, type: input('type').value });
+    form.classList.add('hidden'); say('Cupón guardado.');
+    try { await load(); } catch { say('Cupón guardado. No se pudo actualizar el listado; pulsa Actualizar.'); }
+  }); });
+  el('list').addEventListener('click', event => {
+    const button = (event.target as Element).closest<HTMLButtonElement>('button[data-action]');
+    if (!button || busy) return;
+    const c = coupons.find(c => c.id === button.dataset.id); if (!c) return;
+    if (button.dataset.action === 'edit') return edit(c);
+    void mutate(async () => {
+      if (button.dataset.action === 'uses') {
+        const data = await request('GET', undefined, '?id=' + encodeURIComponent(c.id));
+        el('usesTitle').textContent = `Usos de ${c.code}: ${data.usedCount}`;
+        el('uses').innerHTML = DOMPurify.sanitize(data.uses.length ? `<ul>${data.uses.map((u: any) => `<li class="py-2 border-b">${esc(u.email || 'Email no disponible')} · ${esc(u.slug)} · ${esc(u.method)}</li>`).join('')}</ul>` : '<p>No hay registros de usuario disponibles para este cupón.</p>');
+        el('usesPanel').classList.remove('hidden'); el('usesPanel').scrollIntoView({ block: 'nearest' }); return;
+      }
+      if (button.dataset.action === 'delete') {
+        if (!confirm(`¿Eliminar el cupón ${c.code}? Los cupones utilizados deben desactivarse para conservar su historial.`)) return;
+        await request('DELETE', { id: c.id });
+      } else await request('PATCH', { id: c.id, activo: !c.activo });
+      say('Cambio guardado.'); try { await load(); } catch { say('Cambio guardado. Actualiza el listado para verlo.'); }
+    });
+  });
+  (async () => {
+    say('Comprobando acceso…');
+    try { const session = await initAdmin(); if (!session.ok) { say(session.error || 'Necesitas una cuenta de administrador.'); return; } api = session.api; el('panel').classList.remove('hidden'); await load(); say(''); }
+    catch { say('No se pudieron cargar los cupones. Pulsa Actualizar para reintentarlo.'); }
+  })();
+</script>

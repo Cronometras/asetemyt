@@ -29,7 +29,7 @@ export async function listConsultores(db: D1Binding): Promise<any[]> {
   const stmt = db.prepare(
     'SELECT id, slug, nombre, tipo, lang, descripcion, especialidades, servicios, ' +
     'ubicacion, contacto, logo, verificado, destacado, created_at, updated_at ' +
-    'FROM consultores ORDER BY nombre ASC'
+    'FROM consultores ORDER BY verificado DESC, destacado DESC, nombre ASC'
   );
   const res = await stmt.all();
   return (res.results || []).map(rowToConsultor);
@@ -45,7 +45,7 @@ export async function listConsultoresByEspecialidad(db: D1Binding, especialidad:
     "ubicacion, contacto, logo, verificado, destacado, created_at, updated_at " +
     "FROM consultores " +
     "WHERE LOWER(especialidades) LIKE ? " +
-    "ORDER BY destacado DESC, nombre ASC"
+    "ORDER BY verificado DESC, destacado DESC, nombre ASC"
   );
   // Use JSON path to match exact element (LIKE '%"lean"%' would over-match nested quotes)
   const pattern = `%"${especialidad}"%`;
@@ -97,7 +97,7 @@ export async function listConsultoresByCity(db: D1Binding, ciudad: string): Prom
     "FROM consultores " +
     "WHERE LOWER(IFNULL(json_extract(ubicacion, '$.ciudad'), '')) = ? " +
     "   OR LOWER(IFNULL(json_extract(ubicacion, '$.ciudad'), '')) = ? " +
-    "ORDER BY nombre ASC"
+    "ORDER BY verificado DESC, destacado DESC, nombre ASC"
   );
   const res = await stmt.bind(needle, norm).all();
   return (res.results || []).map(rowToConsultor);
@@ -163,7 +163,7 @@ export async function listSoftware(db: D1Binding): Promise<any[]> {
     'SELECT id, slug, nombre, tipo, lang, descripcion, categorias, funcionalidades, ' +
     'pricing, fabricante, contacto, logo, verificado, destacado, created_at, updated_at, ' +
     'parametros ' +
-    'FROM software ORDER BY nombre ASC'
+    'FROM software ORDER BY verificado DESC, destacado DESC, nombre ASC'
   );
   const res = await stmt.all();
   return (res.results || []).map(rowToSoftware);

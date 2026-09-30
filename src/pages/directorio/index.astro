@@ -7,12 +7,12 @@ import { canonicalPath } from '../../lib/seo';
 // Only embed the fields displayed in public cards, never contact/account data.
 const consultores = (await listConsultores(getDB(Astro.locals)))
   .filter(entry => entry.slug)
-  .map(({ slug, nombre, tipo, descripcion, especialidades, ubicacion, logo, verificado, destacado }) => ({
+  .map(({ slug, nombre, tipo, descripcion, especialidades, ubicacion, logo, verificado, destacado, createdAt }) => ({
     slug, nombre, tipo, descripcion, especialidades,
     ubicacion: { pais: ubicacion?.pais, provincia: ubicacion?.provincia, ciudad: ubicacion?.ciudad },
-    logo, verificado, destacado,
+    logo, verificado, destacado, createdAt,
   }))
-  .sort((a, b) => Number(b.destacado) - Number(a.destacado));
+  .sort((a, b) => Number(b.verificado === true) - Number(a.verificado === true) || Number(b.destacado) - Number(a.destacado));
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
 const directoryJson = JSON.stringify(consultores).replace(/</g, '\\u003c');
 ---
@@ -49,6 +49,7 @@ const directoryJson = JSON.stringify(consultores).replace(/</g, '\\u003c');
   <script id="directory-data" type="application/json" set:html={directoryJson} />
   <script>
 import DOMPurify from "dompurify";
+    import { compareDirectoryEntries, validDirectoryOrder } from "../../lib/directory-order";
     import { t, getLang, type Lang } from '../../lib/firebase';
     let lang: Lang = getLang();
 
@@ -59,7 +60,7 @@ import DOMPurify from "dompurify";
       const consultores = JSON.parse(document.getElementById('directory-data')!.textContent || '[]') as any[];
 
       // Sort: destacado first
-      consultores.sort((a, b) => (b.destacado ? 1 : 0) - (a.destacado ? 1 : 0));
+      consultores.sort((a, b) => Number(b.verificado === true) - Number(a.verificado === true) || Number(b.destacado === true) - Number(a.destacado === true));
 
       const tipos = [
         { value: 'empresa', label: lang === 'es' ? 'Empresas' : 'Companies' },
@@ -155,6 +156,15 @@ import DOMPurify from "dompurify";
           </div>
         </div>
 
+        <label for="directory-order" class="block text-sm font-medium mb-4">${lang === 'es' ? 'Ordenar por' : 'Sort by'}
+          <select id="directory-order" class="ml-2 border border-steel-300 rounded-lg px-3 py-2 bg-white">
+            <option value="recommended">${lang === 'es' ? 'Recomendadas (verificadas primero)' : 'Recommended (verified first)'}</option>
+            <option value="newest">${lang === 'es' ? 'Más recientes' : 'Newest first'}</option>
+            <option value="oldest">${lang === 'es' ? 'Más antiguas' : 'Oldest first'}</option>
+            <option value="name-asc">${lang === 'es' ? 'Nombre: A–Z' : 'Name: A–Z'}</option>
+            <option value="name-desc">${lang === 'es' ? 'Nombre: Z–A' : 'Name: Z–A'}</option>
+          </select>
+        </label>
         <p class="text-steel-500 mb-4" id="results-count">
           ${consultores.length} ${consultores.length === 1 ? tr('result') : tr('results')}
         </p>
@@ -208,6 +218,15 @@ import DOMPurify from "dompurify";
         `}
       `);
 
+      const orderSelect = document.getElementById('directory-order') as HTMLSelectElement;
+      orderSelect.value = validDirectoryOrder(new URLSearchParams(location.search).get('orden'));
+      const sortRecords = new Map(Array.from(document.querySelectorAll<HTMLElement>('.directory-card')).map((card, index) => [card, consultores[index]]));
+      function sortCards() {
+        const grid = document.getElementById('directory-grid');
+        const sorted = Array.from(sortRecords.keys()).sort((a, b) => compareDirectoryEntries(sortRecords.get(a), sortRecords.get(b), validDirectoryOrder(orderSelect.value)));
+        sorted.forEach(card => grid?.appendChild(card));
+        return sorted;
+      }
       // Client-side filtering
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const filterTipo = document.getElementById('filter-tipo') as HTMLSelectElement;
@@ -247,7 +266,7 @@ import DOMPurify from "dompurify";
 
         let visible = 0;
         const matchingCards: HTMLElement[] = [];
-        cards.forEach((card) => {
+        sortCards().forEach((card) => {
           const name = card.dataset.name || '';
           const cardTipo = card.dataset.tipo || '';
           const cardEsp = card.dataset.especialidades || '';
@@ -278,6 +297,7 @@ import DOMPurify from "dompurify";
         for (const [key, element] of [['q', searchInput], ['tipo', filterTipo], ['especialidad', filterEsp], ['ubicacion', filterLoc], ['provincia', filterProv], ['ciudad', filterCiudad]] as const) {
           if (element.value) query.set(key, element.value); else query.delete(key);
         }
+        if (orderSelect.value !== 'recommended') query.set('orden', orderSelect.value); else query.delete('orden');
         if (page > 1) query.set('pagina', String(page)); else query.delete('pagina');
         history.replaceState(null, '', window.location.pathname + (query.size ? '?' + query : ''));
         if (countEl) {
@@ -285,6 +305,7 @@ import DOMPurify from "dompurify";
         }
       }
 
+      orderSelect.addEventListener('change', applyFilters);
       searchInput?.addEventListener('input', applyFilters);
       filterTipo?.addEventListener('change', applyFilters);
       filterEsp?.addEventListener('change', applyFilters);
