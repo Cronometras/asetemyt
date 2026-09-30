@@ -127,10 +127,16 @@ import Layout from '../layouts/Layout.astro';
 
     async function loadSoftware() {
       try {
-        const res = await fetch('/data/software-comparison.json');
+        const res = await fetch('/api/directorio/software');
         if (!res.ok) throw new Error('Software data unavailable');
         const data = await res.json();
-        allSoftware = data.software.sort((a: any, b: any) => a.name.localeCompare(b.name));
+        allSoftware = (data.software || []).map((raw: any) => raw.nombre ? ({
+          slug: raw.slug, name: raw.nombre, methods: raw.parametros_comparables?.metodos || [],
+          features: raw.funcionalidades || [], platform: raw.parametros_comparables?.plataforma || '',
+          pricing: raw.pricing?.modelo || '', freeTrial: raw.pricing?.prueba_gratuita || '',
+          target: raw.parametros_comparables?.target || '', languages: raw.parametros_comparables?.idiomas || [],
+          url: raw.contacto?.web || '', description: raw.descripcion || '',
+        }) : raw).sort((a: any, b: any) => a.name.localeCompare(b.name));
         dataLoaded = true;
 
         populateSelects();
