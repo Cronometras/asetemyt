@@ -145,8 +145,7 @@ import Layout from '../layouts/Layout.astro';
   </section>
 
   <script>
-    import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-    import { db, t, getLang, type Lang, PENDING_CONSULTORES } from '../lib/firebase';
+    import { t, getLang, type Lang } from '../lib/firebase';
 
     let lang: Lang = getLang();
 
@@ -217,11 +216,13 @@ import Layout from '../layouts/Layout.astro';
         lang,
         verificado: false,
         status: 'pending',
-        createdAt: serverTimestamp(),
+
       };
 
       try {
-        await addDoc(collection(db, PENDING_CONSULTORES), data);
+        const response = await fetch('/api/directorio/submit', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'No se pudo guardar.');
         successEl?.classList.remove('hidden');
         form.reset();
       } catch (err: any) {

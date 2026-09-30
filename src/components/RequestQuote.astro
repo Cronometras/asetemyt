@@ -12,6 +12,7 @@ const { slug, entryName, services = [] } = Astro.props;
 <div id="quote-section" class="mt-8">
   <button
     id="quote-toggle-btn"
+    type="button" aria-expanded="false" aria-controls="quote-form"
     class="w-full bg-gradient-to-r from-primary-700 to-primary-800 hover:from-primary-800 hover:to-primary-900 text-white font-bold px-6 py-4 rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"
   >
     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,7 +25,7 @@ const { slug, entryName, services = [] } = Astro.props;
   </button>
 
   <form id="quote-form" class="hidden mt-4 bg-white rounded-xl shadow-lg p-6 border border-primary-100">
-    <p class="text-sm text-steel-500 mb-5">Completa el formulario y {entryName} recibirá tu solicitud de presupuesto.</p>
+    <p class="text-sm text-steel-500 mb-5">Indica qué necesitas y cómo pueden contactarte. Tu solicitud va dirigida a {entryName}. ASETEMYT la registra para facilitar su seguimiento.</p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <div>
@@ -73,10 +74,10 @@ const { slug, entryName, services = [] } = Astro.props;
         class="bg-primary-700 hover:bg-primary-800 text-white font-semibold px-6 py-2.5 rounded-lg transition-colors">
         Enviar solicitud
       </button>
-      <span id="quote-status" class="text-sm"></span>
+      <span id="quote-status" role="status" aria-live="polite" class="text-sm"></span>
     </div>
 
-    <p class="text-xs text-steel-400 mt-3">Tus datos serán enviados únicamente a {entryName} para gestionar esta solicitud.</p>
+    <p class="text-xs text-steel-400 mt-3">ASETEMYT guardará tu solicitud y recibirá un aviso para gestionarla. Si la ficha está vinculada a un propietario con verificación activa, podrá consultarla desde su cuenta y recibir un aviso por correo. Consulta nuestra <a href="/politica-de-privacidad" class="underline">política de privacidad</a>.</p>
   </form>
 </div>
 
@@ -87,11 +88,16 @@ const { slug, entryName, services = [] } = Astro.props;
 
   toggleBtn?.addEventListener('click', () => {
     form.classList.toggle('hidden');
-    arrow.style.transform = form.classList.contains('hidden') ? '' : 'rotate(180deg)';
+    const expanded = !form.classList.contains('hidden');
+    toggleBtn.setAttribute('aria-expanded', String(expanded));
+    arrow.style.transform = expanded ? 'rotate(180deg)' : '';
+    if (expanded) document.getElementById('quote-name')?.focus();
   });
 
+  let sending = false;
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (sending) return;
     const statusEl = document.getElementById('quote-status');
     const f = e.target;
 
@@ -106,6 +112,9 @@ const { slug, entryName, services = [] } = Astro.props;
       message: f.message?.value || '',
     };
 
+    const submitBtn = f.querySelector('button[type="submit"]');
+    sending = true;
+    submitBtn.disabled = true;
     statusEl.textContent = 'Enviando...';
     statusEl.className = 'text-sm text-steel-500';
 
@@ -120,10 +129,7 @@ const { slug, entryName, services = [] } = Astro.props;
         statusEl.textContent = '✓ ' + data.message;
         statusEl.className = 'text-sm text-green-600';
         f.reset();
-        setTimeout(() => {
-          form.classList.add('hidden');
-          arrow.style.transform = '';
-        }, 3000);
+
       } else {
         statusEl.textContent = data.error || 'Error.';
         statusEl.className = 'text-sm text-red-600';
@@ -131,6 +137,9 @@ const { slug, entryName, services = [] } = Astro.props;
     } catch {
       statusEl.textContent = 'Error de conexión.';
       statusEl.className = 'text-sm text-red-600';
+    } finally {
+      sending = false;
+      submitBtn.disabled = false;
     }
   });
 </script>

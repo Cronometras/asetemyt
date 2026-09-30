@@ -11,7 +11,7 @@ test('verification landing renders available benefits and subscription terms wit
   assert.match(html, /Suscripci|suscripci/);
   assert.match(html, /renovaci[oó]n autom[aá]tica|renueva autom[aá]ticamente/);
   assert.doesNotMatch(html, /Propuestas para futuras|No incluidas actualmente|Estadísticas de tu ficha/);
-  assert.match(html, /escaparate de proyectos/);
+  assert.match(html, /proyectos y casos de estudio/);
   assert.match(html, /buzón de oportunidades/);
   assert.match(html, /50 €/);
   assert.match(html, /Impuestos no incluidos/);
@@ -55,6 +55,8 @@ test('built directory serves crawlable live data and consistent canonical URLs',
       const response = await fetchPage('/directorio/acmp-lean/');
       assert.equal(response.status, 200);
       const html = await response.text();
+      const schemas = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match => { assert.doesNotMatch(match[1], /</); return JSON.parse(match[1]); });
+      assert.ok(schemas.some(schema => schema.description?.includes('</script>')));
       assert.deepEqual([...html.matchAll(/<link rel="canonical" href="([^"]+)"/g)].map(m => m[1]), ['https://asetemyt.com/directorio/acmp-lean/']);
     });
 
@@ -70,6 +72,13 @@ test('built directory serves crawlable live data and consistent canonical URLs',
       assert.equal(entries.length, 2);
       assert.match(entries[0].descripcion, /<\/script>/);
       assert.doesNotMatch(json, /<script>/);
+    });
+
+    await t.test('public catalog does not expose unverified contact data', async()=>{
+      const response=await fetchPage('/api/directorio/consultores');
+      assert.equal(response.status,200);
+      const body=await response.text();assert.doesNotMatch(body,/private@example.com/);
+      assert.deepEqual(JSON.parse(body).consultores[0].contacto,{});
     });
 
     await t.test('verified website is in server HTML and unverified website is absent', async () => {

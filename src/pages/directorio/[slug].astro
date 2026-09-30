@@ -128,9 +128,9 @@ if (entry.tipo === 'empresa') {
 
 <Layout title={entry.nombre} description={entry.descripcion} ogType="profile">
   <!-- BreadcrumbList structured data -->
-  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema).split('<').join(String.fromCharCode(92) + 'u003c')} />
   <!-- Entity (Organization | Person) structured data -->
-  <script type="application/ld+json" set:html={JSON.stringify(entitySchema)} />
+  <script type="application/ld+json" set:html={JSON.stringify(entitySchema).split('<').join(String.fromCharCode(92) + 'u003c')} />
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <!-- Breadcrumb -->
     <nav class="mb-8">

@@ -1,19 +1,13 @@
 // Firebase configuration for asetemyt.com
 import { initializeApp } from 'firebase/app';
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  orderBy,
-} from 'firebase/firestore';
+
 
 // Firebase Web SDK config — injected via PUBLIC_ env vars in Cloudflare Pages
 // Set in CF dashboard: PUBLIC_FIREBASE_API_KEY, PUBLIC_FIREBASE_PROJECT_ID, etc.
 import { firebaseConfig } from './firebase-config';
 
 export const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+
 
 // Directory collection names (split by type)
 export const COLLECTION_CONSULTORES = 'directorio_consultores_asetemyt';
@@ -402,89 +396,4 @@ export function getLang(): Lang {
 export function t(key: string, lang?: Lang): string {
   const l = lang || getLang();
   return (translations[l] as any)?.[key] || (translations.es as any)?.[key] || key;
-}
-
-// --- Directory (split: consultores + software) ---
-
-function applyFilters(entries: any[], filters?: {
-  tipo?: string;
-  especialidad?: string;
-  ubicacion?: string;
-  lang?: string;
-}) {
-  let result = entries;
-  if (filters?.tipo) {
-    result = result.filter((e) => e.tipo === filters.tipo);
-  }
-  if (filters?.especialidad) {
-    result = result.filter((e) =>
-      e.especialidades?.some(
-        (es: string) => es.toLowerCase() === filters.especialidad!.toLowerCase()
-      )
-    );
-  }
-  if (filters?.ubicacion) {
-    const loc = filters.ubicacion.toLowerCase();
-    result = result.filter(
-      (e) =>
-        e.ubicacion?.pais?.toLowerCase().includes(loc) ||
-        e.ubicacion?.ciudad?.toLowerCase().includes(loc)
-    );
-  }
-  if (filters?.lang) {
-    result = result.filter((e) => !e.lang || e.lang === filters.lang);
-  }
-  return result;
-}
-
-/**
- * Get consultores entries only — queries Firestore directly.
- * Called from getStaticPaths (build-time) and from other server contexts.
- * The home page and other public-facing pages should NOT call this
- * function; they should fetch /api/directorio/consultores instead, which
- * is served from a Cloudflare KV cache (24h TTL) and only burns 1 Firestore
- * read per cache rebuild instead of N reads per visitor.
- */
-export async function getConsultoresEntries(filters?: {
-  tipo?: string;
-  especialidad?: string;
-  ubicacion?: string;
-  lang?: string;
-}) {
-  const snapshot = await getDocs(
-    query(collection(db, COLLECTION_CONSULTORES), orderBy('createdAt', 'desc'))
-  );
-  const entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
-  return applyFilters(entries, filters);
-}
-
-/**
- * Get software entries only — queries Firestore directly.
- * See note on getConsultoresEntries about when to use the cached public API.
- */
-export async function getSoftwareEntries(filters?: {
-  tipo?: string;
-  especialidad?: string;
-  ubicacion?: string;
-  lang?: string;
-}) {
-  const snapshot = await getDocs(
-    query(collection(db, COLLECTION_SOFTWARE), orderBy('createdAt', 'desc'))
-  );
-  const entries = snapshot.docs.map((d: any) => ({ id: d.id, ...d.data() })) as any[];
-  return applyFilters(entries, filters);
-}
-
-/** Get all directory entries from both collections (for getStaticPaths and slug lookup) */
-export async function getDirectoryEntries(filters?: {
-  tipo?: string;
-  especialidad?: string;
-  ubicacion?: string;
-  lang?: string;
-}) {
-  const [consultores, software] = await Promise.all([
-    getConsultoresEntries(filters),
-    getSoftwareEntries(filters),
-  ]);
-  return [...consultores, ...software];
 }

@@ -36,6 +36,11 @@ import Layout from '../layouts/Layout.astro';
         </button>
       </div>
 
+      <section id="adminAccess" class="hidden mb-6 p-5 bg-primary-50 border border-primary-200 rounded-xl">
+        <p class="font-bold text-primary-900">Tu cuenta tiene acceso de administrador</p>
+        <p class="text-sm text-steel-600 mt-1 mb-4">Abre el panel para gestionar el directorio, las solicitudes y las publicaciones. También puedes gestionar tus propias fichas desde esta página.</p>
+        <a href="/admin" class="inline-block bg-primary-800 text-white font-bold rounded-lg px-5 py-3">Abrir panel de administración →</a>
+      </section>
       <!-- Success alert -->
       <div id="successAlert" class="hidden mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
         Estamos comprobando la confirmación del pago.
@@ -126,7 +131,7 @@ import DOMPurify from "dompurify";
 
     userName.textContent = user.displayName || user.email || 'Usuario';
 
-    // Check admin status FIRST — redirect before showing dashboard
+    // Show administrative access alongside the owner dashboard.
     try {
       const adminResp = await authFetch('/api/admin/status');
       const adminData = await adminResp.json();
@@ -136,13 +141,7 @@ import DOMPurify from "dompurify";
         subInfo.textContent = 'No se ha podido comprobar tu suscripción.';
         return;
       }
-      if (adminData.admin && !paymentReturn) {
-        const adminLink = document.createElement('a');
-        adminLink.href = '/admin';
-        adminLink.textContent = 'Abrir administración';
-        adminLink.className = 'inline-block text-accent-600 font-semibold mb-4';
-        fichasList.before(adminLink);
-      }
+      if (adminData.admin) document.getElementById('adminAccess')!.classList.remove('hidden');
     } catch {
       dashboard.classList.remove('hidden');
       fichasList.textContent = 'No se pudo validar tu sesión. Vuelve a iniciar sesión o reinténtalo más tarde.';
@@ -150,7 +149,7 @@ import DOMPurify from "dompurify";
       return;
     }
 
-    // Not an admin — show regular dashboard
+    // Show the account dashboard for every authenticated user.
     dashboard.classList.remove('hidden');
 
     if (paymentReturn) {
@@ -202,9 +201,9 @@ import DOMPurify from "dompurify";
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <a href="/directorio/${f.slug}" class="text-xs text-accent-600 hover:text-accent-700 font-medium">Ver</a>
-              <a href="/mi-cuenta/ficha/?slug=${encodeURIComponent(f.slug)}" class="text-xs text-primary-800 hover:underline font-semibold">Proyectos y solicitudes</a>
-              <a href="/editar/${f.slug}" class="text-xs bg-accent-500 hover:bg-accent-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Editar</a>
+              <a href="/directorio/${encodeURIComponent(f.slug)}/" class="text-xs text-accent-600 hover:text-accent-700 font-medium">Ver</a>
+              <a href="/mi-cuenta/ficha/?slug=${encodeURIComponent(f.slug)}" class="text-xs text-primary-800 hover:underline font-semibold">Gestionar contenido y solicitudes</a>
+              <a href="/editar/${encodeURIComponent(f.slug)}" class="text-xs bg-accent-500 hover:bg-accent-600 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">Editar</a>
             </div>
           </div>
         `).join(''));

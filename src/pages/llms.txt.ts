@@ -1,14 +1,17 @@
 // Build-time static llms.txt. Prerendered to dist/llms.txt.
-export const prerender = true;
+export const prerender = false;
 import type { APIRoute } from 'astro';
-import { getDirectoryEntries } from '../lib/firebase';
+import { getDB, listConsultores, listSoftware } from '../lib/d1';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ locals }) => {
   let entries: any[] = [];
   try {
-    entries = await getDirectoryEntries();
+    const db = getDB(locals);
+    const collections = await Promise.all([listConsultores(db), listSoftware(db)]);
+    entries = collections.flat();
   } catch (e) {
     console.error('Error fetching directory entries for llms.txt:', e);
+    return new Response('Directorio temporalmente no disponible.', {status:503, headers:{'Cache-Control':'no-store'}});
   }
 
   const totalEntries = entries.length;

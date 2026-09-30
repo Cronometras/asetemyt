@@ -1,14 +1,17 @@
 // Build-time static llms-full.txt. Prerendered to dist/llms-full.txt.
-export const prerender = true;
+export const prerender = false;
 import type { APIRoute } from 'astro';
-import { getDirectoryEntries } from '../lib/firebase';
+import { getDB, listConsultores, listSoftware } from '../lib/d1';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ locals }) => {
   let entries: any[] = [];
   try {
-    entries = await getDirectoryEntries();
+    const db = getDB(locals);
+    const collections = await Promise.all([listConsultores(db), listSoftware(db)]);
+    entries = collections.flat();
   } catch (e) {
     console.error('Error fetching directory entries for llms-full.txt:', e);
+    return new Response('Directorio temporalmente no disponible.', {status:503, headers:{'Cache-Control':'no-store'}});
   }
 
   const totalEntries = entries.length;
@@ -99,14 +102,15 @@ export const GET: APIRoute = async () => {
     lines.push('', '## Profesionales y empresas destacados del directorio (últimos 50)', '');
     for (const e of top) {
       if (!e.slug) continue;
-      const nombre = e.nombre || 'Sin nombre';
+      const text = (value: string) => String(value || '').replace(/[\r\n]+/g, ' ').replace(/[\[\]\\]/g, '');
+      const nombre = text(e.nombre) || 'Sin nombre';
       const tipo = e.tipo || 'profesional';
       const ciudad = e.ubicacion?.ciudad || '';
       const pais = e.ubicacion?.pais || '';
       const esp = (e.especialidades || []).slice(0, 4).join(', ');
       const ubic = [ciudad, pais].filter(Boolean).join(', ');
       const desc = (e.descripcion || '').slice(0, 100);
-      lines.push(`- [${nombre}](https://asetemyt.com/directorio/${e.slug}): ${tipo}${ubic ? ' en ' + ubic : ''}${esp ? ' — especialidades: ' + esp : ''}.${desc ? ' ' + desc + '…' : ''}`);
+      lines.push(`- [${nombre}](https://asetemyt.com/directorio/${encodeURIComponent(e.slug)}/): ${text(tipo)}${ubic ? ' en ' + text(ubic) : ''}${esp ? ' — especialidades: ' + text(esp) : ''}.${desc ? ' ' + text(desc) + '…' : ''}`);
     }
   }
 

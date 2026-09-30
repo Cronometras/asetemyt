@@ -15,6 +15,7 @@ const { GET: leads } = await server.ssrLoadModule('/src/pages/api/admin/leads.ts
 const { GET: subscribers } = await server.ssrLoadModule('/src/pages/api/admin/subscribers.ts');
 const { GET: coupons } = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: outreach } = await server.ssrLoadModule('/src/pages/api/admin/outreach/list.ts');
+const directorySubmit = await server.ssrLoadModule('/src/pages/api/directorio/submit.ts');
 const trainingApi = await server.ssrLoadModule('/src/pages/api/user/formacion.ts');
 const ownerFicha = await server.ssrLoadModule('/src/pages/api/user/ficha.ts');
 const casesApi = await server.ssrLoadModule('/src/pages/api/cases/index.ts');
@@ -291,7 +292,7 @@ test('contact visibility changes on the next request after bulk actions without 
   const env = { DB, FIREBASE_API_KEY: 'test' };
   await store.firestoreCreate(env, 'directorio_consultores_asetemyt', 'unverified', fields({
     slug: 'unverified', nombre: 'Unverified', tipo: 'consultor', verificado: false,
-    contactoDesbloqueado: false, contacto: { email: 'contact@example.com' },
+    contactoDesbloqueado: false, contacto: { email: 'contact@example.com', internalNotes: 'private', telefono: { malformed: true } },
   }));
   const read = slug => contact(context(env, 'GET', undefined, '/api/ficha/contact?slug=' + slug));
   assert.deepEqual(await (await read('unverified')).json(), { locked: true, contacto: null });
@@ -476,5 +477,48 @@ test('training belongs to its listing owner and requires review after edits',asy
   assert.equal((await trainingApi.PATCH(context(env,'PATCH',{slug:'existing',action:'withdraw'}))).status,200);
   user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
   assert.equal((await moderation.POST(context(env,'POST',{kind:'training',id:'existing',action:'approve'}))).status,409);
+ }finally{sqlite.close();}
+});
+
+test('public listing submission uses D1 and ignores forged publication permissions',async()=>{
+ const {DB,sqlite}=database();
+ try{
+  const body={nombre:'Nueva Empresa',tipo:'empresa',descripcion:'Servicios industriales',contacto:{email:'info@example.com',web:'https://example.com'},verificado:true,status:'published',ownerUid:'forged'};
+  assert.equal((await directorySubmit.POST(context({},'POST',body))).status,503);
+  assert.equal((await directorySubmit.POST(context({DB},'POST',{...body,contacto:{web:'javascript:alert(1)'}}))).status,400);
+  for(let i=0;i<3;i++)assert.equal((await directorySubmit.POST(context({DB},'POST',body))).status,201);
+  assert.equal((await directorySubmit.POST(context({DB},'POST',body))).status,429);
+  const rows=await store.firestoreListAll({DB},'pending_consultores_asetemyt');
+  assert.equal(rows.length,3);assert.ok(rows.every(row=>row.status==='pending'&&row.verificado===false&&row.ownerUid===undefined));
+ }finally{sqlite.close();}
+});
+
+test('listing moderation publishes safely without granting ownership and blocks duplicates',async()=>{
+ const {DB,sqlite}=database();const env={DB};
+ try{
+  user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
+  const proposal={nombre:'Nueva',slug:'nueva',tipo:'empresa',descripcion:'Servicios',status:'pending',ip:'private',ownerUid:'forged'};
+  await store.firestoreCreate(env,'pending_consultores_asetemyt','proposal',fields(proposal));
+  const approve=id=>moderation.POST(context(env,'POST',{kind:'listings',id,action:'approve'}));
+  assert.equal((await approve('proposal')).status,200);
+  const listing=await store.firestoreGet(env,'directorio_consultores_asetemyt','nueva');
+  assert.equal(listing.nombre,'Nueva');assert.equal(listing.verificado,false);assert.equal(listing.ownerUid,undefined);assert.equal(listing.ip,undefined);
+  assert.equal((await approve('proposal')).status,409);
+  await store.firestoreCreate(env,'pending_consultores_asetemyt','duplicate',fields({...proposal,slug:'existing'}));
+  assert.equal((await approve('duplicate')).status,409);
+  assert.equal((await store.firestoreGet(env,'pending_consultores_asetemyt','duplicate')).status,'pending');
+ }finally{sqlite.close();}
+});
+
+test('moderation rejects malformed requests and unsafe legacy listing proposals',async()=>{
+ const {DB,sqlite}=database();const env={DB};user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
+ try{
+  const bad=context(env,'POST',{kind:'listings'});bad.request=new Request(bad.url,{method:'POST',headers:{Authorization:'Bearer test'},body:'{'});
+  assert.equal((await moderation.POST(bad)).status,400);
+  await store.firestoreCreate(env,'pending_consultores_asetemyt','legacy',fields({nombre:'Legacy',slug:'legacy',tipo:'empresa',descripcion:'Texto',status:'pending',contacto:{web:'javascript:alert(1)'}}));
+  assert.equal((await moderation.POST(context(env,'POST',{kind:'listings',id:'legacy',action:'approve'}))).status,400);
+  assert.equal(await store.firestoreGet(env,'directorio_consultores_asetemyt','legacy'),null);
+  assert.equal((await store.firestoreGet(env,'pending_consultores_asetemyt','legacy')).status,'pending');
+  assert.equal((await moderation.POST(context(env,'POST',{kind:'listings',id:'legacy',action:'reject'}))).status,200);
  }finally{sqlite.close();}
 });

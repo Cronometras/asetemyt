@@ -37,7 +37,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (found.listing.ownerUid !== user.user_id) return Response.json({ error: 'Solo el propietario puede publicar.' }, { status: 403 });
     if (!found.listing.verificado) {
-      return new Response(JSON.stringify({ error: 'Solo fichas verificadas pueden publicar casos de estudio.' }), { status: 403 });
+      return new Response(JSON.stringify({ error: 'Solo fichas verificadas pueden publicar proyectos y casos de estudio.' }), { status: 403 });
     }
 
     const docId = crypto.randomUUID();

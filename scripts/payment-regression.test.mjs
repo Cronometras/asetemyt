@@ -116,6 +116,8 @@ async function setup(t) {
 }
 
 test('login return destinations preserve the listing and reject external or malformed redirects', () => {
+  assert.equal(claimReturnPath('?next=' + encodeURIComponent('/mi-cuenta/ficha/?slug=empresa')), '/mi-cuenta/ficha/?slug=empresa');
+  for (const next of ['/mi-cuenta/ficha/?slug=../x', '/mi-cuenta/ficha/?slug=x&slug=y', '/mi-cuenta/ficha/?slug=x&next=evil', '/mi-cuenta/ficha/evil?slug=x']) assert.equal(claimReturnPath('?next=' + encodeURIComponent(next)), null);
   assert.equal(claimReturnPath('?next=%2Freclamar%2Fempresa'), '/reclamar/empresa');
   assert.equal(claimReturnPath('?next=%2Freclamar%2Ft%C3%A9cnico%2F'), '/reclamar/t%C3%A9cnico');
   for (const next of ['https://evil.example', '//evil.example', '/admin', '/reclamar/..', '/reclamar/%2f%2fevil.example', '/reclamar/a?next=evil', '/reclamar/%', '/reclamar/a\\b']) {

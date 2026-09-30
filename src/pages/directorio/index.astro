@@ -218,12 +218,23 @@ import DOMPurify from "dompurify";
       const cards = document.querySelectorAll('.directory-card') as NodeListOf<HTMLElement>;
       const countEl = document.getElementById('results-count');
 
-      let page = 1;
+      const requestedPage = Number(new URLSearchParams(window.location.search).get('pagina'));
+      let page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
       const pageSize = 24;
       const controls = document.createElement('div');
       controls.className = 'flex flex-wrap items-center gap-4 my-6';
       controls.innerHTML = '<button id="previous-page" class="px-4 py-2 border rounded">Anterior</button><span id="page-info" role="status"></span><button id="next-page" class="px-4 py-2 border rounded">Siguiente</button><button id="clear-filters" class="px-4 py-2 border rounded">Limpiar filtros</button>';
       container.append(controls);
+      const previousButton = document.getElementById('previous-page')!;
+      const nextButton = document.getElementById('next-page')!;
+      const clearButton = document.getElementById('clear-filters')!;
+      previousButton.textContent = lang === 'es' ? 'Anterior' : 'Previous';
+      nextButton.textContent = lang === 'es' ? 'Siguiente' : 'Next';
+      clearButton.textContent = lang === 'es' ? 'Limpiar filtros' : 'Clear filters';
+      for (const [id, input] of [['search-input', searchInput], ['filter-tipo', filterTipo], ['filter-especialidad', filterEsp], ['filter-ubicacion', filterLoc], ['filter-provincia', filterProv], ['filter-ciudad', filterCiudad]] as const) {
+        input?.previousElementSibling?.setAttribute('for', id);
+      }
+      countEl?.setAttribute('aria-live', 'polite');
       const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
       function applyFilters(event?: Event) {
         if (event) page = 1;
@@ -235,6 +246,7 @@ import DOMPurify from "dompurify";
         const ciudad = filterCiudad?.value?.toLowerCase() || '';
 
         let visible = 0;
+        const matchingCards: HTMLElement[] = [];
         cards.forEach((card) => {
           const name = card.dataset.name || '';
           const cardTipo = card.dataset.tipo || '';
@@ -246,23 +258,27 @@ import DOMPurify from "dompurify";
           const matchSearch = !search || normalize(name).includes(search) || normalize(cardEsp).includes(search);
           const matchTipo = !tipo || cardTipo === tipo;
           const matchEsp = !esp || cardEsp.includes(esp);
-          const matchLoc = !loc || cardLoc.includes(loc);
-          const matchProv = !prov || cardProv.includes(prov);
-          const matchCiudad = !ciudad || cardCiudad.includes(ciudad);
+          const matchLoc = !loc || normalize(cardLoc) === normalize(loc);
+          const matchProv = !prov || normalize(cardProv) === normalize(prov);
+          const matchCiudad = !ciudad || normalize(cardCiudad) === normalize(ciudad);
 
           const show = matchSearch && matchTipo && matchEsp && matchLoc && matchProv && matchCiudad;
-          if (show) visible++;
-          card.style.display = show && visible > (page - 1) * pageSize && visible <= page * pageSize ? '' : 'none';
+          card.style.display = 'none';
+          if (show) matchingCards.push(card);
         });
 
+        visible = matchingCards.length;
         const pages = Math.max(1, Math.ceil(visible / pageSize));
+        page = Math.min(Math.max(1, page), pages);
+        matchingCards.slice((page - 1) * pageSize, page * pageSize).forEach(card => { card.style.display = ''; });
         (document.getElementById('previous-page') as HTMLButtonElement).disabled = page <= 1;
         (document.getElementById('next-page') as HTMLButtonElement).disabled = page >= pages;
-        document.getElementById('page-info')!.textContent = visible ? `Página ${page} de ${pages}` : 'No hay coincidencias. Prueba otros filtros.';
+        document.getElementById('page-info')!.textContent = visible ? (lang === 'es' ? `Página ${page} de ${pages}` : `Page ${page} of ${pages}`) : (lang === 'es' ? 'No hay coincidencias. Prueba otros filtros.' : 'No matches. Try other filters.');
         const query = new URLSearchParams(window.location.search);
         for (const [key, element] of [['q', searchInput], ['tipo', filterTipo], ['especialidad', filterEsp], ['ubicacion', filterLoc], ['provincia', filterProv], ['ciudad', filterCiudad]] as const) {
           if (element.value) query.set(key, element.value); else query.delete(key);
         }
+        if (page > 1) query.set('pagina', String(page)); else query.delete('pagina');
         history.replaceState(null, '', window.location.pathname + (query.size ? '?' + query : ''));
         if (countEl) {
           countEl.textContent = `${visible} ${visible === 1 ? tr('result') : tr('results')}`;

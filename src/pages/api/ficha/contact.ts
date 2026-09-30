@@ -30,9 +30,9 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     return new Response(JSON.stringify({
       locked: false,
-      contacto: listing.contacto || {},
+      contacto: Object.fromEntries(['email', 'telefono', 'web', 'linkedin'].filter(key => typeof listing.contacto?.[key] === 'string').map(key => [key, listing.contacto[key]])),
     }), { status: 200, headers });
   } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers });
+    return new Response(JSON.stringify({ error: 'No se pudieron cargar los datos de contacto.' }), { status: 500, headers });
   }
 };

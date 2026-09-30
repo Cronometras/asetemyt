@@ -97,7 +97,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return new Response(JSON.stringify({
       success: true,
-      message: 'Solicitud enviada correctamente. El profesional te contactará pronto.',
+      message: 'Solicitud registrada correctamente.',
     }), { status: 201 });
   } catch (err: any) {
     console.error('Lead submit error:', err);

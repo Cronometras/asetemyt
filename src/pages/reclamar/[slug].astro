@@ -22,7 +22,7 @@ if (!entry) return Astro.redirect('/directorio');
           <p class="text-steel-500">{entry.nombre}</p>
         </div>
       </div>
-      <p class="text-steel-600 text-sm">Verifica que eres el propietario de esta empresa usando tu email corporativo. Se te enviará un código de 6 dígitos.</p>
+      <p class="text-steel-600 text-sm">Comprueba tu acceso al correo de la ficha con un código de 6 dígitos. Después podrás revisar la suscripción en Stripe antes de confirmar el pago.</p>
       <a href={`/verificar-ficha/?slug=${encodeURIComponent(entry.slug)}`} class="inline-block mt-3 text-sm font-semibold text-accent-600 hover:underline">Qué incluye verificar tu ficha →</a>
       <p class="mt-3 text-xs text-steel-500">La verificación de pago es una suscripción con renovación automática. Stripe muestra el importe, la periodicidad y los impuestos antes de confirmar. Podrás gestionar la renovación desde Mi cuenta.</p>
     </div>
@@ -45,7 +45,7 @@ if (!entry) return Astro.redirect('/directorio');
 
     <!-- STEP 1: Form -->
     <div id="step1" class="hidden bg-white rounded-2xl shadow-lg p-8">
-      <h2 class="text-lg font-bold text-primary-900 mb-4">Paso 1 — Datos de contacto</h2>
+      <h2 class="text-lg font-bold text-primary-900 mb-4">Paso 1 — Recibe un código en tu correo</h2>
       <form id="claimForm" class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-steel-700 mb-1">Nombre completo *</label>
@@ -73,7 +73,7 @@ if (!entry) return Astro.redirect('/directorio');
           <div id="couponResult" class="hidden mt-2 text-sm p-3 rounded-lg"></div>
         </div>
 
-        <div id="error1" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
+        <div role="alert" id="error1" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
         <button type="submit" id="btnSend" class="w-full bg-accent-500 hover:bg-accent-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
           Enviar código de verificación
         </button>
@@ -88,18 +88,19 @@ if (!entry) return Astro.redirect('/directorio');
       <!-- Coupon info in step 2 -->
       <div id="couponInfo2" class="hidden mb-4 p-3 bg-accent-50 border border-accent-200 rounded-lg text-sm text-accent-800"></div>
 
+      <p class="text-xs text-steel-500 mb-4">Si no lo encuentras, revisa la carpeta de spam o pulsa Reenviar código. Introducir el código no realiza ningún cobro.</p>
       <form id="codeForm" class="space-y-4">
         <div class="flex justify-center gap-2">
-          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
-          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
-          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
-          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
-          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
-          <input type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input aria-label="Dígito 1 del código" type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input aria-label="Dígito 2 del código" type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input aria-label="Dígito 3 del código" type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input aria-label="Dígito 4 del código" type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input aria-label="Dígito 5 del código" type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
+          <input aria-label="Dígito 6 del código" type="text" maxlength="1" class="code-input w-12 h-14 text-center text-2xl font-bold rounded-lg border-2 border-steel-200 focus:border-accent-500 outline-none" inputmode="numeric" pattern="[0-9]" />
         </div>
-        <div id="error2" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
+        <div role="alert" id="error2" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded-lg"></div>
         <button type="submit" id="btnVerify" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors">
-          Verificar y pagar
+          Comprobar código y revisar el pago
         </button>
         <button type="button" id="btnResend" class="w-full text-accent-600 hover:text-accent-700 font-medium py-2 text-sm underline">
           Reenviar código
@@ -111,7 +112,7 @@ if (!entry) return Astro.redirect('/directorio');
     <div id="step3" class="hidden bg-white rounded-2xl shadow-lg p-8 text-center">
       <div class="inline-block w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
       <h2 class="text-lg font-bold text-primary-900 mb-2">¡Código verificado!</h2>
-      <p class="text-steel-500">Redirigiendo al pago...</p>
+      <p class="text-steel-500">Abriendo Stripe para que revises el importe y las condiciones. El cobro se confirma allí.</p>
     </div>
 
     <!-- STEP 4: Free coupon success -->

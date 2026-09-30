@@ -1,0 +1,20 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import ts from 'typescript';
+const source=readFileSync('src/pages/mi-cuenta/ficha.astro','utf8');
+const render=source.slice(source.indexOf('  function renderLeads()'),source.indexOf('  async function load()'));
+test('request drafts survive list filtering without changing saved data',()=>{
+ const data={leads:[{id:'one',status:'new',contactName:'Ana',contactEmail:'ana@example.com',ownerNotes:'Saved'}]};
+ const leadDrafts=new Map([['one',{status:'contacted',ownerNotes:'Unsaved <note>'}]]);
+ const filter={value:'contacted'};const leadsEl={innerHTML:''};
+ const escape=value=>String(value??'').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ const code=ts.transpileModule(render+';renderLeads();',{compilerOptions:{target:ts.ScriptTarget.ES2022}}).outputText;
+ const context={data,leadDrafts,filter,leadsEl,escape,date:()=>'',states:{new:'Nueva',sent:'Enviada',contacted:'Contactada',closed:'Cerrada'}};
+ runInNewContext(code,context);
+ assert.match(leadsEl.innerHTML,/Unsaved &lt;note&gt;/);assert.match(leadsEl.innerHTML,/value="contacted" selected/);
+ filter.value='new';runInNewContext(code,context);assert.match(leadsEl.innerHTML,/No hay solicitudes/);
+ filter.value='';runInNewContext(code,context);assert.match(leadsEl.innerHTML,/Unsaved &lt;note&gt;/);
+ assert.equal(data.leads[0].ownerNotes,'Saved');assert.equal(data.leads[0].status,'new');
+});
