@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { firestoreListAll, firestoreQuery, firestoreCreate } from '../../../lib/firestore-rest';
 import { getCached, invalidate, CACHE_KEYS } from '../../../lib/cache';
+import { validTextForm } from '../../../lib/form-validation';
 
 /** Remove HTML tags from a string to prevent XSS */
 function stripHtml(s: string): string {
@@ -11,14 +12,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
 
   try {
-    const body = await request.json();
+    let body;
+    try { body = await request.json(); }
+    catch { return Response.json({ error: 'JSON no válido.' }, { status: 400 }); }
+    if (!validTextForm(body, { title: 200, company: 200, location: 200, description: 3000,
+      requirements: 2000, salary: 100, type: 20, contactEmail: 254, contactUrl: 2048 },
+      ['title', 'company', 'description', 'contactEmail']) ||
+      (body.type !== undefined && !['full-time', 'part-time', 'contract', 'freelance'].includes(body.type))) {
+      return Response.json({ error: 'Datos no válidos.' }, { status: 400 });
+    }
     const { title, company, location, description, requirements, salary, type, contactEmail, contactUrl } = body;
 
     if (!title?.trim() || !company?.trim() || !description?.trim() || !contactEmail?.trim()) {
       return new Response(JSON.stringify({ error: 'Título, empresa, descripción y email son obligatorios.' }), { status: 400 });
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail) || (contactUrl && !/^https?:\/\//i.test(contactUrl))) return Response.json({ error: 'Correo o enlace no válido.' }, { status: 400 });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail.trim()) || (contactUrl && !/^https?:\/\//i.test(contactUrl.trim()))) return Response.json({ error: 'Correo o enlace no válido.' }, { status: 400 });
     if (contactUrl) { try { const link = new URL(contactUrl); if (!['https:', 'http:'].includes(link.protocol) || link.username || link.password) throw new Error(); } catch { return Response.json({ error: 'Enlace no válido.' }, { status: 400 }); } }
     // Rate limit: max 3 jobs per IP per day
     const ip = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || 'unknown';
@@ -32,7 +41,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Save job
-    const docId = `${company.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`;
+    const docId = crypto.randomUUID();
 
     const saved = await firestoreCreate(env, 'jobs_asetemyt', docId, {
       title: { stringValue: stripHtml(title.trim().substring(0, 200)) },
@@ -79,8 +88,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
         const all = await firestoreListAll(env, 'jobs_asetemyt');
         return all
           .filter((j: any) => j.status === 'active' && (!j.expiresAt || Date.parse(j.expiresAt) > Date.now()))
-          .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
-          .slice(0, 100);
+          .sort((a: any, b: any) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
       },
       3600 // 1h TTL — jobs are time-sensitive, refresh more often than 24h
     );
@@ -88,7 +96,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
     jobs = jobs.filter((j: any) => !j.expiresAt || Date.parse(j.expiresAt) > Date.now());
     // Apply optional filters (post-cache — they're cheap)
     if (type) jobs = jobs.filter((j: any) => j.type === type);
-    if (location) jobs = jobs.filter((j: any) => j.location?.toLowerCase().includes(location.toLowerCase()));
+    if (location) jobs = jobs.filter((j: any) => typeof j.location === 'string' && j.location.toLowerCase().includes(location.toLowerCase()));
+    jobs = jobs.slice(0, 100);
 
     return new Response(JSON.stringify({ jobs: jobs.map(({ title, company, location, description, requirements, salary, type, contactEmail, contactUrl, createdAt, expiresAt }: any) => ({ title, company, location, description, requirements, salary, type, contactEmail, contactUrl, createdAt, expiresAt })) }), {
       status: 200,
@@ -99,6 +108,6 @@ export const GET: APIRoute = async ({ url, locals }) => {
     });
   } catch (err: any) {
     console.error('Jobs fetch error:', err);
-    return new Response(JSON.stringify({ error: 'Error interno.', details: err.message }), { status: 500 });
+    return Response.json({ error: 'Error interno.' }, { status: 500 });
   }
 };

@@ -10,16 +10,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any).runtime?.env || {};
 
   try {
-    const body = await request.json();
+    let body;
+    try { body = await request.json(); }
+    catch { return Response.json({ error: 'JSON no válido.' }, { status: 400 }); }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return Response.json({ error: 'Datos no válidos.' }, { status: 400 });
+    }
     const { slug, rating, authorName, authorEmail, comment } = body;
 
     // Validate
-    if (!slug || !rating || rating < 1 || rating > 5) {
+    if (typeof slug !== 'string' || !slug.trim() || slug.length > 200 ||
+        typeof rating !== 'number' || !Number.isInteger(rating) || rating < 1 || rating > 5) {
       return new Response(JSON.stringify({ error: 'Datos inválidos. Rating debe ser 1-5.' }), { status: 400 });
     }
 
-    if (!authorName || !authorName.trim()) {
+    if (typeof authorName !== 'string' || !stripHtml(authorName).trim() || authorName.length > 100) {
       return new Response(JSON.stringify({ error: 'Nombre requerido.' }), { status: 400 });
+    }
+
+    if ((authorEmail !== undefined && (typeof authorEmail !== 'string' || authorEmail.length > 254 ||
+          (authorEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(authorEmail.trim())))) ||
+        (comment !== undefined && (typeof comment !== 'string' || comment.length > 1000))) {
+      return Response.json({ error: 'Correo o comentario no válido.' }, { status: 400 });
     }
 
     // Check the entry exists in either collection
@@ -37,8 +49,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // Save review (pending moderation) — use email as doc ID for idempotency
-    const docId = `${slug}_${(authorEmail || authorName).toLowerCase().trim().replace(/[^a-zA-Z0-9@._-]/g, '_')}_${Date.now()}`;
+    // Keep personal data out of document IDs and avoid timestamp collisions.
+    const docId = crypto.randomUUID();
 
     const saved = await firestoreCreate(env, 'reviews_asetemyt', docId, {
       slug: { stringValue: slug },

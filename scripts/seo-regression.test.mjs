@@ -4,6 +4,22 @@ import { readFileSync, readdirSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
+test('verification landing renders available benefits and subscription terms without JavaScript', () => {
+  const html = readFileSync('dist/verificar-ficha/index.html', 'utf8');
+  assert.match(html, /<h1[^>]*>Haz que te contacten/);
+  assert.match(html, /https:\/\/asetemyt.com\/verificar-ficha\//);
+  assert.match(html, /Suscripci|suscripci/);
+  assert.match(html, /renovaci[oó]n autom[aá]tica|renueva autom[aá]ticamente/);
+  assert.doesNotMatch(html, /Propuestas para futuras|No incluidas actualmente|Estadísticas de tu ficha/);
+  assert.match(html, /escaparate de proyectos/);
+  assert.match(html, /buzón de oportunidades/);
+  assert.match(html, /50 €/);
+  assert.match(html, /Impuestos no incluidos/);
+  assert.match(html, /href="\/directorio\/"/);
+  assert.match(html, /href="\/anadir"/);
+  assert.doesNotMatch(html, /50€|clientes garantizados/);
+});
+
 test('built directory serves crawlable live data and consistent canonical URLs', async (t) => {
   const worker = new Miniflare({
     modules: ['index.js', ...readdirSync('dist/_worker.js', { recursive: true })
@@ -21,6 +37,7 @@ test('built directory serves crawlable live data and consistent canonical URLs',
       const sql = readFileSync(`migrations/${file}`, 'utf8').replace(/--[^\n]*/g, '');
       for (const statement of sql.split(';').filter(s => s.trim())) await db.prepare(statement).run();
     }
+    await db.prepare('CREATE TABLE app_documents (collection TEXT NOT NULL, id TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(collection,id))').run();
     const insert = async (id, slug, name = 'ACMP Lean') => db.prepare(
       'INSERT INTO consultores (id, slug, nombre, tipo, descripcion, especialidades, ubicacion, contacto, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).bind(id, slug, name, 'empresa', 'Procesos industriales </script><script>untrusted()</script>', '["lean"]', '{"pais":"España","ciudad":"Ansoáin"}', '{"email":"private@example.com"}', '2026-09-25T00:00:00Z').run();
@@ -52,6 +69,28 @@ test('built directory serves crawlable live data and consistent canonical URLs',
       assert.equal(entries.length, 2);
       assert.match(entries[0].descripcion, /<\/script>/);
       assert.doesNotMatch(json, /<script>/);
+    });
+
+    await t.test('verified website is in server HTML and unverified website is absent', async () => {
+      const website = 'https://seo-fixture.example/company';
+      await db.prepare('UPDATE consultores SET contacto = ?, verificado = 0 WHERE id = ?').bind(JSON.stringify({web: website}), 'acmp').run();
+      const locked = await (await fetchPage('/directorio/acmp-lean/')).text();
+      assert.ok(!locked.includes('seo-fixture.example'));
+      await db.prepare('UPDATE consultores SET verificado = 1 WHERE id = ?').bind('acmp').run();
+      const verified = await (await fetchPage('/directorio/acmp-lean/')).text();
+      const anchor = verified.match(/<a[^>]*href="https:\/\/seo-fixture\.example\/company"[^>]*>/)?.[0];
+      assert.ok(anchor, 'Verified website must be crawlable without JavaScript');
+      assert.match(anchor, /rel="[^"]*\bsponsored\b/);
+    });
+
+    await t.test('only approved training appears in profile HTML',async()=>{
+      const payload={slug:'acmp-lean',description:'Formación industrial propia',courses:'Temario de cronometraje',methodology:'Prácticas supervisadas',format:'Presencial',status:'pending'};
+      await db.prepare('INSERT INTO app_documents (collection,id,data) VALUES (?,?,?)').bind('formaciones_asetemyt','acmp-lean',JSON.stringify(payload)).run();
+      assert.doesNotMatch(await (await fetchPage('/directorio/acmp-lean/')).text(),/Temario de cronometraje/);
+      payload.status='published';
+      await db.prepare('UPDATE app_documents SET data = ? WHERE collection = ? AND id = ?').bind(JSON.stringify(payload),'formaciones_asetemyt','acmp-lean').run();
+      const html=await (await fetchPage('/directorio/acmp-lean/')).text();
+      assert.match(html,/Formaciones que ofrecemos/);assert.match(html,/Temario de cronometraje/);assert.match(html,/Prácticas supervisadas/);
     });
 
     await t.test('sitemap updates after writes, deduplicates and matches live landings', async () => {

@@ -23,6 +23,8 @@ if (!entry) return Astro.redirect('/directorio');
         </div>
       </div>
       <p class="text-steel-600 text-sm">Verifica que eres el propietario de esta empresa usando tu email corporativo. Se te enviará un código de 6 dígitos.</p>
+      <a href={`/verificar-ficha/?slug=${encodeURIComponent(entry.slug)}`} class="inline-block mt-3 text-sm font-semibold text-accent-600 hover:underline">Qué incluye verificar tu ficha →</a>
+      <p class="mt-3 text-xs text-steel-500">La verificación de pago es una suscripción con renovación automática. Stripe muestra el importe, la periodicidad y los impuestos antes de confirmar. Podrás gestionar la renovación desde Mi cuenta.</p>
     </div>
 
     <!-- Already verified -->
@@ -38,7 +40,7 @@ if (!entry) return Astro.redirect('/directorio');
     <div id="loginRequired" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
       <h2 class="text-xl font-bold text-amber-800 mb-2">Inicia sesión</h2>
       <p class="text-amber-700 mb-4">Necesitas iniciar sesión para reclamar una ficha.</p>
-      <a href="/login" class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-6 py-3 rounded-lg transition-colors">Iniciar Sesión</a>
+      <a href={`/login?next=${encodeURIComponent(`/reclamar/${entry.slug}`)}`} class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-6 py-3 rounded-lg transition-colors">Iniciar Sesión</a>
     </div>
 
     <!-- STEP 1: Form -->
@@ -181,7 +183,7 @@ if (!entry) return Astro.redirect('/directorio');
       const data = await resp.json();
       if (data.valid) {
         appliedCoupon = data.code;
-        resultEl.innerHTML = `✅ <strong>${data.code}</strong> — ${data.description}`;
+        resultEl.textContent = `✅ ${data.code} — ${data.description}`;
         resultEl.className = 'mt-2 text-sm p-3 rounded-lg bg-green-50 text-green-700';
         // Update button text based on coupon type
         if (data.type === 'free') {
@@ -265,8 +267,7 @@ if (!entry) return Astro.redirect('/directorio');
       // Show coupon info in step 2
       if (appliedCoupon) {
         const couponInfoEl = $('#couponInfo2');
-        const resultText = $('#couponResult').innerHTML;
-        couponInfoEl.innerHTML = resultText;
+        couponInfoEl.textContent = $('#couponResult').textContent;
         couponInfoEl.classList.remove('hidden');
       }
 

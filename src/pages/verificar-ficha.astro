@@ -1,0 +1,112 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+const benefits = [
+  { number: '01', title: 'Un perfil con responsable', text: 'El distintivo de ficha verificada indica que una persona ha acreditado el acceso al correo asociado a la ficha o a su dominio corporativo.' },
+  { number: '02', title: 'Tus datos de contacto, a la vista', text: 'La verificación desbloquea los datos de contacto de tu ficha. Los visitantes pueden consultar el email, teléfono, web y LinkedIn que hayas facilitado. Tu web incluye un enlace directo y visible en el código de la ficha para facilitar las visitas a tu sitio.' },
+  { number: '03', title: 'La información, bajo tu control', text: 'Actualiza tu descripción, especialidades, servicios, ubicación, logo y datos de contacto desde tu cuenta para presentar lo que haces hoy.' },
+  { number: '04', title: 'Una referencia para compartir', text: 'Accede al certificado de ficha verificada desde tu perfil y compártelo con tus clientes, en tu web o en LinkedIn como referencia a tu presencia en ASETEMYT.' },
+  { number: '05', title: 'Tu escaparate de proyectos', text: 'Presenta trabajos realizados, resultados y enlaces a documentos. Envía y edita tus proyectos desde tu cuenta, con revisión editorial antes de publicarse, y retíralos cuando lo necesites.' },
+  { number: '06', title: 'Tus oportunidades, organizadas', text: 'Consulta las solicitudes recibidas en tu ficha, responde por email y guarda su estado y tus notas privadas. Recibe avisos de nuevas solicitudes en el correo del propietario.' },
+];
+const questions = [
+  { question: '¿Qué acredita la verificación?', answer: 'Acredita el acceso al correo de la ficha o a su dominio corporativo y vincula su gestión a una cuenta. No es una auditoría de capacidades, una certificación técnica ni una garantía de la calidad del servicio.' },
+  { question: '¿Cuánto cuesta y cómo se renueva?', answer: 'El plan vigente cuesta 50 € al año, impuestos no incluidos, y se renueva automáticamente. Stripe muestra el precio, los impuestos y cualquier descuento antes de confirmar. Revisa ese resumen: es el que determina el cobro. Gestiona la suscripción y su cancelación desde Mi cuenta.' },
+  { question: '¿Necesito una ficha antes de pagar?', answer: 'Sí. Busca tu empresa o perfil en el directorio. Si todavía no aparece, envíalo gratuitamente desde Añadir al directorio. Una vez publicado podrás iniciar su verificación.' },
+  { question: '¿Puedo corregir o dar de baja mi ficha sin verificarla?', answer: 'Sí. Puedes solicitar correcciones, ampliar la información o pedir la baja desde Contacto sin contratar la verificación. La suscripción permite gestionar tú mismo la ficha desde Mi cuenta y utilizar las herramientas del plan.' },
+  { question: '¿Cómo gestiono mis proyectos y solicitudes?', answer: 'En Mi cuenta, abre Proyectos y solicitudes de tu ficha. Puedes enviar, editar y retirar proyectos con resultados y hasta cinco enlaces públicos a documentos. Los proyectos nuevos o modificados pasan por revisión editorial. En el buzón puedes consultar solicitudes, responder desde tu correo y guardar estados y notas privadas; recibirás avisos de nuevas solicitudes en el correo del propietario.' },
+  { question: '¿Puedo usar un cupón?', answer: 'Sí. Aplícalo antes de introducir el código de verificación. Según sus condiciones puede ofrecer un descuento, un periodo de prueba o la activación gratuita. Un periodo de prueba puede continuar como suscripción de pago; comprueba las condiciones en Stripe.' },
+  { question: '¿Y si no tengo acceso al correo de la ficha?', answer: 'Solicita una revisión desde Contacto antes de pagar. La comprobación requiere el correo publicado en la ficha o uno de su dominio corporativo; no basta con introducir cualquier dirección.' },
+  { question: '¿Qué pasa si mi ficha no tiene email?', answer: 'Si incluye una web corporativa, puedes recibir el código en un correo del mismo dominio; por ejemplo, nombre@empresa.com para la web empresa.com. Si no hay un correo ni un dominio corporativo comprobable, solicita una revisión desde Contacto para corregir los datos antes de continuar. El pago no sustituye esta comprobación.' },
+  { question: '¿Cuándo aparece el distintivo?', answer: 'Cuando se confirma el pago y se registra la activación, o cuando se valida un cupón de activación gratuita. Los pagos que tardan en confirmarse pueden aparecer como pendientes en Mi cuenta.' },
+  { question: '¿Mi ficha incluye un enlace a mi web?', answer: 'Sí. Si facilitas tu web y tu ficha está verificada, incluimos un enlace directo en la página y en su HTML, accesible sin JavaScript. Puede llevar visitantes a tu sitio. En las fichas no verificadas, el enlace web de contacto no se publica en el HTML.' },
+  { question: '¿Obtendré más clientes o una posición destacada?', answer: 'La verificación facilita el contacto y permite mantener el perfil actualizado. No garantiza clientes, resultados en buscadores, una posición preferente ni una recomendación editorial. Las solicitudes de presupuesto y las reseñas son funciones generales del directorio.' },
+];
+---
+
+<Layout title="Verifica tu ficha y facilita que te contacten" description="Descubre las ventajas de verificar tu ficha en ASETEMYT: datos de contacto visibles, proyectos con resultados, solicitudes de presupuesto y gestión de tu perfil.">
+  <section class="relative overflow-hidden bg-primary-900 text-white">
+    <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full border-[48px] border-white/5 pointer-events-none" aria-hidden="true"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <p class="text-accent-400 uppercase tracking-widest text-xs font-bold mb-5">Para empresas, consultores y profesionales</p>
+        <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-6">Haz que te contacten.<br />Gestiona cada oportunidad.</h1>
+        <p class="text-lg text-steel-300 max-w-xl leading-relaxed">Verifica tu ficha para mostrar tus datos de contacto, presentar tus proyectos y gestionar las solicitudes de quienes buscan un especialista en métodos y tiempos.</p>
+        <div class="flex flex-wrap gap-4 mt-8">
+          <a data-claim-link href="/directorio/" class="inline-flex items-center bg-accent-500 hover:bg-accent-600 text-white font-bold rounded-lg px-6 py-3.5">Buscar mi ficha y verificar →</a>
+          <a href="#beneficios" class="inline-flex items-center rounded-lg border border-white/30 hover:bg-white/10 px-6 py-3.5 font-semibold">Descubrir las ventajas</a>
+        </div>
+        <p class="text-sm text-steel-400 mt-5">Primero compruebas tu correo. Después revisas el pago.</p>
+      </div>
+      <aside class="bg-white text-primary-900 rounded-2xl p-6 sm:p-8 shadow-2xl lg:rotate-2" aria-label="Ejemplo ilustrativo de ficha verificada">
+        <div class="flex justify-between items-start gap-3 mb-6">
+          <div class="w-14 h-14 rounded-xl bg-primary-50 text-primary-800 flex items-center justify-center text-xl font-bold">MT</div>
+          <span class="rounded-full bg-green-100 text-green-800 text-xs font-bold px-3 py-2">✓ Ficha verificada</span>
+        </div>
+        <p class="text-xs uppercase tracking-widest text-steel-500 mb-2">Ejemplo de perfil</p>
+        <h2 class="text-2xl font-bold">Tu empresa o tu nombre</h2>
+        <p class="text-steel-500 mt-2">Especialistas en mejorar procesos industriales</p>
+        <div class="flex flex-wrap gap-2 my-5"><span class="bg-steel-100 text-steel-700 text-xs px-3 py-1.5 rounded-full">Cronometraje</span><span class="bg-steel-100 text-steel-700 text-xs px-3 py-1.5 rounded-full">Métodos y tiempos</span><span class="bg-steel-100 text-steel-700 text-xs px-3 py-1.5 rounded-full">Lean</span></div>
+        <div class="border-t border-steel-100 pt-5 space-y-3 text-sm"><p><span class="text-green-700 font-bold mr-2">✓</span>Contacto disponible para visitantes</p><p><span class="text-green-700 font-bold mr-2">✓</span>Información gestionada por el propietario</p><p><span class="text-green-700 font-bold mr-2">✓</span>Proyectos y solicitudes gestionados desde tu cuenta</p></div>
+        <p class="text-xs text-steel-400 mt-6">Ilustración del perfil. No representa a una empresa real.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section id="beneficios" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 scroll-mt-24">
+    <p class="text-accent-600 uppercase tracking-widest text-xs font-bold mb-3">Incluido hoy</p>
+    <h2 class="text-3xl font-extrabold text-primary-900 mb-4">Más claridad. Menos barreras para contactar.</h2>
+    <p class="text-steel-600 max-w-2xl mb-9">Presenta tus servicios con tus datos de contacto visibles, demuestra tu experiencia con proyectos y lleva el seguimiento de las solicitudes desde tu cuenta.</p>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{benefits.map(benefit => (
+      <article class="bg-white border border-steel-200 rounded-xl p-6"><span class="text-accent-600 text-sm font-bold">{benefit.number}</span><h3 class="font-bold text-primary-900 text-lg mt-4 mb-3">{benefit.title}</h3><p class="text-sm text-steel-600 leading-relaxed">{benefit.text}</p></article>
+    ))}</div>
+  </section>
+
+  <section class="bg-primary-50 border-y border-primary-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 grid md:grid-cols-2 gap-10">
+      <div><p class="text-xs font-bold uppercase tracking-widest text-accent-600 mb-3">Empresas y consultoras</p><h2 class="text-2xl font-bold text-primary-900 mb-4">Presenta tu oferta con coherencia.</h2><p class="text-steel-600 leading-relaxed">Mantén visibles los servicios, las especialidades y los canales de contacto de tu equipo. Una ficha actualizada ayuda a que los responsables de producción e ingeniería entiendan si tu empresa encaja con su proyecto.</p></div>
+      <div><p class="text-xs font-bold uppercase tracking-widest text-accent-600 mb-3">Profesionales independientes</p><h2 class="text-2xl font-bold text-primary-900 mb-4">Muestra tu experiencia. Facilita que te contraten.</h2><p class="text-steel-600 leading-relaxed">Presenta tus especialidades, los servicios que ofreces y dónde trabajas. Comparte proyectos y resultados que ayuden a tus potenciales clientes a valorar tu experiencia, mantén tus datos de contacto visibles y gestiona las solicitudes desde tu cuenta.</p></div>
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="grid lg:grid-cols-2 gap-12">
+      <div><p class="text-accent-600 uppercase tracking-widest text-xs font-bold mb-3">Cómo funciona</p><h2 class="text-3xl font-extrabold text-primary-900 mb-6">De tu ficha a tu cuenta,<br />en cuatro pasos.</h2><ol class="space-y-6">{[
+        ['Localiza tu ficha', 'Busca tu empresa o perfil. Si todavía no está publicado, envíalo al directorio.'],
+        ['Acredita el correo', 'Inicia sesión y recibe un código en el correo de la ficha o de su dominio corporativo.'],
+        ['Revisa y confirma', 'Introduce el código y consulta en Stripe el importe, los impuestos, la renovación y el cupón aplicado antes de pagar.'],
+        ['Gestiona tu presencia', 'Comprueba la activación en Mi cuenta, actualiza tus datos y abre Proyectos y solicitudes para gestionar tus trabajos y contactos recibidos.'],
+      ].map(([title, description], index) => <li class="flex gap-4"><span class="flex-shrink-0 w-9 h-9 rounded-full bg-primary-100 text-primary-800 font-bold flex items-center justify-center">{index + 1}</span><div><h3 class="font-bold text-primary-900">{title}</h3><p class="text-sm text-steel-600 mt-1 leading-relaxed">{description}</p></div></li>)}</ol></div>
+      <div class="bg-white border border-steel-200 rounded-2xl p-7 sm:p-9 self-start">
+        <span class="inline-block text-xs font-bold bg-green-100 text-green-800 rounded-full px-3 py-1.5 mb-5">Ficha verificada</span>
+        <h2 class="text-2xl font-bold text-primary-900 mb-3">Haz visibles tus datos de contacto.<br />Toma el control de tu perfil.</h2>
+        <p class="text-steel-600 text-sm leading-relaxed mb-6">Distintivo, datos de contacto visibles, edición de la ficha, certificado, escaparate de proyectos y buzón de oportunidades.</p>
+        <div class="bg-steel-50 rounded-xl p-4 text-sm text-steel-600 mb-6"><p class="text-3xl font-extrabold text-primary-900 mb-1">50 € <span class="text-base font-medium">/ año</span></p><p class="text-xs mb-4">Impuestos no incluidos.</p><p>La suscripción se renueva automáticamente. El importe final, los impuestos y los descuentos se muestran en Stripe antes de confirmar. Puedes cancelar la renovación desde Mi cuenta.</p></div>
+        <a data-claim-link href="/directorio/" class="block text-center bg-accent-500 hover:bg-accent-600 text-white font-bold px-5 py-3.5 rounded-lg">Buscar mi ficha y verificar →</a>
+        <a href="/anadir" class="block text-center text-sm font-semibold text-primary-800 hover:underline mt-4">Todavía no aparezco: añadir mi ficha</a>
+        <p class="text-xs text-steel-500 mt-6 leading-relaxed">El distintivo acredita la vinculación de la cuenta con la ficha. No sustituye una certificación técnica ni una evaluación del servicio.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 pb-16">
+    <h2 class="text-3xl font-extrabold text-primary-900 mb-7">Antes de verificar</h2>
+    <div class="space-y-3">{questions.map(item => <details class="group bg-white rounded-xl border border-steel-200 p-5"><summary class="font-semibold text-primary-900 cursor-pointer">{item.question}</summary><p class="mt-4 text-sm text-steel-600 leading-relaxed">{item.answer}</p></details>)}</div>
+    <p class="text-sm text-steel-600 mt-6">Puedes pedir correcciones o la baja de tu ficha sin contratar la verificación.</p>
+    <p class="text-sm text-steel-500 mt-3">¿Tu caso necesita revisión? <a href="/contact" class="font-semibold text-accent-600 hover:underline">Contacta con ASETEMYT</a>. Consulta también nuestra <a href="/politica-editorial" class="text-accent-600 hover:underline">política editorial</a>.</p>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-primary-900 rounded-2xl p-8 sm:p-12 text-center text-white"><h2 class="text-2xl sm:text-3xl font-bold mb-4">Haz que el siguiente contacto sea más fácil.</h2><p class="text-steel-300 mb-7">Tu ficha, actualizada por ti. Tus datos, disponibles para quienes te buscan.</p><a data-claim-link href="/directorio/" class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-7 py-3.5 rounded-lg">Buscar mi ficha y verificar →</a></div>
+  </section>
+</Layout>
+
+<script>
+  const slug = new URLSearchParams(window.location.search).get('slug');
+  if (slug && slug.length <= 200 && !/[/\\\u0000-\u001f]/.test(slug)) {
+    document.querySelectorAll<HTMLAnchorElement>('[data-claim-link]').forEach(link => {
+      link.href = `/reclamar/${encodeURIComponent(slug)}`;
+      link.textContent = 'Verificar esta ficha →';
+    });
+  }
+</script>

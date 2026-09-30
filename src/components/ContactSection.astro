@@ -5,11 +5,29 @@
 
 export interface Props {
   slug: string;
+  verifiedContact?: Record<string, string>;
 }
-const { slug } = Astro.props;
+const { slug, verifiedContact } = Astro.props;
+function webUrl(value: string, linkedin = false) {
+  if (!value) return null;
+  try {
+    const candidate = /^[a-z][a-z0-9+.-]*:/i.test(value) ? value : linkedin ? `https://linkedin.com/in/${value}` : `https://${value}`;
+    const url = new URL(candidate);
+    return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}
+const contact = verifiedContact || {};
+const links = [
+  ...(contact.email ? [{label: contact.email.replace(/ at /g, '@').replace(/ dot /g, '.'), href: 'mailto:' + contact.email.replace(/ at /g, '@').replace(/ dot /g, '.'), external: false}] : []),
+  ...(contact.telefono ? [{label: contact.telefono, href: 'tel:' + contact.telefono, external: false}] : []),
+  ...(webUrl(contact.web) ? [{label: contact.web, href: webUrl(contact.web)!, external: true}] : []),
+  ...(webUrl(contact.linkedin, true) ? [{label: 'LinkedIn', href: webUrl(contact.linkedin, true)!, external: true}] : []),
+];
 ---
 
-<div id={`contacto-${slug}`} class="contact-section" data-slug={slug}>
+{verifiedContact ? <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  {links.length ? links.map(link => <a href={link.href} target={link.external ? '_blank' : undefined} rel={link.external ? 'sponsored noopener noreferrer' : undefined} class="flex items-center gap-3 p-3 bg-steel-50 rounded-lg hover:bg-steel-100 transition-colors"><span class="text-sm text-steel-700 break-all">{link.label}</span></a>) : <p class="text-sm text-steel-500">No hay datos de contacto disponibles para esta ficha.</p>}
+</div> : <div id={`contacto-${slug}`} class="contact-section" data-slug={slug}>
   <!-- Server-rendered: locked state (default) -->
   <div class="relative">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 blur-[6px] select-none pointer-events-none opacity-40">
@@ -46,7 +64,7 @@ const { slug } = Astro.props;
 
   <!-- Client: unlocked state (hidden by default, shown after fetch) -->
   <div class="contact-unlocked hidden grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
-</div>
+</div>}
 
 <script>
   (async function() {
@@ -93,13 +111,13 @@ const { slug } = Astro.props;
       }
       if (c.web) {
         const href = c.web.indexOf('http') === 0 ? c.web : 'https://' + c.web;
-        items.push(`<a href="${esc(href)}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-3 bg-steel-50 rounded-lg hover:bg-steel-100 transition-colors">
+        items.push(`<a href="${esc(href)}" target="_blank" rel="sponsored noopener noreferrer" class="flex items-center gap-3 p-3 bg-steel-50 rounded-lg hover:bg-steel-100 transition-colors">
           <svg class="w-5 h-5 text-accent-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
           <span class="text-sm text-steel-700">${esc(c.web)}</span></a>`);
       }
       if (c.linkedin) {
         const lhref = c.linkedin.indexOf('http') === 0 ? c.linkedin : 'https://linkedin.com/in/' + c.linkedin;
-        items.push(`<a href="${esc(lhref)}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-3 bg-steel-50 rounded-lg hover:bg-steel-100 transition-colors">
+        items.push(`<a href="${esc(lhref)}" target="_blank" rel="sponsored noopener noreferrer" class="flex items-center gap-3 p-3 bg-steel-50 rounded-lg hover:bg-steel-100 transition-colors">
           <svg class="w-5 h-5 text-accent-500" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
           <span class="text-sm text-steel-700">LinkedIn</span></a>`);
       }

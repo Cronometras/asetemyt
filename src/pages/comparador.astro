@@ -31,19 +31,19 @@ import Layout from '../layouts/Layout.astro';
     <div class="bg-white rounded-xl shadow-md p-6 mb-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4" id="selector-grid">
         <div>
-          <label class="block text-sm font-medium text-steel-700 mb-1" data-field="tool1">Herramienta 1</label>
+          <label for="select-1" class="block text-sm font-medium text-steel-700 mb-1" data-field="tool1">Herramienta 1</label>
           <select id="select-1" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
             <option value="" data-field="selectTool">Seleccionar...</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-steel-700 mb-1" data-field="tool2">Herramienta 2</label>
+          <label for="select-2" class="block text-sm font-medium text-steel-700 mb-1" data-field="tool2">Herramienta 2</label>
           <select id="select-2" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
             <option value="" data-field="selectTool">Seleccionar...</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-steel-700 mb-1" data-field="tool3">Herramienta 3 (opcional)</label>
+          <label for="select-3" class="block text-sm font-medium text-steel-700 mb-1" data-field="tool3">Herramienta 3 (opcional)</label>
           <select id="select-3" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
             <option value="" data-field="selectTool">Seleccionar...</option>
           </select>
@@ -89,9 +89,29 @@ import Layout from '../layouts/Layout.astro';
 
   <script>
     import { t, getLang, type Lang } from '../lib/firebase';
+    import { escapeComparisonText as escapeHtml, trialAvailable, uniqueComparisonSlugs } from '../lib/comparison';
 
     let lang: Lang = getLang();
     let allSoftware: any[] = [];
+    let dataLoaded = false;
+    let activeFilter = 'all';
+
+    function renderFilteredGrid() {
+      renderGrid(activeFilter === 'all' ? allSoftware : allSoftware.filter(s =>
+        [...(s.methods || []), ...(s.features || [])].some((value: string) =>
+          value.toLowerCase().includes(activeFilter))));
+    }
+
+    function populateSelects() {
+      const opts = allSoftware.map(s => `<option value="${escapeHtml(s.slug)}">${escapeHtml(s.name)}</option>`).join('');
+      ['select-1', 'select-2', 'select-3'].forEach(id => {
+        const el = document.getElementById(id) as HTMLSelectElement;
+        if (!el) return;
+        const selected = el.value;
+        el.innerHTML = `<option value="">${escapeHtml(tr('selectTool'))}</option>` + opts;
+        el.value = selected;
+      });
+    }
 
     function tr(key: string): string {
       return t(key, lang);
@@ -108,21 +128,16 @@ import Layout from '../layouts/Layout.astro';
     async function loadSoftware() {
       try {
         const res = await fetch('/data/software-comparison.json');
-        if (!res.ok) return;
+        if (!res.ok) throw new Error('Software data unavailable');
         const data = await res.json();
         allSoftware = data.software.sort((a: any, b: any) => a.name.localeCompare(b.name));
+        dataLoaded = true;
 
-        // Populate selects
-        const opts = allSoftware.map((s: any) => `<option value="${s.slug}">${s.name}</option>`).join('');
-        ['select-1', 'select-2', 'select-3'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) el.innerHTML = `<option value="">${tr('selectTool')}</option>` + opts;
-        });
-
-        renderGrid(allSoftware);
-        setupFilters();
+        populateSelects();
+        renderFilteredGrid();
       } catch (e) {
         console.error('Error loading software data:', e);
+        document.getElementById('software-grid')!.innerHTML = '<p role="alert" class="text-center py-10 col-span-full">No se han podido cargar las herramientas. Recarga la página para volver a intentarlo.</p>';
       }
     }
 
@@ -135,17 +150,17 @@ import Layout from '../layouts/Layout.astro';
 
       grid.innerHTML = software.map((s: any) => `
         <div class="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition-all border border-steel-100">
-          <h3 class="font-bold text-primary-800 text-lg mb-2">${s.name}</h3>
+          <h3 class="font-bold text-primary-800 text-lg mb-2">${escapeHtml(s.name)}</h3>
           <div class="flex flex-wrap gap-1.5 mb-3">
-            ${(s.methods || []).map((m: string) => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded font-medium">${m}</span>`).join('')}
+            ${(s.methods || []).map((m: string) => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded font-medium">${escapeHtml(m)}</span>`).join('')}
           </div>
           <div class="space-y-1.5 text-sm text-steel-600 mb-3">
-            <p><span class="font-medium text-steel-700">${tr('platform')}:</span> ${s.platform || '—'}</p>
-            <p><span class="font-medium text-steel-700">${tr('pricing')}:</span> ${s.pricing || 'Contactar'}</p>
-            <p><span class="font-medium text-steel-700">${tr('target')}:</span> ${s.targetSize || '—'}</p>
+            <p><span class="font-medium text-steel-700">${tr('platform')}:</span> ${escapeHtml(s.platform || '—')}</p>
+            <p><span class="font-medium text-steel-700">${tr('pricing')}:</span> ${escapeHtml(s.pricing || 'Contactar')}</p>
+            <p><span class="font-medium text-steel-700">${tr('target')}:</span> ${escapeHtml(s.targetSize || '—')}</p>
           </div>
-          ${s.features?.length ? `<p class="text-xs text-steel-500 line-clamp-2">${s.features.slice(0, 4).join(' · ')}</p>` : ''}
-          ${s.freeTrial ? `<span class="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">${tr('trialAvail')}</span>` : ''}
+          ${s.features?.length ? `<p class="text-xs text-steel-500 line-clamp-2">${escapeHtml(s.features.slice(0, 4).join(' · '))}</p>` : ''}
+          ${trialAvailable(s.freeTrial) ? `<span class="inline-block mt-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded font-medium">${tr('trialAvail')}</span>` : ''}
           ${s.videoSupport ? `<span class="inline-block mt-2 ml-1 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">${tr('videoAvail')}</span>` : ''}
         </div>
       `).join('');
@@ -155,21 +170,14 @@ import Layout from '../layouts/Layout.astro';
       document.querySelectorAll('.filter-chip').forEach(chip => {
         chip.addEventListener('click', () => {
           const filter = (chip as HTMLElement).dataset.filter;
+          activeFilter = filter || 'all';
           document.querySelectorAll('.filter-chip').forEach(c => {
             c.className = c === chip
               ? 'filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-accent-500 text-white cursor-pointer'
               : 'filter-chip px-3 py-1.5 text-xs font-semibold rounded-full bg-steel-100 text-steel-600 hover:bg-accent-100 hover:text-accent-700 transition-colors cursor-pointer';
           });
 
-          if (filter === 'all') {
-            renderGrid(allSoftware);
-          } else {
-            const filtered = allSoftware.filter(s =>
-              (s.methods || []).some((m: string) => m.toLowerCase().includes(filter)) ||
-              (s.features || []).some((f: string) => f.toLowerCase().includes(filter))
-            );
-            renderGrid(filtered);
-          }
+          renderFilteredGrid();
         });
       });
 
@@ -185,9 +193,9 @@ import Layout from '../layouts/Layout.astro';
     }
 
     function compareSelected() {
-      const slugs = ['select-1', 'select-2', 'select-3']
+      const slugs = uniqueComparisonSlugs(['select-1', 'select-2', 'select-3']
         .map(id => (document.getElementById(id) as HTMLSelectElement)?.value)
-        .filter(Boolean);
+        .filter(Boolean) as string[]);
 
       if (slugs.length < 2) {
         alert(tr('selectAtLeast'));
@@ -203,7 +211,7 @@ import Layout from '../layouts/Layout.astro';
 
       thead.innerHTML = `<tr>
         <th class="text-left p-4 bg-steel-50 text-steel-700 font-semibold text-sm min-w-[140px]">${tr('characteristic')}</th>
-        ${selected.map((s: any, i: number) => `<th class="p-4 ${headerColors[i]} text-white font-bold text-sm text-center">${s.name}</th>`).join('')}
+        ${selected.map((s: any, i: number) => `<th class="p-4 ${headerColors[i]} text-white font-bold text-sm text-center">${escapeHtml(s.name)}</th>`).join('')}
       </tr>`;
 
       const rows = [
@@ -211,7 +219,7 @@ import Layout from '../layouts/Layout.astro';
         { label: tr('pricing'), key: 'pricing' },
         { label: tr('target'), key: 'targetSize' },
         { label: tr('languages'), key: 'languages', format: (v: any) => v?.join(', ') || '—' },
-        { label: tr('trial'), key: 'freeTrial' },
+        { label: tr('trial'), key: 'freeTrial', format: (v: any) => typeof v === 'boolean' ? (v ? tr('yes') : tr('no')) : v },
         { label: tr('video'), key: 'videoSupport', format: (v: any) => v ? tr('yes') : tr('no') },
         { label: tr('apiInt'), key: 'apiIntegration', format: (v: any) => v ? tr('yes') : tr('no') },
       ];
@@ -222,17 +230,17 @@ import Layout from '../layouts/Layout.astro';
           ${(selected as any[]).map(s => {
             let val = s[row.key];
             if (row.format) val = row.format(val);
-            return `<td class="p-4 text-center text-sm text-steel-600">${val || '—'}</td>`;
+            return `<td class="p-4 text-center text-sm text-steel-600">${escapeHtml(val || '—')}</td>`;
           }).join('')}
         </tr>
       `).join('') + `
         <tr class="border-t border-steel-100">
           <td class="p-4 font-medium text-steel-700 text-sm">${tr('methods')}</td>
-          ${(selected as any[]).map(s => `<td class="p-4 text-center text-sm"><div class="flex flex-wrap gap-1 justify-center">${(s.methods||[]).map((m: string) => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded">${m}</span>`).join('')}</div></td>`).join('')}
+          ${(selected as any[]).map(s => `<td class="p-4 text-center text-sm"><div class="flex flex-wrap gap-1 justify-center">${(s.methods||[]).map((m: string) => `<span class="text-xs bg-primary-50 text-primary-700 px-2 py-0.5 rounded">${escapeHtml(m)}</span>`).join('')}</div></td>`).join('')}
         </tr>
         <tr class="border-t border-steel-100">
           <td class="p-4 font-medium text-steel-700 text-sm">${tr('keyFeatures')}</td>
-          ${(selected as any[]).map(s => `<td class="p-4 text-sm"><ul class="text-xs text-steel-600 space-y-1">${(s.features||[]).map((f: string) => `<li class="flex items-start gap-1"><span class="text-accent-500 mt-0.5">•</span>${f}</li>`).join('')}</ul></td>`).join('')}
+          ${(selected as any[]).map(s => `<td class="p-4 text-sm"><ul class="text-xs text-steel-600 space-y-1">${(s.features||[]).map((f: string) => `<li class="flex items-start gap-1"><span class="text-accent-500 mt-0.5">•</span>${escapeHtml(f)}</li>`).join('')}</ul></td>`).join('')}
         </tr>
       `;
 
@@ -244,9 +252,14 @@ import Layout from '../layouts/Layout.astro';
       lang = e.detail;
       updateLabels();
       // Re-render dynamic content
-      loadSoftware();
+      if (!dataLoaded) return;
+      populateSelects();
+      renderFilteredGrid();
+      if (!document.getElementById('comparison-result')?.classList.contains('hidden')) compareSelected();
     }) as EventListener);
 
+    updateLabels();
+    setupFilters();
     loadSoftware();
   </script>
 </Layout>

@@ -48,7 +48,7 @@ import Layout from '../layouts/Layout.astro';
       </button>
 
       <p class="text-center text-sm text-steel-500 mt-6">
-        ¿No tienes cuenta? <a href="/registro" class="text-accent-600 hover:text-accent-700 font-semibold">Regístrate</a>
+        ¿No tienes cuenta? <a id="register-link" href="/registro" class="text-accent-600 hover:text-accent-700 font-semibold">Regístrate</a>
       </p>
     </div>
   </section>
@@ -56,6 +56,9 @@ import Layout from '../layouts/Layout.astro';
 
 <script>
   import { signIn, signInGoogle } from '../lib/auth';
+  import { claimReturnPath } from '../lib/auth-return';
+  const returnPath = claimReturnPath(window.location.search);
+  if (returnPath) (document.getElementById('register-link') as HTMLAnchorElement).href = `/registro?next=${encodeURIComponent(returnPath)}`;
 
   const form = document.getElementById('loginForm') as HTMLFormElement;
   const alertEl = document.getElementById('alert')!;
@@ -69,6 +72,7 @@ import Layout from '../layouts/Layout.astro';
   }
 
   async function afterLogin() {
+    if (returnPath) { window.location.href = returnPath; return; }
     // Single fast check — no retries, no user-facing message for
     // non-admin users (it would leak the existence of the admin role).
     // We pass the fresh Firebase ID token explicitly in the Authorization

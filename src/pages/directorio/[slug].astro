@@ -6,6 +6,7 @@
   import Certificate from '../../components/Certificate.astro';
   import PartnerBadge from '../../components/PartnerBadge.astro';
   import CasesSection from '../../components/CasesSection.astro';
+  import { firestoreGet } from '../../lib/firestore-rest';
   import ContactSection from '../../components/ContactSection.astro';
   import { getDB, getConsultorBySlug, getSoftwareBySlug } from '../../lib/d1';
 
@@ -17,6 +18,7 @@ if (!entry) {
   return Astro.redirect('/directorio');
 }
 
+const training = entry.verificado ? await firestoreGet((Astro.locals as any).runtime?.env || {}, 'formaciones_asetemyt', slug) : null;
 const tipoColors: Record<string, string> = {
   empresa: 'bg-blue-100 text-blue-700',
   consultor: 'bg-green-100 text-green-700',
@@ -178,7 +180,7 @@ if (entry.tipo === 'empresa') {
         <!-- Contacto — Astro island: SSR placeholder + client hydration -->
         <div>
           <h2 class="text-lg font-bold text-primary-800 mb-3" data-field="contactLabel">Contacto</h2>
-          <ContactSection slug={entry.slug} />
+          <ContactSection verifiedContact={entry.verificado ? entry.contacto || {} : undefined} slug={entry.slug} />
         </div>
       </div>
     </div>
@@ -194,11 +196,12 @@ if (entry.tipo === 'empresa') {
           </div>
           <div>
             <h3 class="font-bold text-primary-900" data-field="ownerQuestion">¿Eres el propietario de esta ficha?</h3>
-            <p class="text-sm text-steel-600 mt-1 mb-3" data-field="ownerDesc">Verifícala para editar los datos y mostrar el badge de confianza. 50€/año.</p>
+            <p class="text-sm text-steel-600 mt-1 mb-3" data-field="ownerDesc">Verifícala para editar tus datos y hacer visibles tus contactos. Consulta el precio y las condiciones antes de pagar.</p>
             <a href={`/reclamar/${entry.slug}`}
               class="inline-block bg-accent-500 hover:bg-accent-600 text-white font-bold px-5 py-2.5 rounded-lg text-sm transition-colors">
               <span data-field="claimFicha">Reclamar esta ficha →</span>
             </a>
+            <a href={`/verificar-ficha/?slug=${encodeURIComponent(entry.slug)}`} class="inline-block ml-3 mt-2 text-sm font-semibold text-primary-800 hover:underline">Ver ventajas y cómo funciona →</a>
           </div>
         </div>
       </div>
@@ -259,9 +262,16 @@ if (entry.tipo === 'empresa') {
   <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
     {/* Lead Gen: Solicitar Presupuesto */}
     <div class="pb-4">
+      <div id="solicitar-formacion"></div>
       <RequestQuote slug={entry.slug} entryName={entry.nombre} services={entry.servicios || []} />
     </div>
     <ReviewsSection slug={entry.slug} entryName={entry.nombre} />
+    {training?.status === 'published' && <section class="bg-white border border-steel-200 rounded-2xl p-6 sm:p-8 my-8">
+      <h2 class="text-2xl font-bold text-primary-900 mb-4">Formaciones que ofrecemos</h2>
+      <p class="text-steel-600 whitespace-pre-wrap">{training.description}</p>
+      {[[training.courses,'Cursos y contenidos'],[training.methodology,'Nuestra metodología'],[training.format,'Cómo funciona']].map(([text,title])=>text&&<div class="mt-6"><h3 class="text-lg font-bold text-primary-800 mb-2">{title}</h3><p class="text-steel-600 whitespace-pre-wrap">{text}</p></div>)}
+      <a href="#solicitar-formacion" class="inline-block text-accent-600 font-semibold mt-6">Solicitar información →</a>
+    </section>}
     <CasesSection slug={entry.slug} entryName={entry.nombre} isOwner={false} />
   </section>
 

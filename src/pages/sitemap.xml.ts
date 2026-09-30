@@ -30,6 +30,7 @@ export const GET: APIRoute = async ({ locals }) => {
     { url: '/directorio/ciudades', priority: '0.7', changefreq: 'weekly' },
     { url: '/blog', priority: '0.8', changefreq: 'weekly' },
     { url: '/anadir', priority: '0.5', changefreq: 'monthly' },
+    { url: '/verificar-ficha', priority: '0.8', changefreq: 'monthly' },
     { url: '/glosario', priority: '0.8', changefreq: 'weekly' },
     { url: '/comparador', priority: '0.7', changefreq: 'weekly' },
     { url: '/empleo', priority: '0.6', changefreq: 'daily' },

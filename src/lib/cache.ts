@@ -175,7 +175,7 @@ export const CACHE_KEYS = {
   directorioSoftware: 'cache:directorio:software:v1',
 
   // Public job board — invalidated by: new job, job update
-  jobsActive: 'cache:jobs:active:v1',
+  jobsActive: 'cache:jobs:active:v2',
 
   // Public reviews — invalidated by: new approved review
   reviewsAll: 'cache:reviews:v1',

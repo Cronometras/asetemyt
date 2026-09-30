@@ -15,9 +15,13 @@ const { GET: leads } = await server.ssrLoadModule('/src/pages/api/admin/leads.ts
 const { GET: subscribers } = await server.ssrLoadModule('/src/pages/api/admin/subscribers.ts');
 const { GET: coupons } = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: outreach } = await server.ssrLoadModule('/src/pages/api/admin/outreach/list.ts');
+const trainingApi = await server.ssrLoadModule('/src/pages/api/user/formacion.ts');
+const ownerFicha = await server.ssrLoadModule('/src/pages/api/user/ficha.ts');
 const casesApi = await server.ssrLoadModule('/src/pages/api/cases/index.ts');
 const jobsApi = await server.ssrLoadModule('/src/pages/api/jobs/index.ts');
 const reviewsApi = await server.ssrLoadModule('/src/pages/api/reviews/get.ts');
+const leadSubmit = await server.ssrLoadModule('/src/pages/api/leads/submit.ts');
+const reviewSubmit = await server.ssrLoadModule('/src/pages/api/reviews/submit.ts');
 const claimActions = await server.ssrLoadModule('/src/pages/api/admin/claim-action.ts');
 const moderation = await server.ssrLoadModule('/src/pages/api/admin/moderation.ts');
 const { validateListingUpdates } = await server.ssrLoadModule('/src/lib/listing-validation.ts');
@@ -62,6 +66,111 @@ function context(env, method = 'GET', body, path = '/api/admin/fichas') {
   }) };
 }
 const fields = data => store.toFirestoreValue(data).mapValue.fields;
+
+test('lead form rejects malformed JSON, field types and invalid email before storage', async () => {
+  const valid = { slug: 'existing', contactName: 'Ana', contactEmail: 'ana@example.com' };
+  for (const body of [null, [], { ...valid, slug: {} }, { ...valid, contactName: 1 },
+    { ...valid, contactEmail: 'invalid' }, { ...valid, message: [] }, { ...valid, company: 'x'.repeat(201) }]) {
+    const ctx = context({}, 'POST', valid);
+    ctx.request = new Request(ctx.url, { method: 'POST', body: JSON.stringify(body) });
+    assert.equal((await leadSubmit.POST(ctx)).status, 400);
+  }
+  const ctx = context({}, 'POST', valid);
+  ctx.request = new Request(ctx.url, { method: 'POST', body: '{' });
+  assert.equal((await leadSubmit.POST(ctx)).status, 400);
+});
+
+test('lead notifications escape input, follow persistence and tolerate delivery failures', async () => {
+  const { DB, sqlite } = database();
+  const previousFetch = globalThis.fetch;
+  let notifications = 0;
+  const observed = [];
+  try {
+    globalThis.fetch = async (_url, options) => {
+      notifications++;
+      const saved = await store.firestoreListAll({ DB }, 'leads_asetemyt');
+      const email = JSON.parse(options.body);
+      observed.push({ count: saved.length, contactEmail: saved[0]?.contactEmail, html: email.html });
+      return new Response('', { status: 503 });
+    };
+    const body = { slug: 'existing', contactName: 'Ana', contactEmail: ' ANA@example.com ', company: '<img src=x>', message: '<a href="https://evil.example">click</a>' };
+    for (let i = 0; i < 5; i++) assert.equal((await leadSubmit.POST(context({ DB, RESEND_API_KEY: 'test' }, 'POST', body))).status, 201);
+    assert.equal((await leadSubmit.POST(context({ DB, RESEND_API_KEY: 'test' }, 'POST', body))).status, 429);
+    assert.equal(notifications, 5);
+    assert.equal(observed.length, 5);
+    observed.forEach((item, index) => {
+      assert.equal(item.count, index + 1, 'lead must be saved before notification');
+      assert.equal(item.contactEmail, 'ana@example.com');
+      assert.match(item.html, /&lt;img/);
+      assert.match(item.html, /&lt;a/);
+      assert.doesNotMatch(item.html, /<img|<a href="https:\/\/evil/);
+    });
+  } finally { globalThis.fetch = previousFetch; sqlite.close(); }
+});
+
+test('failed lead persistence never sends a notification', async () => {
+  const { DB, sqlite } = database();
+  const previousFetch = globalThis.fetch;
+  let notifications = 0;
+  try {
+    sqlite.exec("CREATE TRIGGER fail_lead BEFORE INSERT ON app_documents WHEN NEW.collection = 'leads_asetemyt' BEGIN SELECT RAISE(ABORT, 'simulated failure'); END;");
+    globalThis.fetch = async () => { notifications++; return Response.json({}); };
+    assert.equal((await leadSubmit.POST(context({ DB, RESEND_API_KEY: 'test' }, 'POST', { slug: 'existing', contactName: 'Ana', contactEmail: 'ana@example.com' }))).status, 500);
+    assert.equal(notifications, 0);
+    assert.equal((await store.firestoreListAll({ DB }, 'leads_asetemyt')).length, 0);
+  } finally { globalThis.fetch = previousFetch; sqlite.close(); }
+});
+
+test('review statistics include all approved ratings while displaying only 50 reviews', async () => {
+  const { DB, sqlite } = database();
+  try {
+    for (let i = 0; i < 60; i++) {
+      await store.firestoreCreate({ DB }, 'reviews_asetemyt', `review-${i}`, fields({
+        slug: 'existing', status: 'approved', rating: i < 50 ? 5 : 1,
+        createdAt: i < 50 ? '2026-09-30' : '2026-09-01', authorEmail: 'private@example.com',
+      }));
+    }
+    for (const [id, rating, status] of [['invalid', 'bad', 'approved'], ['fraction', 2.5, 'approved'], ['pending', 1, 'pending']]) {
+      await store.firestoreCreate({ DB }, 'reviews_asetemyt', id, fields({ slug: 'existing', rating, status }));
+    }
+    const response = await reviewsApi.GET(context({ DB }, 'GET', undefined, '/api/reviews/get?slug=existing'));
+    const payload = await response.json();
+    assert.equal(payload.reviews.length, 50);
+    assert.equal(payload.aggregate.totalReviews, 60);
+    assert.equal(payload.aggregate.avgRating, 4.3);
+    assert.deepEqual(payload.aggregate.ratingDistribution, { 1: 10, 2: 0, 3: 0, 4: 0, 5: 50 });
+    assert.ok(payload.reviews.every(r => !Object.hasOwn(r, 'authorEmail')));
+  } finally { sqlite.close(); }
+});
+
+test('review submission rejects malformed fields before accessing storage', async () => {
+  const valid = { slug: 'existing', rating: 5, authorName: 'Ana', authorEmail: '', comment: '' };
+  for (const body of [null, [], { ...valid, rating: '5' }, { ...valid, rating: 2.5 },
+    { ...valid, slug: {} }, { ...valid, authorName: 3 }, { ...valid, authorName: '<b></b>' },
+    { ...valid, authorEmail: {} }, { ...valid, authorEmail: 'invalid' }, { ...valid, comment: [] }]) {
+    const ctx = context({}, 'POST', valid);
+    ctx.request = new Request(ctx.url, { method: 'POST', body: JSON.stringify(body) });
+    assert.equal((await reviewSubmit.POST(ctx)).status, 400);
+  }
+  const ctx = context({}, 'POST', valid);
+  ctx.request = new Request(ctx.url, { method: 'POST', body: '{' });
+  assert.equal((await reviewSubmit.POST(ctx)).status, 400);
+});
+
+test('valid reviews stay pending, normalize email and reject repeat submissions', async () => {
+  const { DB, sqlite } = database();
+  try {
+    const body = { slug: 'existing', rating: 4, authorName: '<b>Ana</b>', authorEmail: ' ANA@example.com ', comment: '<b>Buen servicio</b>' };
+    assert.equal((await reviewSubmit.POST(context({ DB }, 'POST', body))).status, 201);
+    const [saved] = await store.firestoreListAll({ DB }, 'reviews_asetemyt');
+    assert.equal(saved.status, 'pending');
+    assert.equal(saved.authorEmail, 'ana@example.com');
+    assert.equal(saved.authorName, 'Ana');
+    assert.equal(saved.comment, 'Buen servicio');
+    assert.ok(!saved.id.includes('example.com'));
+    assert.equal((await reviewSubmit.POST(context({ DB }, 'POST', body))).status, 409);
+  } finally { sqlite.close(); }
+});
 
 test('migration retains existing public rows and private fields never enter public output', async () => {
   const { DB, sqlite } = database();
@@ -223,6 +332,51 @@ test('public jobs and reviews exclude private fields and expired jobs',async()=>
  const reviews=await (await reviewsApi.GET(context(env,'GET',null,'/api/reviews/get?slug=existing'))).json();assert.equal(reviews.reviews[0].authorEmail,undefined);assert.equal(reviews.reviews[0].ip,undefined);assert.equal(reviews.reviews[0].id,undefined);
  sqlite.close();
 });
+test('job and case forms reject invalid JSON and field types before storage', async () => {
+  user = { email: 'owner@example.com', emailVerified: true, localId: 'owner' };
+  for (const [api, valid, mutations] of [
+    [jobsApi, { title: 'Técnico', company: 'Empresa', description: 'Oferta', contactEmail: 'hr@example.com' },
+      [{ title: 4 }, { company: [] }, { location: {} }, { salary: 100 }, { type: 'invalid' }, { description: '<b></b>' }, { contactUrl: 'javascript:alert(1)' }]],
+    [casesApi, { slug: 'existing', title: 'Caso', description: 'Descripción' },
+      [{ slug: {} }, { title: 4 }, { results: [] }, { industry: null }, { method: false }, { description: 'x'.repeat(2001) }]],
+  ]) {
+    for (const body of [null, [], ...mutations.map(change => ({ ...valid, ...change }))]) {
+      const ctx = context({}, 'POST', valid);
+      ctx.request = new Request(ctx.url, { method: 'POST', headers: { Authorization: 'Bearer test' }, body: JSON.stringify(body) });
+      assert.equal((await api.POST(ctx)).status, 400);
+    }
+    const ctx = context({}, 'POST', valid);
+    ctx.request = new Request(ctx.url, { method: 'POST', headers: { Authorization: 'Bearer test' }, body: '{' });
+    assert.equal((await api.POST(ctx)).status, 400);
+  }
+});
+
+test('job submissions normalize contact data, queue moderation and enforce daily limit', async () => {
+  const { DB, sqlite } = database();
+  try {
+    const body = { title: 'Técnico', company: 'Empresa', description: 'Oferta', contactEmail: ' HR@example.com ', contactUrl: ' https://example.com/jobs ' };
+    for (let i = 0; i < 3; i++) assert.equal((await jobsApi.POST(context({ DB }, 'POST', body))).status, 201);
+    assert.equal((await jobsApi.POST(context({ DB }, 'POST', body))).status, 429);
+    const rows = await store.firestoreListAll({ DB }, 'jobs_asetemyt');
+    assert.equal(rows.length, 3);
+    assert.ok(rows.every(row => row.status === 'pending' && row.contactEmail === 'hr@example.com' && row.contactUrl === 'https://example.com/jobs' && row.type === 'full-time'));
+  } finally { sqlite.close(); }
+});
+
+test('job filters include matches beyond the first 100 and cases expose only public fields', async () => {
+  const { DB, sqlite } = database();
+  try {
+    for (let i = 0; i < 101; i++) await store.firestoreCreate({ DB }, 'jobs_asetemyt', `job-${i}`, fields({ status: 'active', title: 'Recent', type: 'full-time', location: 'Madrid', createdAt: '2026-09-30' }));
+    await store.firestoreCreate({ DB }, 'jobs_asetemyt', 'match', fields({ status: 'active', title: 'Match', type: 'freelance', location: 'Barcelona', createdAt: '2026-09-01' }));
+    const jobs = await (await jobsApi.GET(context({ DB }, 'GET', undefined, '/api/jobs?type=freelance&location=barcelona'))).json();
+    assert.deepEqual(jobs.jobs.map(job => job.title), ['Match']);
+    await store.firestoreCreate({ DB }, 'casos_estudio_asetemyt', 'case', fields({ slug: 'existing', status: 'published', title: 'Caso', authorUid: 'private-owner', reviewedBy: 'private-admin', reviewedAt: 'private-date' }));
+    const response = await casesApi.GET(context({ DB }, 'GET', undefined, '/api/cases?slug=existing'));
+    assert.match(response.headers.get('Content-Type'), /application\/json/);
+    assert.deepEqual((await response.json()).cases, [{ title: 'Caso' }]);
+  } finally { sqlite.close(); }
+});
+
 test('claim approval changes ownership atomically without granting a paid verification',async()=>{
  const {DB,sqlite}=database(); const env={DB};user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
  await store.firestoreUpdate(env,'directorio_consultores_asetemyt','existing',fields({verificado:false}));
@@ -245,4 +399,81 @@ test('moderation requires admin and records approval audit',async()=>{
 test('listing validation rejects executable URLs and malformed fields',()=>{
  assert.ok(validateListingUpdates({logo:'javascript:alert(1)'}));assert.ok(validateListingUpdates({especialidades:'not-array'}));assert.ok(validateListingUpdates({contacto:{web:'data:text/html,x'}}));
  assert.equal(validateListingUpdates({descripcion:'Text',especialidades:['Lean'],contacto:{web:'https://example.com',email:'user@example.com'}}),null);
+});
+
+
+test('owner workspace protects requests and project editing across listings', async () => {
+ const {DB,sqlite}=database(); const env={DB};
+ try {
+  user={email:'owner@example.com',emailVerified:true,localId:'owner'};
+  await store.firestoreUpdate(env,'directorio_consultores_asetemyt','existing',fields({ownerUid:'owner'}));
+  await store.firestoreCreate(env,'leads_asetemyt','lead',fields({slug:'existing',contactName:'Ana',contactEmail:'ana@example.com',status:'new',ip:'private'}));
+  const read=()=>ownerFicha.GET(context(env,'GET',undefined,'/api/user/ficha?slug=existing'));
+  const anonymous=context(env,'GET',undefined,'/api/user/ficha?slug=existing');anonymous.request.headers.delete('Authorization');
+  assert.equal((await ownerFicha.GET(anonymous)).status,401);
+  assert.equal((await (await read()).json()).leads[0].ip,undefined);
+  assert.equal((await ownerFicha.PATCH(context(env,'PATCH',{slug:'existing',id:'lead',status:'contacted',ownerNotes:'Llamar mañana'}))).status,200);
+  assert.equal((await store.firestoreGet(env,'leads_asetemyt','lead')).ownerNotes,'Llamar mañana');
+  await store.firestoreCreate(env,'leads_asetemyt','other',fields({slug:'other',status:'new'}));
+  assert.equal((await ownerFicha.PATCH(context(env,'PATCH',{slug:'existing',id:'other',status:'closed',ownerNotes:''}))).status,404);
+  const project={slug:'existing',title:'Trabajo',description:'Descripción',results:'Resultado',documents:[{label:'Informe',url:'https://example.com/report.pdf'}]};
+  assert.equal((await casesApi.POST(context(env,'POST',{...project,documents:[{label:'Mal',url:'javascript:alert(1)'}]}))).status,400);
+  assert.equal((await casesApi.POST(context(env,'POST',project))).status,201);
+  const [saved]=await store.firestoreListAll(env,'casos_estudio_asetemyt');
+  await store.firestoreUpdate(env,'casos_estudio_asetemyt',saved.id,fields({status:'published'}));
+  const publicCases=()=>casesApi.GET(context(env,'GET',undefined,'/api/cases?slug=existing'));
+  assert.deepEqual((await (await publicCases()).json()).cases[0].documents,project.documents);
+  assert.equal((await casesApi.PATCH(context(env,'PATCH',{...project,id:saved.id,action:'edit',title:'Actualizado'}))).status,200);
+  assert.equal((await store.firestoreGet(env,'casos_estudio_asetemyt',saved.id)).status,'pending');
+  assert.equal((await (await publicCases()).json()).cases.length,0);
+  user={email:'outsider@example.com',emailVerified:true,localId:'outsider'};
+  assert.equal((await read()).status,403);
+  assert.equal((await ownerFicha.PATCH(context(env,'PATCH',{slug:'existing',id:'lead',status:'closed',ownerNotes:''}))).status,403);
+  assert.equal((await casesApi.PATCH(context(env,'PATCH',{slug:'existing',id:saved.id,action:'withdraw'}))).status,403);
+  user={email:'owner@example.com',emailVerified:true,localId:'owner'};
+  await store.firestoreUpdate(env,'directorio_consultores_asetemyt','existing',fields({verificado:false}));
+  assert.equal((await casesApi.PATCH(context(env,'PATCH',{...project,id:saved.id,action:'edit'}))).status,403);
+  assert.equal((await casesApi.PATCH(context(env,'PATCH',{slug:'existing',id:saved.id,action:'withdraw'}))).status,200);
+  assert.equal((await store.firestoreGet(env,'casos_estudio_asetemyt',saved.id)).status,'archived');
+ } finally {sqlite.close();}
+});
+
+test('owner receives a saved opportunity even if admin notification fails', async()=>{
+ const {DB,sqlite}=database();const previousFetch=globalThis.fetch;const recipients=[];
+ try {
+  await store.firestoreUpdate({DB},'directorio_consultores_asetemyt','existing',fields({ownerUid:'owner',ownerEmail:'owner@example.com'}));
+  globalThis.fetch=async(url,options)=>{
+   const payload=JSON.parse(options.body);recipients.push(payload.to[0]);
+   assert.equal((await store.firestoreListAll({DB},'leads_asetemyt')).length,1);
+   if(payload.to[0]==='info@asetemyt.com') throw new Error('Unavailable');
+   assert.match(payload.html,/mi-cuenta\/ficha/);return Response.json({id:'sent'});
+  };
+  assert.equal((await leadSubmit.POST(context({DB,RESEND_API_KEY:'test'},'POST',{slug:'existing',contactName:'Ana',contactEmail:'ana@example.com'}))).status,201);
+  assert.deepEqual(recipients,['info@asetemyt.com','owner@example.com']);
+ } finally {globalThis.fetch=previousFetch;sqlite.close();}
+});
+
+
+test('training belongs to its listing owner and requires review after edits',async()=>{
+ const {DB,sqlite}=database();const env={DB};
+ try{
+  user={email:'owner@example.com',emailVerified:true,localId:'owner'};
+  const body={slug:'existing',action:'edit',description:'Formación a medida',courses:'Curso Lean: diagnóstico y ejercicios',methodology:'Casos prácticos',format:'Online'};
+  assert.equal((await trainingApi.PATCH(context(env,'PATCH',body))).status,403);
+  await store.firestoreUpdate(env,'directorio_consultores_asetemyt','existing',fields({ownerUid:'owner'}));
+  assert.equal((await trainingApi.PATCH(context(env,'PATCH',{...body,courses:[]}))).status,400);
+  assert.equal((await trainingApi.PATCH(context(env,'PATCH',body))).status,200);
+  assert.equal((await store.firestoreGet(env,'formaciones_asetemyt','existing')).status,'pending');
+  user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
+  assert.equal((await moderation.POST(context(env,'POST',{kind:'training',id:'existing',action:'approve'}))).status,200);
+  assert.equal((await store.firestoreGet(env,'formaciones_asetemyt','existing')).status,'published');
+  user={email:'owner@example.com',emailVerified:true,localId:'owner'};
+  assert.equal((await trainingApi.PATCH(context(env,'PATCH',body))).status,200);
+  assert.equal((await store.firestoreGet(env,'formaciones_asetemyt','existing')).status,'pending');
+  await store.firestoreUpdate(env,'directorio_consultores_asetemyt','existing',fields({verificado:false}));
+  assert.equal((await trainingApi.PATCH(context(env,'PATCH',body))).status,403);
+  assert.equal((await trainingApi.PATCH(context(env,'PATCH',{slug:'existing',action:'withdraw'}))).status,200);
+  user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
+  assert.equal((await moderation.POST(context(env,'POST',{kind:'training',id:'existing',action:'approve'}))).status,409);
+ }finally{sqlite.close();}
 });

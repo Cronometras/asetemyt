@@ -15,13 +15,12 @@ export const GET: APIRoute = async ({ url, locals }) => {
     // cache is invalidated when an admin approves a new review (see reviews/submit.ts).
     const payload = await getCached(
       env,
-      `${CACHE_KEYS.reviewsAll}:${slug}:public-v2`,
+      `${CACHE_KEYS.reviewsAll}:${slug}:public-v3`,
       async () => {
         const allDocs = await firestoreQuery(env, 'reviews_asetemyt', 'slug', 'EQUAL', { stringValue: slug });
         const reviews = allDocs
-          .filter((r: any) => r.status === 'approved')
-          .sort((a: any, b: any) => (b.createdAt || '').localeCompare(a.createdAt || ''))
-          .slice(0, 50);
+          .filter((r: any) => r.status === 'approved' && Number.isInteger(Number(r.rating)) && Number(r.rating) >= 1 && Number(r.rating) <= 5)
+          .sort((a: any, b: any) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
 
         const totalReviews = reviews.length;
         const avgRating = totalReviews > 0
@@ -35,7 +34,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
         });
 
         return {
-          reviews: reviews.map(({ rating, authorName, comment, createdAt }: any) => ({ rating, authorName, comment, createdAt })),
+          reviews: reviews.slice(0, 50).map(({ rating, authorName, comment, createdAt }: any) => ({ rating, authorName, comment, createdAt })),
           aggregate: { totalReviews, avgRating, ratingDistribution },
         };
       },

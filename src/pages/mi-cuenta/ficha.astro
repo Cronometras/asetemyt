@@ -1,0 +1,139 @@
+---
+import Layout from '../../layouts/Layout.astro';
+export const prerender = true;
+---
+<Layout title="Proyectos y solicitudes de mi ficha" description="Gestiona los proyectos publicados y las solicitudes de presupuesto de tu ficha en ASETEMYT.">
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <a href="/mi-cuenta" class="text-accent-600 font-semibold text-sm">← Mi cuenta</a>
+    <h1 id="ficha-title" class="text-3xl font-extrabold text-primary-900 mt-5 mb-3">Proyectos y solicitudes</h1>
+    <p id="page-status" role="status" aria-live="polite" class="text-steel-600 mb-8">Comprobando el acceso a tu ficha…</p>
+    <div id="owner-tools" class="hidden space-y-8">
+      <section class="bg-white rounded-2xl border border-steel-200 p-5 sm:p-8">
+       <h2 class="text-2xl font-bold text-primary-900">Formaciones que ofrecemos</h2>
+       <p class="text-sm text-steel-600 my-3">Presenta tu oferta de formación, el índice de cursos y tu metodología. Los cambios pasan por revisión editorial. Puedes ocultar la sección en cualquier momento.</p>
+       <p id="training-status" class="text-sm mb-4"></p>
+       <form id="training-form" class="space-y-4">
+        {[['description','Presentación y destinatarios',2000],['courses','Cursos y contenidos: títulos, descripción e índice',6000],['methodology','Metodología: prácticas, materiales y evaluación',3000],['format','Cómo funciona: modalidad, duración y formación a medida',1000]].map(([name,label,max])=><label class="block text-sm font-semibold">{label}<textarea name={name} maxlength={max} required={name==='description'||name==='courses'} rows="4" class="block w-full border border-steel-300 rounded-lg p-3 mt-2"></textarea></label>)}
+        <button type="submit" class="bg-accent-500 text-white font-bold rounded-lg px-5 py-3">Enviar formación a revisión</button>
+       </form>
+       <button id="withdraw-training" class="text-steel-600 font-semibold mt-4">Ocultar sección de formación</button>
+      </section>
+      <section class="bg-white rounded-2xl border border-steel-200 p-5 sm:p-8">
+        <h2 class="text-2xl font-bold text-primary-900">Buzón de oportunidades</h2>
+        <p class="text-sm text-steel-600 mt-2 mb-5">Consulta los contactos recibidos, responde por email y guarda el estado y tus notas privadas. Los avisos de nuevas solicitudes se envían al correo del propietario.</p>
+        <label for="lead-filter" class="text-sm font-semibold text-steel-700">Mostrar solicitudes</label>
+        <select id="lead-filter" class="block border border-steel-300 rounded-lg p-2 mt-2 mb-5"><option value="">Todas</option><option value="new">Nuevas</option><option value="sent">Enviadas</option><option value="contacted">Contactadas</option><option value="closed">Cerradas</option></select>
+        <div id="owner-leads" class="space-y-4"></div>
+      </section>
+      <section class="bg-white rounded-2xl border border-steel-200 p-5 sm:p-8">
+        <h2 class="text-2xl font-bold text-primary-900">Escaparate de proyectos</h2>
+        <p class="text-sm text-steel-600 mt-2 mb-5">Comparte trabajos, resultados y enlaces a documentos. Cada proyecto nuevo o modificado pasa por revisión editorial antes de aparecer en tu ficha pública. Puedes retirarlo en cualquier momento.</p>
+        <p id="project-access" class="hidden text-amber-700 text-sm mb-4">La verificación debe estar activa para enviar o editar proyectos. Puedes consultar y retirar los existentes.</p>
+        <form id="project-form" class="space-y-4 border border-steel-200 bg-steel-50 rounded-xl p-5 mb-6">
+          <input type="hidden" name="id" />
+          <div><label for="project-title" class="block text-sm font-semibold mb-1">Título del proyecto *</label><input id="project-title" name="title" required maxlength="200" class="w-full border border-steel-300 rounded-lg p-3" /></div>
+          <div><label for="project-description" class="block text-sm font-semibold mb-1">Descripción del trabajo *</label><textarea id="project-description" name="description" required maxlength="2000" rows="4" class="w-full border border-steel-300 rounded-lg p-3"></textarea></div>
+          <div><label for="project-results" class="block text-sm font-semibold mb-1">Resultados obtenidos</label><textarea id="project-results" name="results" maxlength="1000" rows="3" class="w-full border border-steel-300 rounded-lg p-3"></textarea></div>
+          <div class="grid sm:grid-cols-2 gap-4"><div><label for="project-industry" class="block text-sm font-semibold mb-1">Sector</label><input id="project-industry" name="industry" maxlength="100" class="w-full border border-steel-300 rounded-lg p-3" /></div><div><label for="project-method" class="block text-sm font-semibold mb-1">Método aplicado</label><input id="project-method" name="method" maxlength="100" class="w-full border border-steel-300 rounded-lg p-3" /></div></div>
+          <div><label for="project-documents" class="block text-sm font-semibold mb-1">Documentos y referencias</label><textarea id="project-documents" name="documents" rows="3" class="w-full border border-steel-300 rounded-lg p-3" placeholder="Informe del proyecto | https://tuweb.com/informe.pdf"></textarea><p class="text-xs text-steel-500 mt-2">Hasta 5 enlaces públicos, uno por línea: nombre del documento | URL completa. Publica solo documentos que puedas compartir con los visitantes.</p></div>
+          <div class="flex flex-wrap gap-3"><button type="submit" class="bg-accent-500 hover:bg-accent-600 text-white font-bold rounded-lg px-5 py-3">Enviar a revisión</button><button id="reset-project" type="button" class="text-steel-600 font-semibold px-3 py-2">Limpiar / nuevo proyecto</button></div>
+        </form>
+        <div id="owner-cases" class="space-y-4"></div>
+      </section>
+    </div>
+  </section>
+</Layout>
+<script>
+  import { auth, authFetch } from '../../lib/auth';
+  import { validCaseDocuments } from '../../lib/case-documents';
+  import { escapeComparisonText as escape } from '../../lib/comparison';
+  const slug = new URLSearchParams(window.location.search).get('slug');
+  const status = document.getElementById('page-status')!;
+  const form = document.getElementById('project-form') as HTMLFormElement;
+  const leadsEl = document.getElementById('owner-leads')!;
+  const casesEl = document.getElementById('owner-cases')!;
+  const filter = document.getElementById('lead-filter') as HTMLSelectElement;
+  let data: any = null;
+  const states: Record<string, string> = { new: 'Nueva', sent: 'Enviada', contacted: 'Contactada', closed: 'Cerrada', pending: 'Pendiente de revisión', published: 'Publicado', rejected: 'No aprobado', archived: 'Retirado' };
+  const date = (value: string) => { const time = new Date(value); return Number.isNaN(time.getTime()) ? '' : time.toLocaleDateString('es-ES'); };
+  const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+  function renderLeads() {
+    const leads = data.leads.filter((lead: any) => !filter.value || lead.status === filter.value);
+    leadsEl.innerHTML = leads.length ? leads.map((lead: any) => `<article data-id="${escape(lead.id)}" class="border border-steel-200 rounded-xl p-4"><h3 class="font-bold text-primary-900">${escape(lead.contactName)} ${lead.status === 'new' ? ' · Nueva' : ''}</h3><p class="text-xs text-steel-500 mt-1">${escape(date(lead.createdAt))} · ${escape(lead.company || '')}</p><p class="text-sm mt-3">${escape(lead.serviceNeeded || '')}</p><p class="text-sm text-steel-600 whitespace-pre-wrap mt-2">${escape(lead.message || '')}</p><p class="text-sm mt-3">${escape(lead.contactEmail)} ${escape(lead.contactPhone || '')}</p><a href="mailto:${encodeURIComponent(lead.contactEmail || '')}" class="inline-block text-sm font-semibold text-accent-600 mt-2">Responder por email →</a><label class="block text-sm font-semibold mt-4">Estado<select name="status" class="block w-full border border-steel-300 rounded-lg p-2 mt-1">${['new', 'sent', 'contacted', 'closed'].map(value => `<option value="${value}" ${lead.status === value ? 'selected' : ''}>${states[value]}</option>`).join('')}</select></label><label class="block text-sm font-semibold mt-3">Notas privadas<textarea name="notes" maxlength="2000" rows="2" class="block w-full border border-steel-300 rounded-lg p-2 mt-1">${escape(lead.ownerNotes || '')}</textarea></label><button data-save-lead class="bg-primary-800 text-white rounded-lg px-4 py-2 font-semibold text-sm mt-3">Guardar seguimiento</button></article>`).join('') : '<p class="text-sm text-steel-500">No hay solicitudes con este estado.</p>';
+  }
+  async function load() {
+    const response = await authFetch(`/api/user/ficha?slug=${encodeURIComponent(slug || '')}`);
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || 'No se pudo cargar la ficha.');
+    data = payload;
+    const trainingForm=document.getElementById('training-form') as HTMLFormElement;
+    trainingForm.classList.toggle('hidden',!data.ficha.verificado);
+    document.getElementById('training-status')!.textContent=data.training?`Estado: ${states[data.training.status]||data.training.status}`:'Todavía no has publicado formación.';
+    for(const key of ['description','courses','methodology','format']) (trainingForm.elements.namedItem(key) as HTMLTextAreaElement).value=data.training?.[key]||'';
+    document.getElementById('withdraw-training')!.classList.toggle('hidden',!data.training||data.training.status==='archived');
+    document.getElementById('ficha-title')!.textContent = `${data.ficha.nombre} · Proyectos y solicitudes`;
+    document.getElementById('owner-tools')!.classList.remove('hidden');
+    form.classList.toggle('hidden', !data.ficha.verificado);
+    document.getElementById('project-access')!.classList.toggle('hidden', data.ficha.verificado);
+    renderLeads();
+    casesEl.innerHTML = data.cases.length ? data.cases.map((project: any) => `<article data-id="${escape(project.id)}" class="border border-steel-200 rounded-xl p-4"><h3 class="font-bold text-primary-900">${escape(project.title)}</h3><p class="text-xs text-steel-500 mt-1">${escape(states[project.status] || project.status)} · ${escape(date(project.createdAt))}</p><p class="text-sm text-steel-600 mt-3 whitespace-pre-wrap">${escape(project.description)}</p><p class="text-sm text-green-700 mt-2">${escape(project.results || '')}</p><div class="flex gap-4 mt-4">${data.ficha.verificado ? '<button data-edit-case class="font-semibold text-sm text-accent-600">Editar</button>' : ''}${project.status !== 'archived' ? '<button data-withdraw-case class="font-semibold text-sm text-steel-600">Retirar de la ficha</button>' : ''}</div></article>`).join('') : '<p class="text-sm text-steel-500">Todavía no has enviado proyectos.</p>';
+  }
+  async function save(url: string, method: string, body: any, button: HTMLButtonElement, message: string) {
+    button.disabled = true;
+    status.textContent = 'Guardando…';
+    try {
+      const response = await authFetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'No se pudo guardar.');
+      await load(); status.textContent = message; return true;
+    } catch (error) { status.textContent = error instanceof Error ? error.message : 'Error de conexión.'; return false; }
+    finally { button.disabled = false; }
+  }
+  filter.addEventListener('change', renderLeads);
+  leadsEl.addEventListener('click', async event => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-save-lead]');
+    if (!button) return;
+    const card = button.closest<HTMLElement>('article')!;
+    await save('/api/user/ficha', 'PATCH', { slug, id: card.dataset.id, status: card.querySelector<HTMLSelectElement>('select')!.value, ownerNotes: card.querySelector<HTMLTextAreaElement>('textarea')!.value }, button, 'Seguimiento guardado.');
+  });
+  casesEl.addEventListener('click', async event => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button');
+    if (!button) return;
+    const id = button.closest<HTMLElement>('article')!.dataset.id;
+    const project = data.cases.find((item: any) => item.id === id);
+    if (button.hasAttribute('data-edit-case')) {
+      for (const key of ['id', 'title', 'description', 'results', 'industry', 'method']) field(key).value = project[key] || '';
+      field('documents').value = (project.documents || []).map((document: any) => `${document.label} | ${document.url}`).join('\n');
+      form.scrollIntoView({ behavior: 'smooth' }); field('title').focus();
+    } else if (button.hasAttribute('data-withdraw-case')) await save('/api/cases', 'PATCH', { slug, id, action: 'withdraw' }, button, 'Proyecto retirado de la ficha pública. Puedes editarlo para volver a enviarlo a revisión.');
+  });
+  document.getElementById('reset-project')!.addEventListener('click', () => form.reset());
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const documents = field('documents').value.split('\n').filter(line => line.trim()).map(line => {
+      const separator = line.indexOf('|');
+      return { label: line.slice(0, separator).trim(), url: separator >= 0 ? line.slice(separator + 1).trim() : '' };
+    });
+    if (!validCaseDocuments(documents)) { status.textContent = 'Revisa los documentos: hasta 5 enlaces, con nombre | URL http o https.'; return; }
+    const body: any = { slug, documents };
+    for (const key of ['title', 'description', 'results', 'industry', 'method']) body[key] = field(key).value;
+    const id = field('id').value;
+    if (id) Object.assign(body, { id, action: 'edit' });
+    if (await save('/api/cases', id ? 'PATCH' : 'POST', body, form.querySelector<HTMLButtonElement>('button[type="submit"]')!, 'Proyecto enviado a revisión editorial.')) form.reset();
+  });
+  const trainingForm=document.getElementById('training-form') as HTMLFormElement;
+  trainingForm.addEventListener('submit',async event=>{
+   event.preventDefault();const body:any={slug,action:'edit'};
+   for(const key of ['description','courses','methodology','format']) body[key]=(trainingForm.elements.namedItem(key) as HTMLTextAreaElement).value;
+   await save('/api/user/formacion','PATCH',body,trainingForm.querySelector<HTMLButtonElement>('button')!,'Formación enviada a revisión.');
+  });
+  document.getElementById('withdraw-training')!.addEventListener('click',async event=>{
+   await save('/api/user/formacion','PATCH',{slug,action:'withdraw'},event.currentTarget as HTMLButtonElement,'Sección de formación oculta.');
+  });
+  await auth.authStateReady();
+  if (!auth.currentUser) {
+    status.innerHTML = 'Inicia sesión desde <a href="/login" class="text-accent-600 underline">Acceder a mi cuenta</a> para gestionar tus fichas.';
+  } else if (!slug) status.textContent = 'Selecciona una ficha desde Mi cuenta.';
+  else try { await load(); status.textContent = 'Gestiona tus proyectos y el seguimiento de tus solicitudes.'; }
+  catch (error) { status.textContent = error instanceof Error ? error.message : 'No se pudo cargar la ficha.'; }
+</script>

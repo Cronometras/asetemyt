@@ -15,6 +15,7 @@ const checkout = await server.ssrLoadModule('/src/pages/api/stripe/checkout.ts')
 const webhook = await server.ssrLoadModule('/src/pages/api/stripe/webhook.ts');
 const status = await server.ssrLoadModule('/src/pages/api/stripe/status.ts');
 const userData = await server.ssrLoadModule('/src/pages/api/user/data.ts');
+const { claimReturnPath } = await server.ssrLoadModule('/src/lib/auth-return.ts');
 const originalFetch = globalThis.fetch;
 after(async () => { globalThis.fetch = originalFetch; await server.close(); });
 
@@ -113,6 +114,14 @@ async function setup(t) {
   return { ...db, env, put, get, emails, sessions, requests, subscription, body, sendCode, start, event,
     auth: value => { authOverrides = value; }, failStripe: value => { failStripe = value; }, failEmail: value => { failEmail = value; } };
 }
+
+test('login return destinations preserve the listing and reject external or malformed redirects', () => {
+  assert.equal(claimReturnPath('?next=%2Freclamar%2Fempresa'), '/reclamar/empresa');
+  assert.equal(claimReturnPath('?next=%2Freclamar%2Ft%C3%A9cnico%2F'), '/reclamar/t%C3%A9cnico');
+  for (const next of ['https://evil.example', '//evil.example', '/admin', '/reclamar/..', '/reclamar/%2f%2fevil.example', '/reclamar/a?next=evil', '/reclamar/%', '/reclamar/a\\b']) {
+    assert.equal(claimReturnPath('?next=' + encodeURIComponent(next)), null);
+  }
+});
 
 test('claim endpoints require authentication and legacy checkout cannot skip email verification', async t => {
   const s = await setup(t);
