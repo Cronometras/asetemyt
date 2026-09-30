@@ -39,6 +39,7 @@ function database() {
   for (const file of ['0001_consultores.sql', '0002_software.sql']) sqlite.exec(readFileSync('migrations/' + file, 'utf8'));
   sqlite.exec(`INSERT INTO consultores (id,slug,nombre,tipo,contacto,verificado) VALUES ('existing','existing','Existing','consultor','{"email":"public@example.com"}',1);`);
   sqlite.exec(readFileSync('migrations/0003_app_documents.sql', 'utf8'));
+  sqlite.exec(readFileSync('migrations/0004_software_parametros.sql', 'utf8'));
   function statement(sql, values = []) {
     const prepared = sqlite.prepare(sql);
     // D1 supports numbered and anonymous parameters. node:sqlite exposes the
