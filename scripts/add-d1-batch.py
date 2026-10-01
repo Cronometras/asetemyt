@@ -20,7 +20,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 
 import urllib.request
 
@@ -194,6 +194,18 @@ def main():
         if len(nr) >= 4:
             existing_name_roots.add(nr)
 
+    # Fail closed: fetch permanent opt-outs before accepting any import.
+    exclusions = d1_query(cf_token, account_id,
+        "SELECT id, data FROM app_documents WHERE collection = 'bajas_asetemyt'").get('results', [])
+    blocked_domains = set()
+    blocked_slugs = set()
+    for record in exclusions:
+        item = json.loads(record['data'])
+        raw = item.get('domain') or item.get('dominio') or record['id']
+        host = urlsplit(raw if '://' in raw else 'https://' + raw).hostname or ''
+        blocked_domains.add(re.sub(r'^www\.', '', host.lower()))
+        if item.get('slug'): blocked_slugs.add(item['slug'])
+
     # Conteo antes
     count_before = d1_query(cf_token, account_id, "SELECT COUNT(*) AS n FROM consultores")["results"][0]["n"]
     print(f"📊 Conteo consultores ANTES: {count_before}\n")
@@ -213,6 +225,13 @@ def main():
         email = e.get("contacto", {}).get("email", "").strip()
         desc_len = len(e.get("descripcion", ""))
         servicios_n = len(e.get("servicios", []))
+
+        hosts = []
+        for candidate in [e.get('contacto', {}).get('web', ''), email.split('@')[-1] if '@' in email else '']:
+            if candidate:
+                hosts.append((urlsplit(candidate if '://' in candidate else 'https://' + candidate).hostname or '').lower())
+        if slug in blocked_slugs or any(host == domain or host.endswith('.' + domain) for host in hosts for domain in blocked_domains if domain):
+            raise RuntimeError(f"Importación cancelada: {nombre} figura en bajas_asetemyt. No publicar ni contactar.")
 
         # Nombre raíz para dedupe intra-batch e inter-batch
         name_root = normalize_name(nombre)

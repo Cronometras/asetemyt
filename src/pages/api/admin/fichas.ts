@@ -1,3 +1,4 @@
+import { isDirectoryExcluded } from '../../../lib/directory-exclusions';
 // GET /api/admin/fichas — Admin CRUD for directory listings
 // GET    → List all fichas (both collections)
 // POST   → Create a new ficha directly (skip pending)
@@ -107,6 +108,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       createdBy: user.user_id,
     };
 
+if (await isDirectoryExcluded(env, data)) return Response.json({ error: 'Esta empresa ha solicitado la baja. No se permite publicarla ni contactarla.' }, { status: 409 });
     await firestoreCreate(env, collection, data.slug, toFirestoreValue(data).mapValue.fields);
 
     // Invalidate public listings + admin cache so the new ficha shows up immediately
@@ -138,6 +140,7 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: 'Ficha no encontrada' }), { status: 404 });
     }
 
+    if (await isDirectoryExcluded(env, {...found.listing,...updates})) return Response.json({error:'Esta empresa ha solicitado la baja.'},{status:409});
     // Admin can update ALL fields
     const firestoreFields: Record<string, any> = {};
     for (const [key, val] of Object.entries(updates)) {

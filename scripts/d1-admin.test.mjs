@@ -16,6 +16,8 @@ const { GET: subscribers } = await server.ssrLoadModule('/src/pages/api/admin/su
 const couponApi = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: coupons } = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: outreach } = await server.ssrLoadModule('/src/pages/api/admin/outreach/list.ts');
+const exclusionsApi = await server.ssrLoadModule('/src/pages/api/admin/bajas.ts');
+const { isDirectoryExcluded } = await server.ssrLoadModule('/src/lib/directory-exclusions.ts');
 const directorySubmit = await server.ssrLoadModule('/src/pages/api/directorio/submit.ts');
 const trainingApi = await server.ssrLoadModule('/src/pages/api/user/formacion.ts');
 const ownerFicha = await server.ssrLoadModule('/src/pages/api/user/ficha.ts');
@@ -559,4 +561,23 @@ test('public directories prioritize verified entries before featured unverified 
     assert.ok(entries.findIndex(e => e.slug === 'last-alphabetically') < entries.findIndex(e => e.slug === 'first-alphabetically'));
   }
   sqlite.close();
+});
+
+
+test('directory opt-outs persist, remove listings and block future creation', async () => {
+ const { DB, sqlite } = database(); const env={DB,FIREBASE_API_KEY:'test'};
+ user={email:'micaot@gmail.com',emailVerified:true,localId:'owner'};
+ const body={nombre:'Existing',domain:'www.example.com',slug:'existing',motivo:'Solicito la baja',fuente:'Petición por email'};
+ assert.equal((await exclusionsApi.POST(context(env,'POST',body))).status,200);
+ assert.equal(await store.firestoreGet(env,'directorio_consultores_asetemyt','existing'),null);
+ assert.equal(await isDirectoryExcluded(env,{contacto:{web:'https://services.example.com/path'}}),true);
+ assert.equal(await isDirectoryExcluded(env,{contacto:{web:'https://notexample.com'}}),false);
+ assert.equal(await isDirectoryExcluded(env,{contacto:{email:'persona@example.com'}}),true);
+ assert.equal((await fichas.POST(context(env,'POST',{nombre:'Recreated',slug:'new',tipo:'empresa',contacto:{web:'example.com'}}))).status,409);
+ const stored=await (await exclusionsApi.GET(context(env))).json(); assert.equal(stored.items.length,1);
+ assert.equal((await exclusionsApi.POST(context(env,'POST',body))).status,200);
+ assert.equal((await exclusionsApi.POST(context(env,'POST',{...body,domain:'invalid'}))).status,400);
+ user={email:'visitor@example.com',emailVerified:true,localId:'visitor'};
+ assert.equal((await exclusionsApi.GET(context(env))).status,403);
+ user={email:'micaot@gmail.com',emailVerified:true,localId:'owner'};sqlite.close();
 });

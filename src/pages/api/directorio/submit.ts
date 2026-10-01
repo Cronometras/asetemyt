@@ -1,3 +1,4 @@
+import { isDirectoryExcluded } from '../../../lib/directory-exclusions';
 import type { APIRoute } from 'astro';
 import { createDocument, queryDocuments } from '../../../lib/d1-documents';
 import { validTextForm } from '../../../lib/form-validation';
@@ -13,6 +14,7 @@ export const POST: APIRoute = async ({request,locals})=>{
   if(recent.filter((entry:any)=>entry.createdAt>new Date(Date.now()-86400000).toISOString()).length>=3) return Response.json({error:'Has enviado varias fichas hoy. Inténtalo mañana.'},{status:429});
   const slug=body.nombre.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   if(!slug) return Response.json({error:'Introduce un nombre válido.'},{status:400});
+if (await isDirectoryExcluded(env, body)) return Response.json({ error: 'Esta empresa ha solicitado la baja. No se permite publicarla ni contactarla.' }, { status: 409 });
   await createDocument(env.DB,'pending_consultores_asetemyt',crypto.randomUUID(),{nombre:body.nombre.trim(),slug,tipo:body.tipo,descripcion:body.descripcion.trim(),especialidades:body.especialidades||[],servicios:body.servicios||[],ubicacion:body.ubicacion||{},contacto:body.contacto||{},logo:body.logo||'',lang:body.lang==='en'?'en':'es',verificado:false,status:'pending',ip,createdAt:new Date().toISOString()});
   return Response.json({success:true},{status:201});
  }catch(error){console.error('Listing submission failed',error);return Response.json({error:'No se pudo guardar la solicitud. Reinténtalo.'},{status:500});}

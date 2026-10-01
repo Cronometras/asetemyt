@@ -1,3 +1,4 @@
+import { isDirectoryExcluded } from '../../../lib/directory-exclusions';
 import type { APIRoute } from 'astro';
 import { getAuthUser } from '../../../lib/auth-server';
 import { isAdmin } from '../../../lib/admin';
@@ -35,6 +36,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
      if (!validTextForm(item, {nombre:200,slug:200,tipo:30,descripcion:10000}, ['nombre','slug','tipo','descripcion']) || !['empresa','consultor','freelance'].includes(item.tipo) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug) || validateListingUpdates(item)) throw new PaymentError(400, 'Esta solicitud contiene datos no válidos. Corrígela antes de publicar.');
      if (!item.slug || await findListingBySlug(env, item.slug) || await tx.get('directorio_consultores_asetemyt', item.slug)) throw new PaymentError(409, 'Ya existe una ficha con ese nombre de enlace. Revisa el duplicado antes de publicar.');
      const listing = Object.fromEntries(['nombre','slug','tipo','descripcion','especialidades','servicios','ubicacion','contacto','logo','lang','createdAt'].map(key => [key,item[key] ?? (['especialidades','servicios'].includes(key) ? [] : ['ubicacion','contacto'].includes(key) ? {} : '')]));
+if (await isDirectoryExcluded(env, listing)) throw new PaymentError(409, 'Esta empresa ha solicitado la baja. No se puede publicar.');
      await tx.put('directorio_consultores_asetemyt', item.slug, {...listing,verificado:false,contactoDesbloqueado:false,updatedAt:new Date().toISOString()});
     }
    }

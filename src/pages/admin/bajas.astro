@@ -1,0 +1,54 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+<Layout title="Administración — Bajas y exclusiones" description="Empresas que no quieren figurar en el directorio">
+<section class="max-w-5xl mx-auto px-4 py-12">
+<a href="/admin" class="text-accent-700">← Administración</a>
+<h1 class="text-3xl font-bold my-4">Bajas y exclusiones</h1>
+<p class="mb-6">Registra las empresas que no quieren aparecer en el directorio ni recibir contactos. La baja elimina sus fichas y se conserva para impedir nuevas altas y envíos.</p>
+<p id="status" role="status" aria-live="polite">Comprobando acceso…</p>
+<div id="panel" class="hidden">
+<form id="form" class="bg-white rounded-xl border p-6 space-y-4 my-6">
+<h2 class="text-xl font-bold">Registrar una baja</h2>
+<label class="block">Empresa<input name="nombre" required maxlength="200" class="block border p-2 rounded w-full" /></label>
+<label class="block">Dominio o web<input name="domain" required placeholder="empresa.com" class="block border p-2 rounded w-full" /></label>
+<label class="block">Nombre del enlace de la ficha (opcional)<input name="slug" pattern="[a-z0-9-]*" placeholder="nombre-empresa" class="block border p-2 rounded w-full" /></label>
+<label class="block">Motivo<textarea name="motivo" required maxlength="2000" class="block border p-2 rounded w-full"></textarea></label>
+<label class="block">Referencia de la solicitud<textarea name="fuente" maxlength="2000" placeholder="Fecha, asunto del email o referencia de la petición" class="block border p-2 rounded w-full"></textarea></label>
+<p class="text-sm text-steel-600">Se eliminarán las fichas coincidentes con ese dominio o enlace. El bloqueo incluye sus subdominios.</p>
+<button class="bg-accent-500 text-white rounded px-4 py-2">Registrar baja y retirar fichas</button>
+</form>
+<button id="refresh" class="border rounded px-4 py-2 mb-4">Actualizar listado</button>
+<div id="list" class="space-y-4"></div>
+</div>
+</section>
+</Layout>
+<script>
+import { initAdmin } from '../../lib/admin-auth';
+const el=(id:string)=>document.getElementById(id)!;
+const form=el('form') as HTMLFormElement;
+let api:(url:string,options?:RequestInit)=>Promise<Response>;
+let busy=false;
+async function load(){
+ const res=await api('/api/admin/bajas');const data=await res.json();if(!res.ok)throw new Error(data.error);
+ el('list').replaceChildren();
+ if(!data.items.length){el('list').textContent='No hay bajas registradas.';return;}
+ for(const item of data.items){
+  const card=document.createElement('article');card.className='border rounded-xl bg-white p-5';
+  for(const [tag,text] of [['h2',item.nombre||item.empresa||item.domain||item.dominio||item.id],['p','Dominio: '+(item.domain||item.dominio||item.id)],['p','No publicar · No contactar'],['p',item.motivo||item.reason||''],['p',item.fuente||item.source||''],['p',item.createdAt||item.fecha||'']] as const){const node=document.createElement(tag);node.textContent=String(text);card.appendChild(node);}el('list').appendChild(card);
+ }
+}
+el('refresh').addEventListener('click',()=>{void load().then(()=>el('status').textContent='Listado actualizado.').catch(e=>el('status').textContent=e.message);});
+form.addEventListener('submit',async event=>{
+ event.preventDefault();if(busy)return;
+ if(!confirm('¿Registrar esta exclusión y eliminar las fichas coincidentes del directorio?'))return;
+ busy=true;const button=form.querySelector('button')!;button.disabled=true;
+ try{
+ const body=Object.fromEntries(new FormData(form));const response=await api('/api/admin/bajas',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await response.json();if(!response.ok)throw new Error(data.error);
+ form.reset();el('status').textContent=`Baja registrada. Fichas retiradas: ${data.removed}.`;
+ try{await load();}catch{el('status').textContent+=' Actualiza el listado para comprobar el registro.';}
+ }catch(e){el('status').textContent=e instanceof Error?e.message:'No se pudo guardar la baja.';}finally{busy=false;button.disabled=false;}
+});
+(async()=>{try{const session=await initAdmin();if(!session.ok){el('status').textContent=session.error||'Necesitas permisos de administrador.';return;}api=session.api;el('panel').classList.remove('hidden');await load();el('status').textContent='';}catch{el('status').textContent='No se pudieron cargar las bajas. Pulsa Actualizar.';}})();
+</script>

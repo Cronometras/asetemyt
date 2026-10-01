@@ -1,3 +1,4 @@
+import { isDirectoryExcluded } from '../../../../lib/directory-exclusions';
 // POST /api/admin/outreach/send — Send a previously-created draft outreach
 // via Resend. One send per request (NO batch — each outreach is personalized
 // and must be reviewed individually before sending).
@@ -79,6 +80,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: `Ficha ${slug} ya no existe` }), { status: 404 });
     }
 
+if (await isDirectoryExcluded(env, {...found.listing,fichaEmail})) return Response.json({ error: 'Esta empresa ha solicitado la baja. No se permite publicarla ni contactarla.' }, { status: 409 });
     // 3. Build the email HTML (very simple: plain text wrapped in <pre>)
     const htmlBody = `<!DOCTYPE html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.6;color:#1a2332;max-width:600px;margin:0 auto;padding:24px">
 <div style="background:linear-gradient(135deg,#1e3a5f 0%,#2d5a87 100%);color:white;padding:24px;border-radius:12px 12px 0 0;text-align:center;margin:-24px -24px 24px -24px">
