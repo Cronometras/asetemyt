@@ -203,7 +203,10 @@ def main():
         item = json.loads(record['data'])
         raw = item.get('domain') or item.get('dominio') or record['id']
         host = urlsplit(raw if '://' in raw else 'https://' + raw).hostname or ''
-        blocked_domains.add(re.sub(r'^www\.', '', host.lower()))
+        domain = re.sub(r'^www\.', '', host.lower())
+        shared = {'gmail.com', 'outlook.com', 'hotmail.com', 'yahoo.com', 'yahoo.es', 'hotmail.es', 'live.com', 'icloud.com', 'proton.me', 'protonmail.com', 'aol.com', 'mail.com', 'google.com', 'facebook.com', 'linkedin.com', 'instagram.com', 'wordpress.com', 'wixsite.com', 'github.io', 'blogspot.com'}
+        if not any(domain == d or domain.endswith('.' + d) for d in shared):
+            blocked_domains.add(domain)
         if item.get('slug'): blocked_slugs.add(item['slug'])
 
     # Conteo antes

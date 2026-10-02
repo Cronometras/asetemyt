@@ -1,3 +1,4 @@
+import { isDirectoryExcluded } from '../../../../lib/directory-exclusions';
 // POST /api/admin/outreach/draft — Create a draft outreach for a ficha.
 // Returns the outreachId + ficha context so the agent (or admin) can
 // draft a personalized email. The actual send is a separate step via
@@ -79,6 +80,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }), { status: 400 });
     }
 
+    if (await isDirectoryExcluded(env, found.listing)) return Response.json({error:'Esta empresa ha solicitado la baja. No se puede preparar un contacto.'},{status:409});
     const listing = found.listing;
     const fichaEmail: string = (listing.contacto?.email || '').trim();
     if (!fichaEmail) {

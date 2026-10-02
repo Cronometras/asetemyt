@@ -17,6 +17,7 @@ const couponApi = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: coupons } = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: outreach } = await server.ssrLoadModule('/src/pages/api/admin/outreach/list.ts');
 const exclusionsApi = await server.ssrLoadModule('/src/pages/api/admin/bajas.ts');
+const { matchesExclusion } = await server.ssrLoadModule('/src/lib/directory-exclusions.ts');
 const { isDirectoryExcluded } = await server.ssrLoadModule('/src/lib/directory-exclusions.ts');
 const directorySubmit = await server.ssrLoadModule('/src/pages/api/directorio/submit.ts');
 const trainingApi = await server.ssrLoadModule('/src/pages/api/user/formacion.ts');
@@ -580,4 +581,18 @@ test('directory opt-outs persist, remove listings and block future creation', as
  user={email:'visitor@example.com',emailVerified:true,localId:'visitor'};
  assert.equal((await exclusionsApi.GET(context(env))).status,403);
  user={email:'micaot@gmail.com',emailVerified:true,localId:'owner'};sqlite.close();
+});
+
+
+test('opt-outs never exclude unrelated businesses through shared email providers', async () => {
+ assert.equal(matchesExclusion({slug:'other',contacto:{email:'other@gmail.com'}},{domain:'gmail.com',slug:'original'}),false);
+ assert.equal(matchesExclusion({slug:'original',contacto:{email:'original@gmail.com'}},{domain:'gmail.com',slug:'original'}),true);
+ const {DB,sqlite}=database();const env={DB,FIREBASE_API_KEY:'test'};
+ user={email:'micaot@gmail.com',emailVerified:true,localId:'owner'};
+ const body={nombre:'Original',domain:'gmail.com',motivo:'Baja'};
+ assert.equal((await exclusionsApi.POST(context(env,'POST',body))).status,400);
+ assert.equal((await exclusionsApi.POST(context(env,'POST',{...body,domain:'original.example',fuente:'Email original'}))).status,200);
+ assert.equal((await exclusionsApi.POST(context(env,'POST',{...body,domain:'original.example',fuente:'Segundo intento'}))).status,200);
+ const record=await store.firestoreGet(env,'bajas_asetemyt','original.example');
+ assert.equal(record.fuente,'Email original');sqlite.close();
 });

@@ -29,7 +29,10 @@ function mockFetch() {
     calls.push({ url: String(url), options });
     if (String(url).includes('oauth2.googleapis.com')) return Response.json({ access_token: 'test-access', expires_in: 3600 });
     if (String(url).includes('identitytoolkit')) return Response.json({ users: [authUser] });
-    if (String(url).includes('firestore.googleapis.com')) return Response.json({ error: { message: 'quota exceeded' } }, { status: firestoreStatus });
+    if (String(url).includes('firestore.googleapis.com')) {
+      if (firestoreStatus === 200) return Response.json(String(url).includes(':runQuery') ? [] : { fields: {} });
+      return Response.json({ error: { message: 'quota exceeded' } }, { status: firestoreStatus });
+    }
     throw new Error('Unexpected request: ' + url);
   };
 }
