@@ -119,7 +119,7 @@ export const GET: APIRoute = async ({ locals }) => {
     '## Apps del grupo ProdCont',
     '',
     '- [ProdCont](https://prodcont.com): paraguas corporativo de ProdCont. Servicios de cronometraje industrial, muestreo del trabajo, control horario y consultoría de métodos y tiempos.',
-    '- [Cronometras](https://cronometras.com): cronometraje industrial, valoración Westinghouse, suplementos OIT, time study.',
+    '- [Cronometras](https://cronometras.com): cronometraje industrial, valoración sintética del ritmo, suplementos OIT y TAL, time study.',
     '- [Cronometras app](https://app.cronometras.com): la PWA instalable en tablet de planta.',
     '- [Worksamp](https://worksamp.com): muestreo del trabajo (work sampling) con análisis estadístico.',
     '- [Worksamp app](https://app.worksamp.com): la PWA con plan de observaciones aleatorias.',
