@@ -1,6 +1,6 @@
 ---
 // Google Analytics with consent gating for ASETEMYT
-const GA_ID = 'G-BMZHR6ZS9Y';
+const GA_ID = 'G-PSB4T9WRJF';
 ---
 
 <!-- Consent mode default: deny analytics until user consents -->
@@ -31,4 +31,30 @@ const GA_ID = 'G-BMZHR6ZS9Y';
       gtag('event', 'page_view');
     }
   }
+</script>
+
+<!-- Capa de eventos: formularios, CTAs y WhatsApp (Micaot 2026-10-08) -->
+<script is:inline>
+  document.addEventListener('submit', function (e) {
+    try {
+      window.gtag && window.gtag('event', 'form_submit', {
+        form_id: e.target.id || '(sin-id)',
+        form_action: e.target.getAttribute('action') || '(sin-accion)',
+        page_path: location.pathname
+      });
+    } catch (err) {}
+  }, true);
+  document.addEventListener('click', function (e) {
+    try {
+      var wa = e.target.closest && e.target.closest('a[href*="wa.me"],a[href*="whatsapp"],a[href*="api.whatsapp"]');
+      if (wa) { window.gtag && window.gtag('event', 'whatsapp_click', { page_path: location.pathname }); return; }
+      var t = e.target.closest && e.target.closest('a,button');
+      if (t) {
+        var txt = (t.innerText || '').trim();
+        if (txt.length < 80 && /demo|prueba|solicitar|presupuesto|contact|quote|ficha/i.test(txt)) {
+          window.gtag && window.gtag('event', 'cta_click', { event_label: txt.slice(0, 60), page_path: location.pathname });
+        }
+      }
+    } catch (err) {}
+  }, true);
 </script>
