@@ -1,6 +1,7 @@
 // Runtime document store. Public directory tables are projections maintained
 // atomically by SQL triggers (migration 0003), never by a second remote write.
 type Database = ReturnType<typeof import('./d1').getDB>;
+import { PUBLIC_LISTING_COLLECTIONS, bumpPublicCacheGeneration } from './public-cache';
 
 function jsonPath(field: string): string {
   const parts = field.split('.');
@@ -52,6 +53,7 @@ export async function createDocument(db: Database, collection: string, id: strin
   // Preserve legacy idempotent-create behavior without overwriting an existing doc.
   await db.prepare('INSERT INTO app_documents (collection, id, data) VALUES (?, ?, ?) ON CONFLICT(collection, id) DO NOTHING')
     .bind(collection, id, JSON.stringify(data)).run();
+  if (PUBLIC_LISTING_COLLECTIONS.has(collection)) await bumpPublicCacheGeneration(db);
   return true;
 }
 
@@ -73,11 +75,13 @@ function updateStatement(db: Database, collection: string, id: string, fields: R
 
 export async function updateDocument(db: Database, collection: string, id: string, fields: Record<string, any>) {
   await updateStatement(db, collection, id, fields).run();
+  if (PUBLIC_LISTING_COLLECTIONS.has(collection)) await bumpPublicCacheGeneration(db);
   return true;
 }
 
 export async function deleteDocument(db: Database, collection: string, id: string) {
   await db.prepare('DELETE FROM app_documents WHERE collection = ? AND id = ?').bind(collection, id).run();
+  if (PUBLIC_LISTING_COLLECTIONS.has(collection)) await bumpPublicCacheGeneration(db);
   return true;
 }
 
@@ -109,5 +113,6 @@ export async function batchUpdateDocuments(db: Database, updates: Array<{ collec
   for (let i = 0; i < statements.length; i += 40) {
     await db.batch(statements.slice(i, i + 40));
   }
+  if (updates.some(u => PUBLIC_LISTING_COLLECTIONS.has(u.collection))) await bumpPublicCacheGeneration(db);
   return updates.length;
 }

@@ -4,6 +4,7 @@
 
 import type { D1Database } from '@cloudflare/workers-types';
 type D1Binding = D1Database;
+import { cachedPublic, safeParamKey } from './public-cache';
 
 /**
  * Resolve the D1 binding from Astro locals. CF Pages exposes runtime.env on locals.
@@ -26,6 +27,10 @@ export function getDB(locals: any): D1Binding {
  * objects. Used by /api/directorio/consultores and /directorio/[slug].
  */
 export async function listConsultores(db: D1Binding): Promise<any[]> {
+  return cachedPublic<any[]>(db, 'consultores:list', () => listConsultoresUncached(db));
+}
+
+async function listConsultoresUncached(db: D1Binding): Promise<any[]> {
   const stmt = db.prepare(
     'SELECT id, slug, nombre, tipo, lang, descripcion, especialidades, servicios, ' +
     'ubicacion, contacto, logo, verificado, destacado, created_at, updated_at ' +
@@ -40,6 +45,11 @@ export async function listConsultores(db: D1Binding): Promise<any[]> {
  * Used by /directorio/especialidad/[slug] SEO pages.
  */
 export async function listConsultoresByEspecialidad(db: D1Binding, especialidad: string): Promise<any[]> {
+  return cachedPublic<any[]>(db, safeParamKey('consultores:esp:', especialidad), () =>
+    listConsultoresByEspecialidadUncached(db, especialidad));
+}
+
+async function listConsultoresByEspecialidadUncached(db: D1Binding, especialidad: string): Promise<any[]> {
   const stmt = db.prepare(
     "SELECT id, slug, nombre, tipo, lang, descripcion, especialidades, servicios, " +
     "ubicacion, contacto, logo, verificado, destacado, created_at, updated_at " +
@@ -57,6 +67,11 @@ export async function listConsultoresByEspecialidad(db: D1Binding, especialidad:
  * Fetch all unique especialidades with counts. Used by the SEO index page.
  */
 export async function getEspecialidadesWithCounts(db: D1Binding): Promise<Array<{ slug: string; count: number; nombre: string }>> {
+  return cachedPublic<Array<{ slug: string; count: number; nombre: string }>>(
+    db, 'consultores:especialidades-counts', () => getEspecialidadesWithCountsUncached(db));
+}
+
+async function getEspecialidadesWithCountsUncached(db: D1Binding): Promise<Array<{ slug: string; count: number; nombre: string }>> {
   // Pull every row's especialidades JSON, parse it, and aggregate in JS
   // (D1's JSON1 doesn't easily flatten arrays). With ~488 rows this is cheap.
   const stmt = db.prepare(
@@ -88,6 +103,11 @@ export async function getEspecialidadesWithCounts(db: D1Binding): Promise<Array<
  * Returns matching consultores sorted by nombre.
  */
 export async function listConsultoresByCity(db: D1Binding, ciudad: string): Promise<any[]> {
+  return cachedPublic<any[]>(db, safeParamKey('consultores:ciudad:', accentStrip(ciudad.toLowerCase())), () =>
+    listConsultoresByCityUncached(db, ciudad));
+}
+
+async function listConsultoresByCityUncached(db: D1Binding, ciudad: string): Promise<any[]> {
   const needle = ciudad.toLowerCase();
   const norm = accentStrip(needle);
   // Match either exact city, accent-stripped city, or the same city with different case
@@ -107,6 +127,11 @@ export async function listConsultoresByCity(db: D1Binding, ciudad: string): Prom
  * Fetch unique (ciudad, count) pairs from D1. Used by the SEO index page.
  */
 export async function getCitiesWithCounts(db: D1Binding): Promise<Array<{ ciudad: string; count: number; slug: string }>> {
+  return cachedPublic<Array<{ ciudad: string; count: number; slug: string }>>(
+    db, 'consultores:ciudades-counts', () => getCitiesWithCountsUncached(db));
+}
+
+async function getCitiesWithCountsUncached(db: D1Binding): Promise<Array<{ ciudad: string; count: number; slug: string }>> {
   const stmt = db.prepare(
     "SELECT json_extract(ubicacion, '$.ciudad') AS ciudad, COUNT(*) AS count " +
     "FROM consultores " +
@@ -159,6 +184,10 @@ export async function getConsultorBySlug(db: D1Binding, slug: string): Promise<a
  * Fetch all software rows from D1. Mirror of listConsultores for the software directory.
  */
 export async function listSoftware(db: D1Binding): Promise<any[]> {
+  return cachedPublic<any[]>(db, 'software:list', () => listSoftwareUncached(db));
+}
+
+async function listSoftwareUncached(db: D1Binding): Promise<any[]> {
   const stmt = db.prepare(
     'SELECT id, slug, nombre, tipo, lang, descripcion, categorias, funcionalidades, ' +
     'pricing, fabricante, contacto, logo, verificado, destacado, created_at, updated_at, ' +
@@ -188,6 +217,10 @@ export async function getSoftwareBySlug(db: D1Binding, slug: string): Promise<an
  * Single round-trip, no full SELECT.
  */
 export async function getCounts(db: D1Binding): Promise<{ consultores: number; software: number }> {
+  return cachedPublic<{ consultores: number; software: number }>(db, 'counts', () => getCountsUncached(db));
+}
+
+async function getCountsUncached(db: D1Binding): Promise<{ consultores: number; software: number }> {
   const cStmt = db.prepare('SELECT COUNT(*) AS n FROM consultores');
   const sStmt = db.prepare('SELECT COUNT(*) AS n FROM software');
   const [c, s] = await Promise.all([cStmt.first(), sStmt.first()]);

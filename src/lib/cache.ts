@@ -68,6 +68,7 @@ export async function getCached<T>(
 ): Promise<T> {
   // D1 is now authoritative. Bypass legacy KV snapshots (including cached
   // permissions) so writes are immediately visible and consume no KV puts.
+  // Public listing readers are cached separately (see src/lib/public-cache.ts).
   if (env.DB) return fetcher();
   const kv = getKV(env);
 
