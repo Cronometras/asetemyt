@@ -82,9 +82,12 @@ export async function cachedPublic<T>(
   return value;
 }
 
-/** Cache key for URL-derived params; null (= bypass) when the param is not a plain slug. */
+/**
+ * Cache key for URL-derived params; null (= bypass) when the param is not a
+ * plain city/especialidad name (letters, digits, spaces, hyphens).
+ */
 export function safeParamKey(prefix: string, param: string): string | null {
   const p = (param || '').toLowerCase();
-  if (!/^[a-z0-9-]{1,80}$/.test(p)) return null;
-  return `${prefix}${p}`;
+  if (!/^[a-z0-9 -]{1,80}$/.test(p)) return null;
+  return `${prefix}${encodeURIComponent(p)}`;
 }
