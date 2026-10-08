@@ -1,0 +1,320 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Pipeline Cronometras" description="CRM ligero de prospección: oportunidades de Cronometras con estado (detectada → contacto → reunión → cierre).">
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div id="loading" class="text-center py-20">
+      <div class="inline-block w-8 h-8 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+      <p class="text-steel-500 mt-4">Cargando pipeline...</p>
+    </div>
+
+    <div id="notAuth" class="hidden text-center py-20">
+      <h2 class="text-2xl font-bold text-primary-900 mb-2">Acceso denegado</h2>
+      <p class="text-steel-500">No tienes permisos de administrador.</p>
+      <a href="/login" class="inline-block mt-4 text-accent-600 font-semibold">Iniciar sesión →</a>
+    </div>
+
+    <div id="pipelinePanel" class="hidden">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-3xl font-extrabold text-primary-900">🧭 Pipeline Cronometras</h1>
+          <p class="text-steel-500 mt-1 text-sm" id="statsLine"></p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <a href="/admin" class="text-sm text-accent-600 font-medium hover:text-accent-700">← Panel</a>
+          <button id="btn-new" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
+            + Nueva oportunidad
+          </button>
+        </div>
+      </div>
+
+      <!-- New opportunity form -->
+      <div id="newForm" class="hidden bg-white rounded-xl shadow-md border border-steel-100 p-5 mb-6">
+        <p class="font-semibold text-primary-800 mb-3">Nueva oportunidad</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <input id="n-empresa" placeholder="Empresa *" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <input id="n-dominio" placeholder="Dominio web" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <input id="n-pais" placeholder="País (ES / MX)" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <input id="n-sector" placeholder="Sector" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <select id="n-categoria" class="border border-steel-200 rounded-lg px-3 py-2">
+            <option value="">Categoría de señal</option>
+            <option value="A">A · Inversión / contratación industrial</option>
+            <option value="B">B · Formación M&T</option>
+            <option value="C">C · Formadores / consultores M&T</option>
+            <option value="D">D · Descartes</option>
+            <option value="E">E · Responsable recién incorporado</option>
+          </select>
+          <input id="n-cargo" placeholder="Cargo objetivo" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <input id="n-contactoNombre" placeholder="Nombre del contacto" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <input id="n-contactoEmail" placeholder="Email del contacto" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <input id="n-fuenteUrl" placeholder="URL de la fuente (señal)" class="border border-steel-200 rounded-lg px-3 py-2 sm:col-span-2" />
+          <textarea id="n-senal" placeholder="Señal detectada (qué ha pasado y por qué importa)" class="border border-steel-200 rounded-lg px-3 py-2 sm:col-span-2" rows="2"></textarea>
+          <textarea id="n-notes" placeholder="Notas" class="border border-steel-200 rounded-lg px-3 py-2 sm:col-span-2" rows="2"></textarea>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button id="btn-create" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg text-sm">Guardar</button>
+          <button id="btn-cancel-new" class="text-steel-500 hover:text-steel-700 text-sm px-3 py-2">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-3 mb-4 text-sm">
+        <select id="filter-etapa" class="border border-steel-200 rounded-lg px-3 py-2">
+          <option value="">Todas las etapas</option>
+          <option value="detectada">Detectada</option>
+          <option value="borrador">Borrador</option>
+          <option value="contactado">Contactado</option>
+          <option value="respondido">Respondido</option>
+          <option value="reunion">Reunión</option>
+          <option value="propuesta">Propuesta</option>
+          <option value="ganada">Ganada</option>
+          <option value="perdida">Perdida</option>
+        </select>
+        <select id="filter-categoria" class="border border-steel-200 rounded-lg px-3 py-2">
+          <option value="">Todas las categorías</option>
+          <option value="A">A · Inversión</option>
+          <option value="B">B · Formación M&T</option>
+          <option value="C">C · Formadores</option>
+          <option value="D">D · Descartes</option>
+          <option value="E">E · Recién incorporados</option>
+        </select>
+        <input id="filter-q" placeholder="Buscar empresa, dominio o contacto..." class="border border-steel-200 rounded-lg px-3 py-2 flex-1 min-w-[220px]" />
+      </div>
+
+      <!-- List -->
+      <div id="list" class="space-y-3"></div>
+    </div>
+  </section>
+</Layout>
+
+<script>
+  import { initAdmin } from '../../lib/admin-auth';
+
+  let api = window.fetch.bind(window);
+  let rows: any[] = [];
+
+  const ETAPAS: Record<string, string> = {
+    detectada: 'Detectada',
+    borrador: 'Borrador',
+    contactado: 'Contactado',
+    respondido: 'Respondido',
+    reunion: 'Reunión',
+    propuesta: 'Propuesta',
+    ganada: 'Ganada',
+    perdida: 'Perdida',
+  };
+
+  const ETAPA_BADGE: Record<string, string> = {
+    detectada: 'bg-steel-100 text-steel-700',
+    borrador: 'bg-purple-100 text-purple-700',
+    contactado: 'bg-blue-100 text-blue-700',
+    respondido: 'bg-green-100 text-green-700',
+    reunion: 'bg-amber-100 text-amber-700',
+    propuesta: 'bg-cyan-100 text-cyan-700',
+    ganada: 'bg-emerald-100 text-emerald-700',
+    perdida: 'bg-red-100 text-red-700',
+  };
+
+  (async () => {
+    const { ok, api: adminApi } = await initAdmin();
+    api = adminApi;
+    if (!ok) return showNotAuth();
+    try {
+      const res = await api('/api/admin/pipeline/list?limit=500');
+      if (res.status === 401 || res.status === 403) return showNotAuth();
+      if (!res.ok) {
+        const text = await res.text().catch(() => '');
+        return showError(res.status, text);
+      }
+      const data = await res.json();
+      rows = data.oportunidades || [];
+      showPanel();
+    } catch (e: any) {
+      showError(0, e?.message || String(e));
+    }
+  })();
+
+  function showNotAuth() {
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('notAuth')!.classList.remove('hidden');
+  }
+
+  function showError(status: number, detail: string) {
+    document.getElementById('loading')!.classList.add('hidden');
+    const node = document.getElementById('notAuth')!;
+    node.classList.remove('hidden');
+    node.innerHTML = `
+      <h2 class="text-2xl font-bold text-red-700 mb-2">Error del servidor (HTTP ${status || 'network'})</h2>
+      <p class="text-steel-600 text-sm max-w-xl mx-auto whitespace-pre-wrap font-mono">${escapeHtml(detail.slice(0, 400))}</p>
+      <div class="mt-4 flex gap-3 justify-center">
+        <a href="/admin" class="inline-block text-accent-600 font-semibold">← Volver al panel</a>
+        <button onclick="location.reload()" class="inline-block text-accent-600 font-semibold">🔄 Reintentar</button>
+      </div>`;
+  }
+
+  function showPanel() {
+    document.getElementById('loading')!.classList.add('hidden');
+    document.getElementById('pipelinePanel')!.classList.remove('hidden');
+    updateStats();
+    wire();
+    render();
+  }
+
+  function updateStats() {
+    const counts: Record<string, number> = {};
+    for (const r of rows) counts[r.etapa] = (counts[r.etapa] || 0) + 1;
+    const parts = Object.keys(ETAPAS)
+      .filter((k) => counts[k])
+      .map((k) => `${ETAPAS[k]}: ${counts[k]}`);
+    document.getElementById('statsLine')!.textContent =
+      `${rows.length} oportunidades · ${parts.join(' · ') || 'sin datos'}`;
+  }
+
+  function wire() {
+    const reload = async () => {
+      const etapa = (document.getElementById('filter-etapa') as HTMLSelectElement).value;
+      const categoria = (document.getElementById('filter-categoria') as HTMLSelectElement).value;
+      const q = (document.getElementById('filter-q') as HTMLInputElement).value;
+      const params = new URLSearchParams({ limit: '500' });
+      if (etapa) params.set('etapa', etapa);
+      if (categoria) params.set('categoria', categoria);
+      if (q) params.set('q', q);
+      const res = await api('/api/admin/pipeline/list?' + params.toString());
+      const data = await res.json();
+      rows = data.oportunidades || [];
+      updateStats();
+      render();
+    };
+
+    document.getElementById('filter-etapa')!.addEventListener('change', reload);
+    document.getElementById('filter-categoria')!.addEventListener('change', reload);
+    let t: any = null;
+    document.getElementById('filter-q')!.addEventListener('input', () => {
+      clearTimeout(t);
+      t = setTimeout(reload, 350);
+    });
+
+    document.getElementById('btn-new')!.addEventListener('click', () => {
+      document.getElementById('newForm')!.classList.toggle('hidden');
+    });
+    document.getElementById('btn-cancel-new')!.addEventListener('click', () => {
+      document.getElementById('newForm')!.classList.add('hidden');
+    });
+    document.getElementById('btn-create')!.addEventListener('click', async () => {
+      const val = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value.trim();
+      const empresa = val('n-empresa');
+      if (!empresa) return alert('La empresa es obligatoria');
+      const payload = {
+        empresa,
+        dominio: val('n-dominio'),
+        pais: val('n-pais'),
+        sector: val('n-sector'),
+        categoria: val('n-categoria'),
+        cargo: val('n-cargo'),
+        contactoNombre: val('n-contactoNombre'),
+        contactoEmail: val('n-contactoEmail'),
+        fuenteUrl: val('n-fuenteUrl'),
+        senal: val('n-senal'),
+        notes: val('n-notes'),
+        etapa: 'detectada',
+      };
+      const res = await api('/api/admin/pipeline/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) return alert('Error: ' + (data.error || res.status));
+      location.reload();
+    });
+  }
+
+  function render() {
+    const target = document.getElementById('list')!;
+    if (!rows.length) {
+      target.innerHTML = `<div class="bg-white rounded-xl shadow-md p-12 text-center border border-steel-100"><p class="text-steel-400">No hay oportunidades con estos filtros.</p></div>`;
+      return;
+    }
+    target.innerHTML = rows.map(renderRow).join('');
+    target.querySelectorAll('[data-save]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const id = (btn as HTMLElement).dataset.save!;
+        const get = (k: string) => (document.getElementById(`e-${k}-${id}`) as any)?.value ?? undefined;
+        const payload = {
+          id,
+          etapa: get('etapa'),
+          contactoNombre: get('contactoNombre'),
+          contactoEmail: get('contactoEmail'),
+          notes: get('notes'),
+        };
+        const res = await api('/api/admin/pipeline/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) return alert('Error: ' + (data.error || res.status));
+        location.reload();
+      });
+    });
+  }
+
+  function renderRow(r: any): string {
+    const etapaLabel = ETAPAS[r.etapa] || r.etapa;
+    const etapaBadge = ETAPA_BADGE[r.etapa] || 'bg-steel-100 text-steel-700';
+    const fecha = r.updatedAt || r.createdAt
+      ? new Date(r.updatedAt || r.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+      : '—';
+    return `
+    <div class="bg-white rounded-xl shadow-md border border-steel-100 p-5">
+      <div class="flex items-start justify-between gap-3 mb-2">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            ${r.categoria ? `<span class="text-xs font-semibold bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full">${escapeHtml(r.categoria)}</span>` : ''}
+            <span class="text-xs font-semibold ${etapaBadge} px-2.5 py-1 rounded-full">${escapeHtml(etapaLabel)}</span>
+            ${r.replied ? '<span class="text-xs font-semibold bg-green-100 text-green-700 px-2.5 py-1 rounded-full">✓ Respondida</span>' : ''}
+          </div>
+          <h3 class="font-bold text-primary-800 truncate">${escapeHtml(r.empresa)}</h3>
+          <p class="text-sm text-steel-500">
+            ${r.dominio ? `<a href="https://${escapeHtml(r.dominio)}" target="_blank" class="text-accent-600 hover:underline">${escapeHtml(r.dominio)}</a> · ` : ''}
+            ${escapeHtml([r.pais, r.sector].filter(Boolean).join(' · '))}
+          </p>
+        </div>
+        <div class="text-xs text-steel-400 text-right whitespace-nowrap">
+          <div>Act.: <strong class="text-steel-600">${fecha}</strong></div>
+          ${r.sentAt ? `<div class="mt-1">Contactado: ${new Date(r.sentAt).toLocaleDateString('es-ES')}</div>` : ''}
+        </div>
+      </div>
+
+      ${r.senal ? `<p class="text-sm text-steel-700 mt-2">${escapeHtml(r.senal)}</p>` : ''}
+      ${r.fuenteUrl ? `<p class="text-xs mt-1"><a href="${escapeHtml(r.fuenteUrl)}" target="_blank" class="text-accent-600 hover:underline">Fuente →</a></p>` : ''}
+      ${r.cargo ? `<p class="text-xs text-steel-500 mt-1">Cargo objetivo: ${escapeHtml(r.cargo)}</p>` : ''}
+
+      <details class="mt-3">
+        <summary class="text-xs text-accent-600 cursor-pointer hover:underline">Editar estado y notas</summary>
+        <div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <select id="e-etapa-${r.id}" class="border border-steel-200 rounded-lg px-3 py-2">
+            ${Object.keys(ETAPAS).map((k) => `<option value="${k}" ${k === r.etapa ? 'selected' : ''}>${ETAPAS[k]}</option>`).join('')}
+          </select>
+          <input id="e-contactoNombre-${r.id}" value="${escapeHtml(r.contactoNombre)}" placeholder="Nombre del contacto" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <input id="e-contactoEmail-${r.id}" value="${escapeHtml(r.contactoEmail)}" placeholder="Email del contacto" class="border border-steel-200 rounded-lg px-3 py-2" />
+          <textarea id="e-notes-${r.id}" placeholder="Notas" rows="2" class="border border-steel-200 rounded-lg px-3 py-2 sm:col-span-2">${escapeHtml(r.notes)}</textarea>
+        </div>
+        <button data-save="${r.id}" class="mt-3 bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg text-sm">Guardar cambios</button>
+      </details>
+    </div>`;
+  }
+
+  function escapeHtml(s: string): string {
+    if (!s) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+</script>
