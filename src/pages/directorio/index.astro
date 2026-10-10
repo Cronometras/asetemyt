@@ -1,345 +1,271 @@
 ---
+// Public directory listing: server-side filtering + pagination (24/page).
+//
+// 2026-10-10 rewrite: the previous version rendered ALL ~657 cards AND
+// embedded a 670 KB JSON snapshot (~1.76 MB of HTML per request, rebuilt
+// client-side on every load). Payload and per-request CPU were blowing past
+// the Workers Free 10 ms CPU limit. This version renders only the active page
+// (~150 KB), embeds no dataset, and keeps the same URL param names as the old
+// UI (q, tipo, especialidad, ubicacion, provincia, ciudad, orden, pagina) so
+// existing links keep working. Filters travel as URL params and work without
+// JavaScript.
 export const prerender = false;
 import Layout from '../../layouts/Layout.astro';
 import { getDB, listConsultores } from '../../lib/d1';
 import { canonicalPath } from '../../lib/seo';
+import { compareDirectoryEntries, validDirectoryOrder } from '../../lib/directory-order';
+
+const PAGE_SIZE = 24;
+
+// --- Query params (same names as the previous client-side UI) ---------------
+const params = Astro.url.searchParams;
+const read = (name: string) => (params.get(name) || '').trim().toLowerCase().slice(0, 80);
+const q = read('q');
+const tipo = ['empresa', 'consultor'].includes(read('tipo')) ? read('tipo') : '';
+const especialidad = read('especialidad');
+const ubicacionParam = read('ubicacion');
+const provinciaParam = read('provincia');
+const ciudadParam = read('ciudad');
+const orden = validDirectoryOrder(read('orden'));
+
+// Normalize country names to prevent duplicates (e.g. "España"/"Spain").
+const countryMap: Record<string, string> = {
+  'spain': 'España', 'españa': 'España',
+  'germany': 'Alemania', 'alemania': 'Alemania',
+  'mexico': 'México', 'méxico': 'México', 'méjico': 'México',
+  'peru': 'Perú', 'perú': 'Perú',
+  'usa': 'Estados Unidos', 'us': 'Estados Unidos', 'united states': 'Estados Unidos', 'estados unidos': 'Estados Unidos',
+  'france': 'Francia', 'francia': 'Francia',
+  'italy': 'Italia', 'italia': 'Italia',
+  'portugal': 'Portugal',
+  'brazil': 'Brasil', 'brasil': 'Brasil',
+  'colombia': 'Colombia', 'argentina': 'Argentina', 'chile': 'Chile',
+  'uk': 'Reino Unido', 'united kingdom': 'Reino Unido', 'reino unido': 'Reino Unido',
+  'china': 'China', 'japan': 'Japón', 'japón': 'Japón',
+  'india': 'India',
+};
+const stripAccents = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const normCountry = (pais?: string) => {
+  if (!pais) return '';
+  const key = pais.toLowerCase().trim();
+  return countryMap[key] || pais.trim();
+};
 
 // Only embed the fields displayed in public cards, never contact/account data.
-const consultores = (await listConsultores(getDB(Astro.locals)))
+const all = (await listConsultores(getDB(Astro.locals)))
   .filter(entry => entry.slug)
   .map(({ slug, nombre, tipo, descripcion, especialidades, ubicacion, logo, verificado, destacado, createdAt }) => ({
     slug, nombre, tipo, descripcion, especialidades,
-    ubicacion: { pais: ubicacion?.pais, provincia: ubicacion?.provincia, ciudad: ubicacion?.ciudad },
+    ubicacion: { pais: normCountry(ubicacion?.pais), provincia: (ubicacion?.provincia || '').trim(), ciudad: (ubicacion?.ciudad || '').trim() },
     logo, verificado, destacado, createdAt,
-  }))
-  .sort((a, b) => Number(b.verificado === true) - Number(a.verificado === true) || Number(b.destacado) - Number(a.destacado));
+  }));
+
+// --- Filtering (semantics preserved from the old client-side UI) ------------
+const filtered = all.filter(entry => {
+  if (tipo && entry.tipo !== tipo) return false;
+  if (especialidad && !(entry.especialidades || []).join(',').toLowerCase().includes(especialidad)) return false;
+  if (ubicacionParam && stripAccents(entry.ubicacion.pais) !== stripAccents(ubicacionParam)) return false;
+  if (provinciaParam && stripAccents(entry.ubicacion.provincia) !== stripAccents(provinciaParam)) return false;
+  if (ciudadParam && stripAccents(entry.ubicacion.ciudad) !== stripAccents(ciudadParam)) return false;
+  if (q) {
+    const haystack = stripAccents(`${entry.nombre || ''} ${(entry.especialidades || []).join(' ')}`);
+    if (!haystack.includes(stripAccents(q))) return false;
+  }
+  return true;
+});
+filtered.sort((a, b) => compareDirectoryEntries(a, b, orden));
+
+// --- Pagination -------------------------------------------------------------
+const totalResults = filtered.length;
+const totalPages = Math.max(1, Math.ceil(totalResults / PAGE_SIZE));
+const requestedPage = parseInt(params.get('pagina') || '1', 10);
+const page = Number.isFinite(requestedPage) ? Math.min(Math.max(1, requestedPage), totalPages) : 1;
+const pageEntries = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+// Filter option lists come from the full dataset, not the visible page.
+const paises = [...new Set(all.map(e => e.ubicacion.pais).filter(Boolean))].sort();
+const provincias = [...new Set(all.map(e => e.ubicacion.provincia).filter(Boolean))].sort();
+const ciudades = [...new Set(all.map(e => e.ubicacion.ciudad).filter(Boolean))].sort();
+const especialidades = ['cronometraje', 'mtm', 'most', 'oee', 'lean'];
+
+// Pagination links preserve the active filters.
+const pageHref = (n: number) => {
+  const qs = new URLSearchParams();
+  if (q) qs.set('q', q);
+  if (tipo) qs.set('tipo', tipo);
+  if (especialidad) qs.set('especialidad', especialidad);
+  if (ubicacionParam) qs.set('ubicacion', ubicacionParam);
+  if (provinciaParam) qs.set('provincia', provinciaParam);
+  if (ciudadParam) qs.set('ciudad', ciudadParam);
+  if (orden !== 'recommended') qs.set('orden', orden);
+  if (n > 1) qs.set('pagina', String(n));
+  const s = qs.toString();
+  return canonicalPath('/directorio') + (s ? `?${s}` : '');
+};
+
 Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
-const directoryJson = JSON.stringify(consultores).replace(/</g, '\\u003c');
+
+const orderOptions: Array<[string, string]> = [
+  ['recommended', 'Recomendadas (verificadas primero)'],
+  ['newest', 'Más recientes'],
+  ['oldest', 'Más antiguas'],
+  ['name-asc', 'Nombre: A–Z'],
+  ['name-desc', 'Nombre: Z–A'],
+];
+const resultLabel = totalResults === 1 ? '1 resultado' : `${totalResults} resultados`;
 ---
 
 <Layout title="Directorio de Profesionales del Cronometraje Industrial" description="Consultores y empresas especializados en cronometraje industrial, MTM, MOST, OEE y Lean Manufacturing.">
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div id="directory-content">
-      <header class="mb-10">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">Directorio de Profesionales</h1>
-        <p class="text-steel-500 text-lg">Consultores y empresas especializados en ingeniería de métodos y tiempos.</p>
-      </header>
-      <p class="text-steel-500 mb-4">{consultores.length} profesionales y empresas</p>
+    <nav class="mb-4 text-sm text-steel-500">
+      <a href="/" class="hover:text-accent-600" data-field="home">Inicio</a>
+      <span class="mx-2">/</span>
+      <span class="text-steel-700">Profesionales</span>
+    </nav>
+    <header class="mb-10">
+      <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">Directorio de Profesionales</h1>
+      <p class="text-steel-500 text-lg">Consultores y empresas especializados en ingeniería de métodos y tiempos.</p>
+    </header>
+
+    <form method="get" action={canonicalPath('/directorio')} id="filters-form" class="bg-white rounded-xl shadow-md p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div>
+          <label for="q" class="block text-sm font-medium text-steel-600 mb-1" data-field="search">Buscar</label>
+          <input type="text" id="q" name="q" value={q} placeholder="Nombre, especialidad..." maxlength="80"
+            class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all" />
+        </div>
+        <div>
+          <label for="tipo" class="block text-sm font-medium text-steel-600 mb-1" data-field="type">Tipo</label>
+          <select id="tipo" name="tipo" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+            <option value="" data-field="all">Todos</option>
+            <option value="empresa" selected={tipo === 'empresa'} data-field="empresa">Empresas</option>
+            <option value="consultor" selected={tipo === 'consultor'} data-field="consultor">Consultores</option>
+          </select>
+        </div>
+        <div>
+          <label for="especialidad" class="block text-sm font-medium text-steel-600 mb-1" data-field="specialty">Especialidad</label>
+          <select id="especialidad" name="especialidad" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+            <option value="" data-field="allSpec">Todas</option>
+            {especialidades.map(esp => (
+              <option value={esp} selected={especialidad === esp}>{esp.toUpperCase()}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label for="ubicacion" class="block text-sm font-medium text-steel-600 mb-1" data-field="country">País</label>
+          <select id="ubicacion" name="ubicacion" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+            <option value="" data-field="allCountries">Todos los países</option>
+            {paises.map(p => (
+              <option value={stripAccents(p)} selected={stripAccents(ubicacionParam) === stripAccents(p)}>{p}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label for="provincia" class="block text-sm font-medium text-steel-600 mb-1">Provincia</label>
+          <select id="provincia" name="provincia" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+            <option value="">Todas</option>
+            {provincias.map(p => (
+              <option value={stripAccents(p)} selected={stripAccents(provinciaParam) === stripAccents(p)}>{p}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label for="ciudad" class="block text-sm font-medium text-steel-600 mb-1">Ciudad</label>
+          <select id="ciudad" name="ciudad" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
+            <option value="">Todas</option>
+            {ciudades.map(c => (
+              <option value={stripAccents(c)} selected={stripAccents(ciudadParam) === stripAccents(c)}>{c}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 flex flex-wrap items-center gap-4">
+        <label for="orden" class="text-sm font-medium text-steel-600">Ordenar por</label>
+        <select id="orden" name="orden" class="border border-steel-300 rounded-lg px-3 py-2 bg-white">
+          {orderOptions.map(([value, label]) => (
+            <option value={value} selected={orden === value}>{label}</option>
+          ))}
+        </select>
+        <button type="submit" class="px-5 py-2 bg-accent-600 hover:bg-accent-700 text-white rounded-lg font-semibold transition-colors">Filtrar</button>
+        <a href={canonicalPath('/directorio')} class="px-4 py-2 border border-steel-300 rounded-lg text-steel-600 hover:bg-steel-50">Limpiar filtros</a>
+        <span class="text-steel-500 text-sm ml-auto" role="status">{resultLabel} · Página {page} de {totalPages}</span>
+      </div>
+    </form>
+
+    {pageEntries.length === 0 ? (
+      <div class="text-center py-20 bg-white rounded-xl shadow">
+        <svg class="w-16 h-16 mx-auto text-steel-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h5m-5 0v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+        </svg>
+        <p class="text-steel-400 text-lg">No hay coincidencias. Prueba otros filtros.</p>
+        <a href="/anadir" class="inline-block mt-4 text-accent-600 hover:text-accent-700 font-semibold">Añade la primera ficha</a>
+      </div>
+    ) : (
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="directory-grid">
-        {consultores.map(entry => (
-          <a href={canonicalPath(`/directorio/${encodeURIComponent(entry.slug)}`)} class={`directory-card relative bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 group ${entry.destacado ? 'ring-2 ring-amber-400' : ''}`}>
+        {pageEntries.map(entry => (
+          <a href={canonicalPath(`/directorio/${encodeURIComponent(entry.slug)}`)} class={`directory-card relative bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group ${entry.destacado ? 'ring-2 ring-amber-400 border-amber-300' : ''}`}>
+            {entry.verificado && (
+              <span class="absolute top-3 right-3 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-sm" title="Verificado">
+                <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </span>
+            )}
             <div class="flex items-start gap-4 mb-4">
-              {entry.logo ? <img src={entry.logo} alt={entry.nombre} loading="lazy" width="56" height="56" class="w-14 h-14 rounded-lg object-cover" /> : <div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl">{(entry.nombre || '?')[0]}</div>}
+              {entry.logo
+                ? <img src={entry.logo} alt={entry.nombre} loading="lazy" width="56" height="56" class="w-14 h-14 rounded-lg object-cover shadow-sm" />
+                : <div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl">{(entry.nombre || '?')[0].toUpperCase()}</div>
+              }
               <div class="flex-1 min-w-0">
-                <h2 class="text-lg font-bold text-primary-800 group-hover:text-accent-600">{entry.nombre}</h2>
-                <span class="text-xs text-steel-600">{entry.tipo === 'empresa' ? 'Empresa' : 'Consultor'}</span>
-                {entry.verificado && <span class="ml-2 text-xs text-green-700">Verificado</span>}
+                <h2 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">{entry.nombre}</h2>
+                <span class={`inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1 ${entry.tipo === 'empresa' ? 'bg-blue-100 text-blue-700' : entry.tipo === 'consultor' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`} data-field={entry.tipo === 'empresa' ? 'empresa' : 'consultor'}>
+                  {entry.tipo === 'empresa' ? 'Empresa' : 'Consultor'}
+                </span>
               </div>
             </div>
             {entry.descripcion && <p class="text-steel-500 text-sm line-clamp-2 mb-3">{entry.descripcion}</p>}
-            <div class="flex flex-wrap gap-1.5 mb-3">{(entry.especialidades || []).slice(0, 3).map((esp: string) => <span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded">{esp}</span>)}</div>
-            <p class="text-sm text-steel-400">{[entry.ubicacion.ciudad, entry.ubicacion.pais].filter(Boolean).join(', ')}</p>
+            <div class="flex flex-wrap gap-1.5 mb-3">
+              {(entry.especialidades || []).slice(0, 3).map((esp: string) => (
+                <span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded font-medium" data-field={esp}>{esp}</span>
+              ))}
+            </div>
+            <div class="flex items-center text-sm text-steel-400">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              {[entry.ubicacion.ciudad, entry.ubicacion.pais].filter(Boolean).join(', ') || 'Sin ubicación'}
+            </div>
           </a>
         ))}
       </div>
-      {consultores.length === 0 && <p>No hay fichas disponibles.</p>}
-    </div>
+    )}
+
+    {totalPages > 1 && (
+      <nav class="mt-10 flex flex-wrap items-center justify-center gap-2" aria-label="Paginación">
+        {page > 1 && <a href={pageHref(page - 1)} rel="prev" class="px-4 py-2 border border-steel-300 rounded-lg text-steel-600 hover:bg-steel-50">Anterior</a>}
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+          <a href={pageHref(n)} class={`px-3 py-2 border rounded-lg ${n === page ? 'bg-accent-600 text-white border-accent-600' : 'border-steel-300 text-steel-600 hover:bg-steel-50'}`} aria-current={n === page ? 'page' : undefined}>{n}</a>
+        ))}
+        {page < totalPages && <a href={pageHref(page + 1)} rel="next" class="px-4 py-2 border border-steel-300 rounded-lg text-steel-600 hover:bg-steel-50">Siguiente</a>}
+      </nav>
+    )}
   </section>
 
-  <script id="directory-data" type="application/json" set:html={directoryJson} />
   <script>
-import DOMPurify from "dompurify";
-    import { compareDirectoryEntries, validDirectoryOrder } from "../../lib/directory-order";
+    // Progressive enhancement: auto-submit on filter change + translate the few
+    // UI labels the client i18n covers. Filtering and pagination are plain
+    // server-side GETs — everything works without JavaScript.
     import { t, getLang, type Lang } from '../../lib/firebase';
-    let lang: Lang = getLang();
 
-    async function load() {
-      const tr = (k: string) => t(k, lang);
+    const form = document.getElementById('filters-form') as HTMLFormElement | null;
+    form?.querySelectorAll('select').forEach(sel => sel.addEventListener('change', () => form.submit()));
 
-      // Progressive enhancement uses the same server snapshot, without a blocked API fetch.
-      const consultores = JSON.parse(document.getElementById('directory-data')!.textContent || '[]') as any[];
-
-      // Sort: destacado first
-      consultores.sort((a, b) => Number(b.verificado === true) - Number(a.verificado === true) || Number(b.destacado === true) - Number(a.destacado === true));
-
-      const tipos = [
-        { value: 'empresa', label: lang === 'es' ? 'Empresas' : 'Companies' },
-        { value: 'consultor', label: lang === 'es' ? 'Consultores' : 'Consultants' },
-      ];
-
-      // Normalize country names to prevent duplicates (e.g. "España"/"Spain")
-      const countryMap: Record<string, string> = {
-        'spain': 'España', 'españa': 'España',
-        'germany': 'Alemania', 'alemania': 'Alemania',
-        'mexico': 'México', 'méxico': 'México', 'méjico': 'México',
-        'peru': 'Perú', 'perú': 'Perú',
-        'usa': 'Estados Unidos', 'us': 'Estados Unidos', 'united states': 'Estados Unidos', 'estados unidos': 'Estados Unidos',
-        'france': 'Francia', 'francia': 'Francia',
-        'italy': 'Italia', 'italia': 'Italia',
-        'portugal': 'Portugal',
-        'brazil': 'Brasil', 'brasil': 'Brasil',
-        'colombia': 'Colombia',
-        'argentina': 'Argentina',
-        'chile': 'Chile',
-        'uk': 'Reino Unido', 'united kingdom': 'Reino Unido', 'reino unido': 'Reino Unido',
-        'china': 'China',
-        'japan': 'Japón', 'japón': 'Japón',
-        'india': 'India',
-      };
-      consultores.forEach((e: any) => {
-        if (e.ubicacion?.pais) {
-          const normalized = countryMap[e.ubicacion.pais.toLowerCase().trim()];
-          if (normalized) e.ubicacion.pais = normalized;
-        }
-      });
-      const paises = [...new Set(consultores.map((e: any) => e.ubicacion?.pais).filter(Boolean))].sort();
-      const provincias = [...new Set(consultores.map((e: any) => e.ubicacion?.provincia).filter(Boolean))].sort();
-      const ciudades = [...new Set(consultores.map((e: any) => e.ubicacion?.ciudad).filter(Boolean))].sort();
-      const especialidades = ['cronometraje', 'mtm', 'most', 'oee', 'lean'];
-
-      const container = document.getElementById('directory-content')!;
-
-      container.innerHTML = DOMPurify.sanitize(`
-        <div class="mb-10">
-          <nav class="mb-4 text-sm text-steel-500">
-            <a href="/" class="hover:text-accent-600">${tr('home')}</a>
-            <span class="mx-2">/</span>
-            <span class="text-steel-700">${lang === 'es' ? 'Profesionales' : 'Professionals'}</span>
-          </nav>
-          <h1 class="text-3xl md:text-4xl font-extrabold text-primary-800 mb-3">${lang === 'es' ? 'Directorio de Profesionales' : 'Professionals Directory'}</h1>
-          <p class="text-steel-500 text-lg">${lang === 'es' ? 'Consultores y empresas especializados en ingeniería de métodos y tiempos.' : 'Consultants and companies specialized in methods and time engineering.'}</p>
-        </div>
-
-        <!-- Filters -->
-        <div class="bg-white rounded-xl shadow-md p-6 mb-8" id="filters-container">
-          <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${tr('search')}</label>
-              <input type="text" id="search-input" placeholder="${lang === 'es' ? 'Nombre, especialidad...' : 'Name, specialty...'}"
-                class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 outline-none transition-all" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${tr('type')}</label>
-              <select id="filter-tipo" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-                <option value="">${tr('all')}</option>
-                ${tipos.map((t) => `<option value="${t.value}">${t.label}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${tr('specialty')}</label>
-              <select id="filter-especialidad" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-                <option value="">${tr('allSpec')}</option>
-                ${especialidades.map((esp) => `<option value="${esp}">${esp.toUpperCase()}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${tr('country')}</label>
-              <select id="filter-ubicacion" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-                <option value="">${tr('allCountries')}</option>
-                ${paises.map((p) => `<option value="${(p as string).toLowerCase()}">${p}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${lang === 'es' ? 'Provincia' : 'Province'}</label>
-              <select id="filter-provincia" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-                <option value="">${lang === 'es' ? 'Todas' : 'All'}</option>
-                ${provincias.map((p) => `<option value="${(p as string).toLowerCase()}">${p}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-steel-600 mb-1">${lang === 'es' ? 'Ciudad' : 'City'}</label>
-              <select id="filter-ciudad" class="w-full border border-steel-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-accent-500 outline-none bg-white">
-                <option value="">${lang === 'es' ? 'Todas' : 'All'}</option>
-                ${ciudades.map((c) => `<option value="${(c as string).toLowerCase()}">${c}</option>`).join('')}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <label for="directory-order" class="block text-sm font-medium mb-4">${lang === 'es' ? 'Ordenar por' : 'Sort by'}
-          <select id="directory-order" class="ml-2 border border-steel-300 rounded-lg px-3 py-2 bg-white">
-            <option value="recommended">${lang === 'es' ? 'Recomendadas (verificadas primero)' : 'Recommended (verified first)'}</option>
-            <option value="newest">${lang === 'es' ? 'Más recientes' : 'Newest first'}</option>
-            <option value="oldest">${lang === 'es' ? 'Más antiguas' : 'Oldest first'}</option>
-            <option value="name-asc">${lang === 'es' ? 'Nombre: A–Z' : 'Name: A–Z'}</option>
-            <option value="name-desc">${lang === 'es' ? 'Nombre: Z–A' : 'Name: Z–A'}</option>
-          </select>
-        </label>
-        <p class="text-steel-500 mb-4" id="results-count">
-          ${consultores.length} ${consultores.length === 1 ? tr('result') : tr('results')}
-        </p>
-
-        ${consultores.length === 0 ? `
-          <div class="text-center py-20 bg-white rounded-xl shadow">
-            <svg class="w-16 h-16 mx-auto text-steel-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <p class="text-steel-400 text-lg">${tr('noEntries')}</p>
-            <a href="/anadir" class="inline-block mt-4 text-accent-600 hover:text-accent-700 font-semibold">${tr('addFirst')}</a>
-          </div>
-        ` : `
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="directory-grid">
-            ${consultores.map((entry: any) => `
-              <a href="/directorio/${encodeURIComponent(entry.slug)}/" class="directory-card relative bg-white rounded-xl shadow-md hover:shadow-xl transition-all hover:-translate-y-1 p-6 group ${entry.destacado ? 'ring-2 ring-amber-400 border-amber-300' : ''}"
-                data-name="${(entry.nombre || '').toLowerCase()}"
-                data-tipo="${entry.tipo || ''}"
-                data-especialidades="${(entry.especialidades || []).join(',').toLowerCase()}"
-                data-ubicacion="${`${entry.ubicacion?.pais || ''} ${entry.ubicacion?.ciudad || ''}`.toLowerCase()}"
-                data-provincia="${(entry.ubicacion?.provincia || '').toLowerCase()}"
-                data-ciudad="${(entry.ubicacion?.ciudad || '').toLowerCase()}">
-                ${entry.verificado ? '<span class="absolute top-3 right-3 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-sm" title="Verificado"><svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg></span>' : ''}
-                <div class="flex items-start gap-4 mb-4">
-                  ${entry.logo
-                    ? `<img src="${entry.logo}" alt="${entry.nombre}" class="w-14 h-14 rounded-lg object-cover shadow-sm" />`
-                    : `<div class="w-14 h-14 rounded-lg bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-xl">${(entry.nombre || '?')[0].toUpperCase()}</div>`
-                  }
-                  <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-bold text-primary-800 group-hover:text-accent-600 transition-colors truncate">${entry.nombre}</h3>
-                    <span class="inline-block text-xs font-semibold px-2.5 py-0.5 rounded-full mt-1 ${
-                      entry.tipo === 'empresa' ? 'bg-blue-100 text-blue-700' :
-                      entry.tipo === 'consultor' ? 'bg-green-100 text-green-700' :
-                      'bg-purple-100 text-purple-700'
-                    }">
-                      ${entry.tipo === 'empresa' ? tr('empresa') : tr('consultor')}
-                    </span>
-                  </div>
-                </div>
-                ${entry.descripcion ? `<p class="text-steel-500 text-sm line-clamp-2 mb-3">${entry.descripcion}</p>` : ''}
-                <div class="flex flex-wrap gap-1.5 mb-3">
-                  ${(entry.especialidades || []).slice(0, 3).map((esp: string) => `<span class="text-xs bg-steel-100 text-steel-600 px-2 py-0.5 rounded font-medium" data-field="${esp}">${esp}</span>`).join('')}
-                </div>
-                <div class="flex items-center text-sm text-steel-400">
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  ${[entry.ubicacion?.ciudad, entry.ubicacion?.pais].filter(Boolean).join(', ') || tr('noLocation')}
-                </div>
-              </a>
-            `).join('')}
-          </div>
-        `}
-      `);
-
-      const orderSelect = document.getElementById('directory-order') as HTMLSelectElement;
-      orderSelect.value = validDirectoryOrder(new URLSearchParams(location.search).get('orden'));
-      const sortRecords = new Map(Array.from(document.querySelectorAll<HTMLElement>('.directory-card')).map((card, index) => [card, consultores[index]]));
-      function sortCards() {
-        const grid = document.getElementById('directory-grid');
-        const sorted = Array.from(sortRecords.keys()).sort((a, b) => compareDirectoryEntries(sortRecords.get(a), sortRecords.get(b), validDirectoryOrder(orderSelect.value)));
-        sorted.forEach(card => grid?.appendChild(card));
-        return sorted;
-      }
-      // Client-side filtering
-      const searchInput = document.getElementById('search-input') as HTMLInputElement;
-      const filterTipo = document.getElementById('filter-tipo') as HTMLSelectElement;
-      const filterEsp = document.getElementById('filter-especialidad') as HTMLSelectElement;
-      const filterLoc = document.getElementById('filter-ubicacion') as HTMLSelectElement;
-      const filterProv = document.getElementById('filter-provincia') as HTMLSelectElement;
-      const filterCiudad = document.getElementById('filter-ciudad') as HTMLSelectElement;
-      const cards = document.querySelectorAll('.directory-card') as NodeListOf<HTMLElement>;
-      const countEl = document.getElementById('results-count');
-
-      const requestedPage = Number(new URLSearchParams(window.location.search).get('pagina'));
-      let page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-      const pageSize = 24;
-      const controls = document.createElement('div');
-      controls.className = 'flex flex-wrap items-center gap-4 my-6';
-      controls.innerHTML = '<button id="previous-page" class="px-4 py-2 border rounded">Anterior</button><span id="page-info" role="status"></span><button id="next-page" class="px-4 py-2 border rounded">Siguiente</button><button id="clear-filters" class="px-4 py-2 border rounded">Limpiar filtros</button>';
-      container.append(controls);
-      const previousButton = document.getElementById('previous-page')!;
-      const nextButton = document.getElementById('next-page')!;
-      const clearButton = document.getElementById('clear-filters')!;
-      previousButton.textContent = lang === 'es' ? 'Anterior' : 'Previous';
-      nextButton.textContent = lang === 'es' ? 'Siguiente' : 'Next';
-      clearButton.textContent = lang === 'es' ? 'Limpiar filtros' : 'Clear filters';
-      for (const [id, input] of [['search-input', searchInput], ['filter-tipo', filterTipo], ['filter-especialidad', filterEsp], ['filter-ubicacion', filterLoc], ['filter-provincia', filterProv], ['filter-ciudad', filterCiudad]] as const) {
-        input?.previousElementSibling?.setAttribute('for', id);
-      }
-      countEl?.setAttribute('aria-live', 'polite');
-      const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-      function applyFilters(event?: Event) {
-        if (event) page = 1;
-        const search = normalize(searchInput?.value || '');
-        const tipo = filterTipo?.value?.toLowerCase() || '';
-        const esp = filterEsp?.value?.toLowerCase() || '';
-        const loc = filterLoc?.value?.toLowerCase() || '';
-        const prov = filterProv?.value?.toLowerCase() || '';
-        const ciudad = filterCiudad?.value?.toLowerCase() || '';
-
-        let visible = 0;
-        const matchingCards: HTMLElement[] = [];
-        sortCards().forEach((card) => {
-          const name = card.dataset.name || '';
-          const cardTipo = card.dataset.tipo || '';
-          const cardEsp = card.dataset.especialidades || '';
-          const cardLoc = card.dataset.ubicacion || '';
-          const cardProv = card.dataset.provincia || '';
-          const cardCiudad = card.dataset.ciudad || '';
-
-          const matchSearch = !search || normalize(name).includes(search) || normalize(cardEsp).includes(search);
-          const matchTipo = !tipo || cardTipo === tipo;
-          const matchEsp = !esp || cardEsp.includes(esp);
-          const matchLoc = !loc || normalize(cardLoc) === normalize(loc);
-          const matchProv = !prov || normalize(cardProv) === normalize(prov);
-          const matchCiudad = !ciudad || normalize(cardCiudad) === normalize(ciudad);
-
-          const show = matchSearch && matchTipo && matchEsp && matchLoc && matchProv && matchCiudad;
-          card.style.display = 'none';
-          if (show) matchingCards.push(card);
-        });
-
-        visible = matchingCards.length;
-        const pages = Math.max(1, Math.ceil(visible / pageSize));
-        page = Math.min(Math.max(1, page), pages);
-        matchingCards.slice((page - 1) * pageSize, page * pageSize).forEach(card => { card.style.display = ''; });
-        (document.getElementById('previous-page') as HTMLButtonElement).disabled = page <= 1;
-        (document.getElementById('next-page') as HTMLButtonElement).disabled = page >= pages;
-        document.getElementById('page-info')!.textContent = visible ? (lang === 'es' ? `Página ${page} de ${pages}` : `Page ${page} of ${pages}`) : (lang === 'es' ? 'No hay coincidencias. Prueba otros filtros.' : 'No matches. Try other filters.');
-        const query = new URLSearchParams(window.location.search);
-        for (const [key, element] of [['q', searchInput], ['tipo', filterTipo], ['especialidad', filterEsp], ['ubicacion', filterLoc], ['provincia', filterProv], ['ciudad', filterCiudad]] as const) {
-          if (element.value) query.set(key, element.value); else query.delete(key);
-        }
-        if (orderSelect.value !== 'recommended') query.set('orden', orderSelect.value); else query.delete('orden');
-        if (page > 1) query.set('pagina', String(page)); else query.delete('pagina');
-        history.replaceState(null, '', window.location.pathname + (query.size ? '?' + query : ''));
-        if (countEl) {
-          countEl.textContent = `${visible} ${visible === 1 ? tr('result') : tr('results')}`;
-        }
-      }
-
-      orderSelect.addEventListener('change', applyFilters);
-      searchInput?.addEventListener('input', applyFilters);
-      filterTipo?.addEventListener('change', applyFilters);
-      filterEsp?.addEventListener('change', applyFilters);
-      filterLoc?.addEventListener('change', applyFilters);
-      filterProv?.addEventListener('change', applyFilters);
-      filterCiudad?.addEventListener('change', applyFilters);
-
-      document.getElementById('previous-page')!.addEventListener('click', () => { page--; applyFilters(); });
-      document.getElementById('next-page')!.addEventListener('click', () => { page++; applyFilters(); });
-      document.getElementById('clear-filters')!.addEventListener('click', () => { for (const input of [searchInput, filterTipo, filterEsp, filterLoc, filterProv, filterCiudad]) input.value = ''; page = 1; applyFilters(); });
-      // Apply URL params
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('tipo') && filterTipo) filterTipo.value = params.get('tipo')!;
-      if (params.get('especialidad') && filterEsp) filterEsp.value = params.get('especialidad')!;
-      if (params.get('ubicacion') && filterLoc) filterLoc.value = params.get('ubicacion')!;
-      if (params.get('provincia') && filterProv) filterProv.value = params.get('provincia')!.toLowerCase();
-      if (params.get('ciudad') && filterCiudad) filterCiudad.value = params.get('ciudad')!.toLowerCase();
-      searchInput.value = params.get('q') || '';
-      applyFilters();
-    }
-
-    function updateLabels() {
-      document.querySelectorAll('[data-field]').forEach((el) => {
-        const key = (el as HTMLElement).dataset.field!;
+    function translate() {
+      const lang: Lang = getLang();
+      document.querySelectorAll<HTMLElement>('[data-field]').forEach(el => {
+        const key = el.dataset.field!;
         const label = t(key, lang);
         if (label && label !== key) el.textContent = label;
       });
     }
 
-    window.addEventListener('langChange', ((e: CustomEvent) => {
-      lang = e.detail;
-      load().then(() => updateLabels()).catch(error => console.error('Directory enhancement failed:', error));
-    }) as EventListener);
-
-    load().then(() => updateLabels()).catch(error => console.error('Directory enhancement failed:', error));
+    window.addEventListener('langChange', translate);
+    translate();
   </script>
 </Layout>
