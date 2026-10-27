@@ -8,7 +8,10 @@ const GA_ID = 'G-PSB4T9WRJF';
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('consent', 'default', {
-    'analytics_storage': 'denied'
+    'analytics_storage': 'denied',
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied'
   });
 </script>
 
@@ -22,15 +25,21 @@ const GA_ID = 'G-PSB4T9WRJF';
     'send_page_view': false
   });
 
-  // Check saved consent and apply
-  const saved = localStorage.getItem('cookie-preferences');
-  if (saved) {
-    const prefs = JSON.parse(saved);
-    if (prefs.analytics) {
-      gtag('consent', 'update', { 'analytics_storage': 'granted' });
-      gtag('event', 'page_view');
+  // Check saved consent and apply (válido 180 días; requiere decisión explícita
+  // sobre la categoría «publicidad» — un valor anterior se considera caducado y
+  // el banner vuelve a pedir consentimiento).
+  try {
+    const prefs = JSON.parse(localStorage.getItem('cookie-preferences') || 'null');
+    if (prefs && typeof prefs.analytics === 'boolean' && typeof prefs.ads === 'boolean' && prefs.expires > Date.now()) {
+      if (prefs.analytics) {
+        gtag('consent', 'update', { 'analytics_storage': 'granted' });
+        gtag('event', 'page_view');
+      }
+      if (prefs.ads) {
+        gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted' });
+      }
     }
-  }
+  } catch (err) {}
 </script>
 
 <!-- Capa de eventos: formularios, CTAs y WhatsApp (Micaot 2026-10-08) -->

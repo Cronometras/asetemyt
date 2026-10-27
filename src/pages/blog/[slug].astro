@@ -59,6 +59,13 @@ const bodyHtml = marked.parse(contentWithoutH1) as string;
 const canonicalUrl = `https://asetemyt.com/blog/${article.slug}/`;
 const formattedDate = formatDate(article.publishedAt);
 
+// Unidad de anuncio de AdSense (bloque in-page). Vacío = sin anuncios hasta que
+// exista la unidad creada en la cuenta. Los anuncios SOLO se muestran en
+// artículos del blog (decisión Micaot 2026-10-27), nunca en home, servicios ni
+// directorio, y únicamente si el visitante aceptó la categoría «publicidad»
+// del banner de cookies (el push lo hace el banner de consentimiento).
+const AD_SLOT = '';
+
 // Disclosure automático: aparece cuando el artículo menciona proyectos del ecosistema.
 const hasAffiliateMention = /(cronometras\.com|worksamp\.com|induly\.com|\bcronometras\b|\bworksamp\b|\binduly\b)/i.test(
   `${article.title || ''} ${article.excerpt || ''} ${article.content || ''}`
@@ -151,6 +158,20 @@ const breadcrumbSchema = {
       )}
 
       <div class="prose prose-lg prose-slate max-w-none prose-headings:text-primary-800 prose-a:text-accent-600 prose-p:leading-relaxed prose-p:my-4 prose-li:my-1.5 prose-h2:mt-10 prose-h2:mb-3 prose-h3:mt-8 prose-h3:mb-2" set:html={bodyHtml} />
+
+      {/* Anuncio de AdSense: SOLO en artículos del blog (decisión Micaot 2026-10-27).
+          Se muestra únicamente si hay unidad creada (AD_SLOT) y el visitante
+          aceptó las cookies de publicidad (el push lo hace el banner de cookies). */}
+      {AD_SLOT && (
+        <ins
+          class="adsbygoogle"
+          style="display:block; text-align:center; margin: 2rem 0;"
+          data-ad-client="ca-pub-4945197366693593"
+          data-ad-slot={AD_SLOT}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        ></ins>
+      )}
 
       {hasAffiliateMention && (
         <aside class="mt-10 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg text-sm">
