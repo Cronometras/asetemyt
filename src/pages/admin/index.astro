@@ -213,6 +213,7 @@ import Layout from '../../layouts/Layout.astro';
         { href: '/admin/bajas', label: 'Bajas y exclusiones', desc: 'Empresas que no deben publicarse ni contactarse', badge: 'Gestionar' },
         { href: '/admin/cupones', label: 'Cupones', desc: 'Crear descuentos y consultar sus usos', badge: 'Gestionar' },
         { href: '/admin/fichas', label: 'Gestionar Fichas', desc: 'Crear, editar, eliminar, exportar CSV', badge: `${d.totals.total} total` },
+        { href: '/admin/prospeccion', label: 'Informes de prospección', desc: 'Señales y posibles clientes: informes de Hermes por fecha', badge: 'Informes' },
         { href: '/admin/outreach', label: '📬 Outreach', desc: 'Emails personalizados a fichas — 1er, 2º, 3er contacto', badge: 'Nuevo' },
         { href: '/admin/pipeline', label: '🧭 Pipeline Cronometras', desc: 'CRM ligero: oportunidades de prospección con estado', badge: 'Nuevo' },
         { href: '/admin/claims', label: 'Revisar Verificaciones', desc: 'Aprobar o rechazar solicitudes', badge: d.claims.pending === null ? 'No disponible' : d.claims.pending > 0 ? `${d.claims.pending} pendientes` : 'Al día', urgent: d.claims.pending > 0 },

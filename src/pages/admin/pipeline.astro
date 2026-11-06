@@ -24,6 +24,7 @@ import Layout from '../../layouts/Layout.astro';
           <p class="text-steel-500 mt-1 text-sm" id="statsLine"></p>
         </div>
         <div class="flex flex-wrap gap-2">
+          <a href="/admin/prospeccion" class="text-sm text-accent-600 font-medium hover:text-accent-700">Informes originales</a>
           <a href="/admin" class="text-sm text-accent-600 font-medium hover:text-accent-700">← Panel</a>
           <button id="btn-new" class="bg-accent-500 hover:bg-accent-600 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors">
             + Nueva oportunidad
@@ -82,6 +83,7 @@ import Layout from '../../layouts/Layout.astro';
           <option value="E">E · Recién incorporados</option>
         </select>
         <input id="filter-q" placeholder="Buscar empresa, dominio o contacto..." class="border border-steel-200 rounded-lg px-3 py-2 flex-1 min-w-[220px]" />
+        <label class="inline-flex items-center gap-2"><input id="filter-informes" type="checkbox" /> Con informes de Hermes</label>
       </div>
 
       <!-- List -->
@@ -178,10 +180,12 @@ import Layout from '../../layouts/Layout.astro';
       const etapa = (document.getElementById('filter-etapa') as HTMLSelectElement).value;
       const categoria = (document.getElementById('filter-categoria') as HTMLSelectElement).value;
       const q = (document.getElementById('filter-q') as HTMLInputElement).value;
+      const informes = (document.getElementById('filter-informes') as HTMLInputElement).checked;
       const params = new URLSearchParams({ limit: '500' });
       if (etapa) params.set('etapa', etapa);
       if (categoria) params.set('categoria', categoria);
       if (q) params.set('q', q);
+      if (informes) params.set('informes', '1');
       const res = await api('/api/admin/pipeline/list?' + params.toString());
       const data = await res.json();
       rows = data.oportunidades || [];
@@ -191,6 +195,7 @@ import Layout from '../../layouts/Layout.astro';
 
     document.getElementById('filter-etapa')!.addEventListener('change', reload);
     document.getElementById('filter-categoria')!.addEventListener('change', reload);
+    document.getElementById('filter-informes')!.addEventListener('change', reload);
     let t: any = null;
     document.getElementById('filter-q')!.addEventListener('input', () => {
       clearTimeout(t);
@@ -292,6 +297,21 @@ import Layout from '../../layouts/Layout.astro';
       ${r.senal ? `<p class="text-sm text-steel-700 mt-2">${escapeHtml(r.senal)}</p>` : ''}
       ${r.fuenteUrl ? `<p class="text-xs mt-1"><a href="${escapeHtml(r.fuenteUrl)}" target="_blank" class="text-accent-600 hover:underline">Fuente →</a></p>` : ''}
       ${r.cargo ? `<p class="text-xs text-steel-500 mt-1">Cargo objetivo: ${escapeHtml(r.cargo)}</p>` : ''}
+      ${r.revisionPendiente ? '<p class="text-xs text-amber-700 mt-2">Importada del informe: validar señal y contacto antes de actuar.</p>' : ''}
+      ${r.informeIds?.length ? `<details class="mt-3 border-t border-steel-100 pt-3">
+        <summary class="text-sm text-accent-600 cursor-pointer font-semibold">Señales de Hermes (${r.senalesInformes.length}) · ${r.informeIds.length} informes</summary>
+        <div class="mt-3 space-y-4">${r.senalesInformes.map((s: any) => `
+          <div class="border-l-2 border-accent-200 pl-3">
+            <p class="text-xs text-steel-500">Informe: ${escapeHtml(s.reportDate)} · Fecha de la señal: ${escapeHtml(s.fechaSenal || 'no indicada')}</p>
+            <p class="text-sm text-steel-700 mt-1">${escapeHtml(s.senal)}</p>
+            ${s.motivo ? `<p class="text-sm text-steel-500 mt-1">Encaje propuesto: ${escapeHtml(s.motivo)}</p>` : ''}
+            <p class="text-xs text-steel-500 mt-1">${escapeHtml(s.empresa)} · ${escapeHtml(s.pais || '')} · ${escapeHtml(s.fuente || '')}</p>
+            ${safeUrl(s.fuenteUrl) ? `<a href="${escapeHtml(safeUrl(s.fuenteUrl))}" target="_blank" rel="noopener noreferrer" class="text-xs text-accent-600 hover:underline">Consultar fuente pública →</a>` : ''}
+          </div>`).join('')}
+          ${r.borradoresInformes.map((b: any) => `<details><summary class="text-xs text-accent-600 cursor-pointer">Borrador de referencia · ${escapeHtml(b.reportDate)}</summary><pre class="whitespace-pre-wrap break-words text-xs mt-2 font-sans">${escapeHtml(b.content)}</pre></details>`).join('')}
+          <div class="flex flex-wrap gap-3">${r.informeIds.map((id: string) => `<a href="/admin/prospeccion?informe=${encodeURIComponent(id)}" class="text-xs text-accent-600 hover:underline">${escapeHtml(id)} →</a>`).join('')}</div>
+        </div>
+      </details>` : ''}
 
       <details class="mt-3">
         <summary class="text-xs text-accent-600 cursor-pointer hover:underline">Editar estado y notas</summary>
@@ -316,5 +336,10 @@ import Layout from '../../layouts/Layout.astro';
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  }
+
+  function safeUrl(value: string): string {
+    try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : ''; }
+    catch { return ''; }
   }
 </script>

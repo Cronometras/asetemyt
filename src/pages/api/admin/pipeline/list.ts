@@ -30,7 +30,7 @@ export const PIPELINE_ETAPAS = [
 function normalize(o: any) {
   return {
     id: o.id,
-    empresa: o.empresa || '',
+    empresa: o.empresa || o.company || '',
     dominio: o.dominio || '',
     pais: o.pais || '',
     sector: o.sector || '',
@@ -40,8 +40,8 @@ function normalize(o: any) {
     fuenteUrl: o.fuenteUrl || '',
     fechaSenal: o.fechaSenal || '',
     cargo: o.cargo || '',
-    contactoNombre: o.contactoNombre || '',
-    contactoEmail: o.contactoEmail || '',
+    contactoNombre: o.contactoNombre || o.contactName || '',
+    contactoEmail: o.contactoEmail || o.email || '',
     canal: o.canal || 'email',
     etapa: o.etapa || 'detectada',
     subject: o.subject || '',
@@ -54,6 +54,10 @@ function normalize(o: any) {
     notes: o.notes || '',
     createdAt: o.createdAt || '',
     updatedAt: o.updatedAt || '',
+    senalesInformes: Array.isArray(o.senalesInformes) ? o.senalesInformes : [],
+    borradoresInformes: Array.isArray(o.borradoresInformes) ? o.borradoresInformes : [],
+    informeIds: Array.isArray(o.informeIds) ? o.informeIds : [],
+    revisionPendiente: !!o.revisionPendiente,
   };
 }
 
@@ -89,6 +93,8 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
       );
     }
 
+    if (url.searchParams.get('informes') === '1') rows = rows.filter(r => r.informeIds.length > 0);
+
     return new Response(
       JSON.stringify({
         oportunidades: rows.slice(0, limit),
@@ -96,7 +102,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
         etapas: PIPELINE_ETAPAS,
         filters: { etapa: etapaFilter, categoria: categoriaFilter, q, limit },
       }),
-      { status: 200 }
+      { status: 200, headers: { 'Cache-Control': 'private, no-store' } }
     );
   } catch (err: any) {
     console.error('Pipeline list error:', err);

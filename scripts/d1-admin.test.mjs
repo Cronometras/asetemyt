@@ -16,6 +16,8 @@ const { GET: subscribers } = await server.ssrLoadModule('/src/pages/api/admin/su
 const couponApi = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: coupons } = await server.ssrLoadModule('/src/pages/api/admin/coupons.ts');
 const { GET: outreach } = await server.ssrLoadModule('/src/pages/api/admin/outreach/list.ts');
+const { GET: prospectingReports } = await server.ssrLoadModule('/src/pages/api/admin/prospeccion.ts');
+const { GET: pipelineList } = await server.ssrLoadModule('/src/pages/api/admin/pipeline/list.ts');
 const exclusionsApi = await server.ssrLoadModule('/src/pages/api/admin/bajas.ts');
 const { matchesExclusion } = await server.ssrLoadModule('/src/lib/directory-exclusions.ts');
 const { isDirectoryExcluded } = await server.ssrLoadModule('/src/lib/directory-exclusions.ts');
@@ -72,6 +74,56 @@ function context(env, method = 'GET', body, path = '/api/admin/fichas') {
   }) };
 }
 const fields = data => store.toFirestoreValue(data).mapValue.fields;
+
+test('existing pipeline includes report provenance and legacy contact names without changing CRM state', async () => {
+  const { DB, sqlite } = database();
+  const previousUser = user;
+  try {
+    const opportunity = { company: 'Legacy company', contactName: 'Ana', email: 'ana@example.com', etapa: 'respondido',
+      body: 'Original email', informeIds: ['2026-11-03.md'], senalesInformes: [{ senal: 'New line', reportId: '2026-11-03.md' }] };
+    await store.firestoreCreate({ DB }, 'outreach_cronometras', 'op-legacy', opportunity);
+    await store.firestoreCreate({ DB }, 'outreach_cronometras', 'op-other', { empresa: 'Other', etapa: 'contactado' });
+    const response = await pipelineList(context({ DB }, 'GET', null, '/api/admin/pipeline/list?informes=1'));
+    const { oportunidades } = await response.json();
+    assert.equal(oportunidades.length, 1);
+    assert.equal(oportunidades[0].empresa, 'Legacy company');
+    assert.equal(oportunidades[0].contactoNombre, 'Ana');
+    assert.equal(oportunidades[0].etapa, 'respondido');
+    assert.equal(oportunidades[0].body, 'Original email');
+    assert.equal(oportunidades[0].senalesInformes[0].senal, 'New line');
+    assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
+    user = { email: 'visitor@example.com', emailVerified: true, localId: 'visitor' };
+    assert.equal((await pipelineList(context({ DB }, 'GET', null, '/api/admin/pipeline/list'))).status, 403);
+  } finally { user = previousUser; sqlite.close(); }
+});
+
+test('prospecting reports require admin access and serve private Markdown separately from metadata', async () => {
+  const { DB, sqlite } = database();
+  const previousUser = user;
+  try {
+    const report = { title: 'Informe privado', date: '2026-11-03', filename: '2026-11-03.md', content: '# Confidencial\n\nSeñales y borradores.' };
+    await store.firestoreCreate({ DB }, 'informes_prospeccion', report.filename, report);
+    user = { email: 'visitor@example.com', emailVerified: true, localId: 'visitor' };
+    for (const suffix of ['', '?id=2026-11-03.md', '?id=2026-11-03.md&download=1']) {
+      const denied = await prospectingReports(context({ DB }, 'GET', null, '/api/admin/prospeccion' + suffix));
+      assert.equal(denied.status, 403);
+      assert.doesNotMatch(await denied.text(), /Confidencial/);
+    }
+    user = previousUser;
+    const listing = await prospectingReports(context({ DB }, 'GET', null, '/api/admin/prospeccion'));
+    assert.equal(listing.headers.get('Cache-Control'), 'private, no-store');
+    const data = await listing.json();
+    assert.equal(data.reports.length, 1);
+    assert.equal(data.reports[0].content, undefined);
+    const detail = await prospectingReports(context({ DB }, 'GET', null, '/api/admin/prospeccion?id=2026-11-03.md'));
+    assert.equal((await detail.json()).report.content, report.content);
+    const download = await prospectingReports(context({ DB }, 'GET', null, '/api/admin/prospeccion?id=2026-11-03.md&download=1'));
+    assert.match(download.headers.get('Content-Disposition'), /attachment/);
+    assert.equal(await download.text(), report.content);
+    assert.equal((await prospectingReports(context({ DB }, 'GET', null, '/api/admin/prospeccion?id=2026-11-04.md'))).status, 404);
+    assert.equal((await prospectingReports(context({ DB }, 'GET', null, '/api/admin/prospeccion?id=..%2Fsecret.md'))).status, 400);
+  } finally { user = previousUser; sqlite.close(); }
+});
 
 test('lead form rejects malformed JSON, field types and invalid email before storage', async () => {
   const valid = { slug: 'existing', contactName: 'Ana', contactEmail: 'ana@example.com' };
