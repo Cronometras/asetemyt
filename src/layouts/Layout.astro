@@ -19,16 +19,10 @@ import { canonicalUrl as getCanonicalUrl } from '../lib/seo';
 
 const canonicalUrl = getCanonicalUrl(Astro.props.canonical || Astro.url.pathname);
 
-// Title: cap at 60 chars so Google SERPs don't truncate. " | ASETEMYT" suffix (12 chars) is part of the cap.
-const titleWithBrand = title.includes('ASETEMYT') ? title : `${title} | ASETEMYT`;
-const finalTitle = titleWithBrand.length > 60
-  ? titleWithBrand.slice(0, 57).replace(/\s+\S*$/, '') + '…'
-  : titleWithBrand;
+// Preserve complete, authored metadata. Google chooses its own visual snippet length.
+const finalTitle = title.includes('ASETEMYT') ? title : `${title} | ASETEMYT`;
+const finalDescription = description;
 
-// Description: cap at ~160 chars (Google truncates around 155-160 on SERPs)
-const finalDescription = description.length > 160
-  ? description.slice(0, 157).replace(/\s+\S*$/, '') + '…'
-  : description;
 ---
 
 <!doctype html>

@@ -4,6 +4,7 @@
 // ===============================
 export const prerender = true;
 import Layout from '../../layouts/Layout.astro';
+import blogSeo from '../../data/blog-seo.json';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { marked } from 'marked';
@@ -58,6 +59,7 @@ const bodyHtml = marked.parse(contentWithoutH1) as string;
 
 const canonicalUrl = `https://asetemyt.com/blog/${article.slug}/`;
 const formattedDate = formatDate(article.publishedAt);
+const seo = blogSeo[article.slug as keyof typeof blogSeo];
 
 // Unidad de anuncio de AdSense (bloque in-page). Vacío = sin anuncios hasta que
 // exista la unidad creada en la cuenta. Los anuncios SOLO se muestran en
@@ -106,7 +108,7 @@ const breadcrumbSchema = {
 };
 ---
 
-<Layout title={`${article.title} — ASETEMYT`} description={article.excerpt || ''} ogType="article" image={article.coverImage || 'https://asetemyt.com/images/logo-asetemyt.webp'}>
+<Layout title={seo?.title || article.title} description={seo?.description || article.excerpt || ''} ogType="article" image={article.coverImage || 'https://asetemyt.com/images/logo-asetemyt.webp'}>
   <Fragment slot="head">
     <meta property="article:published_time" content={article.publishedAt || ''} />
     {article.author && <meta property="article:author" content={article.author} />}

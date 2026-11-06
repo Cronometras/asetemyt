@@ -1,0 +1,110 @@
+{
+  "mujer-ingeniera-industrial-espana-2026": {
+    "title": "Mujeres en ingeniería industrial en España: datos de 2026",
+    "description": "Datos sobre la presencia de mujeres en ingeniería industrial en España y preguntas para revisar la igualdad y el desarrollo profesional en las empresas."
+  },
+  "saturacion-operarios-indice-actividad-carga-trabajo": {
+    "title": "Saturación de operarios: cómo medir la carga de trabajo",
+    "description": "Cómo calcular la saturación de operarios y el índice de actividad para evaluar la carga de trabajo y distribuir tareas en planta."
+  },
+  "diagrama-hombre-maquina-herramienta-clave-tiempos-muertos": {
+    "title": "Diagrama hombre-máquina: cómo detectar tiempos muertos",
+    "description": "Aprende a construir un diagrama hombre-máquina, identificar esperas y analizar la asignación de máquinas por operario."
+  },
+  "cronometraje-en-mantenimiento-industrial-medir-optimizar-tiempos": {
+    "title": "Cronometraje en mantenimiento industrial: guía práctica",
+    "description": "Cómo medir tareas de mantenimiento preventivo y correctivo para analizar paradas, recursos y disponibilidad de los equipos."
+  },
+  "cronometraje-con-video-herramientas-mejores-practicas": {
+    "title": "Cronometraje con vídeo: herramientas y metodología",
+    "description": "Herramientas y pasos para realizar estudios de tiempos con vídeo, revisar operaciones y mejorar la precisión de las mediciones."
+  },
+  "valoracion-del-ritmo-cronometraje-industrial-guia-factor-actuacion": {
+    "title": "Valoración del ritmo: cómo aplicar el factor de actuación",
+    "description": "Qué es la valoración del ritmo en los estudios de tiempos, qué sistemas se utilizan y qué errores conviene evitar al aplicar el factor de actuación."
+  },
+  "cronometraje-en-logistica-y-almacenes-optimizacion-tiempos-cadena-suministro": {
+    "title": "Cronometraje en logística y almacenes: picking y packing",
+    "description": "Cómo estudiar los tiempos de picking y packing, seleccionar indicadores y analizar las operaciones de almacén y de la cadena de suministro."
+  },
+  "cronometraje-industria-alimentaria-metodos-tiempos": {
+    "title": "Cronometraje en la industria alimentaria: métodos y tiempos",
+    "description": "Cómo adaptar los estudios de tiempos a la variabilidad de materias primas, la higiene y las condiciones de producción en la industria alimentaria."
+  },
+  "ergonomia-y-cronometraje-industrial-factores-humanos-medicion-tiempos": {
+    "title": "Ergonomía y cronometraje: integrar los factores humanos",
+    "description": "Cómo incorporar la ergonomía y los factores humanos a los estudios de tiempos para evaluar la fatiga y definir estándares de trabajo sostenibles."
+  },
+  "mejor-software-estudios-tiempos-analisis-comparativo-2026": {
+    "title": "Software para estudios de tiempos: comparativa 2026",
+    "description": "Comparativa de software para estudios de tiempos industriales en 2026: criterios para evaluar funciones y elegir una herramienta según tus necesidades."
+  },
+  "como-calcular-el-tiempo-estandar-en-manufactura-guia-practica": {
+    "title": "Cómo calcular el tiempo estándar en manufactura",
+    "description": "Guía para calcular el tiempo estándar en manufactura con ejemplos de valoración del ritmo, tolerancias y suplementos."
+  },
+  "cronometraje-en-procesos-quimicos-medicion-de-tiempos": {
+    "title": "Cronometraje en procesos químicos: medición de tiempos",
+    "description": "Cómo adaptar la medición de tiempos a procesos químicos y operaciones continuas con ciclos diferentes a los de la manufactura discreta."
+  },
+  "formacion-en-ingenieria-de-metodos-donde-estudiar": {
+    "title": "Formación en ingeniería de métodos: dónde estudiar",
+    "description": "Opciones de formación en ingeniería de métodos y criterios para elegir estudios relacionados con tiempos, movimientos y mejora de procesos."
+  },
+  "como-elegir-el-software-de-cronometraje-adecuado": {
+    "title": "Cómo elegir software de cronometraje industrial",
+    "description": "Criterios para comparar software de cronometraje industrial y seleccionar una herramienta adecuada para tus estudios de tiempos."
+  },
+  "tiempos-predeterminados-que-son-y-por-que-importan": {
+    "title": "Tiempos predeterminados: qué son y cómo se utilizan",
+    "description": "Qué son los sistemas de tiempos predeterminados, cómo se aplican a los movimientos de trabajo y cuándo conviene utilizarlos."
+  },
+  "normativas-y-estandares-en-cronometraje-industrial": {
+    "title": "Normativas y estándares en cronometraje industrial",
+    "description": "Revisión del marco normativo y de los estándares relacionados con el cronometraje industrial y la medición del trabajo."
+  },
+  "balanceo-de-lineas-de-produccion-tecnicas-avanzadas": {
+    "title": "Balanceo de líneas de producción: técnicas avanzadas",
+    "description": "Técnicas de balanceo de líneas para distribuir tareas, analizar cargas de trabajo e identificar oportunidades de mejora en producción."
+  },
+  "el-futuro-del-cronometraje-ia-y-aprendizaje-automatico": {
+    "title": "Inteligencia artificial y aprendizaje automático en cronometraje",
+    "description": "Aplicaciones de la inteligencia artificial y el aprendizaje automático a la medición de tiempos y al análisis de procesos industriales."
+  },
+  "errores-comunes-en-estudios-de-tiempos-y-como-evitarlos": {
+    "title": "Errores en estudios de tiempos y cómo evitarlos",
+    "description": "Errores habituales al realizar estudios de tiempos y recomendaciones para mejorar la preparación, la observación y la interpretación de los datos."
+  },
+  "lean-manufacturing-y-cronometraje-la-pareja-perfecta": {
+    "title": "Lean Manufacturing y cronometraje: cómo combinarlos",
+    "description": "Cómo combinar Lean Manufacturing con la medición del trabajo para analizar desperdicios y orientar la mejora de los procesos industriales."
+  },
+  "work-sampling-vs-cronometraje-continuo-cuando-usar-cada-metodo": {
+    "title": "Work Sampling o cronometraje continuo: cuándo usar cada uno",
+    "description": "Diferencias entre el muestreo del trabajo y el cronometraje continuo, con criterios para elegir el método según la operación y el objetivo del estudio."
+  },
+  "el-impacto-de-la-industria-4-0-en-el-cronometraje-industrial": {
+    "title": "Industria 4.0 y cronometraje industrial: cambios y aplicaciones",
+    "description": "Cómo influyen la digitalización y las tecnologías de la Industria 4.0 en la recogida de datos y el análisis de los tiempos de trabajo."
+  },
+  "oee-la-metrica-definitiva-para-medir-la-eficiencia-de-planta": {
+    "title": "OEE: cómo medir la eficiencia de una planta",
+    "description": "Qué mide el OEE y cómo interpretar sus componentes de disponibilidad, rendimiento y calidad al analizar la eficiencia de una planta."
+  },
+  "como-realizar-un-estudio-de-tiempos-efectivo-metodologia-paso-a-paso": {
+    "title": "Cómo realizar un estudio de tiempos paso a paso",
+    "description": "Metodología para preparar, observar y analizar un estudio de tiempos de trabajo y documentar sus resultados."
+  },
+  "guia-completa-de-certificaciones-en-ingenieria-de-metodos": {
+    "title": "Certificaciones en ingeniería de métodos: guía de elección",
+    "description": "Criterios para evaluar certificaciones en ingeniería de métodos y elegir una formación acorde con tus objetivos profesionales."
+  },
+  "mtm-vs-most-comparativa-de-sistemas-de-tiempos-predeterminados": {
+    "title": "MTM y MOST: comparativa de tiempos predeterminados",
+    "description": "Comparación de MTM y MOST para comprender sus enfoques y valorar qué sistema de tiempos predeterminados encaja con una operación."
+  },
+  "historia-del-cronometraje-industrial-de-frederick-taylor-a-la-era-digital": {
+    "title": "Historia del cronometraje: de Taylor a la medición digital",
+    "description": "Recorrido por la evolución del cronometraje industrial, desde los estudios de Taylor hasta las herramientas de medición digital."
+  }
+}
