@@ -210,3 +210,22 @@ const breadcrumbSchema = {
     </div>
   </article>
 </Layout>
+
+<script>
+  // Coloca el bloque de AdSense DENTRO del contenido del artículo (tras el
+  // segundo párrafo) en una posición visible, no al final del post.
+  function placeArticleAd(attempts) {
+    var ad = document.querySelector('ins.adsbygoogle');
+    var body = document.querySelector('.prose');
+    if (!ad || !body) return;
+    var ps = body.querySelectorAll('p');
+    if (!ps.length) {
+      if (attempts > 0) setTimeout(function () { placeArticleAd(attempts - 1); }, 500);
+      return;
+    }
+    var anchor = ps.length > 1 ? ps[1] : ps[0];
+    if (ad.parentElement === body && ad.previousElementSibling === anchor) return;
+    anchor.insertAdjacentElement('afterend', ad);
+  }
+  placeArticleAd(12);
+</script>
