@@ -1,0 +1,133 @@
+---
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Admin — Informes de prospección" description="Informes y señales de posibles clientes.">
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <a href="/admin" class="text-accent-600 font-semibold">← Administración</a>
+    <div class="flex flex-wrap items-center justify-between gap-4 mt-6 mb-8">
+      <div>
+        <h1 class="text-3xl font-extrabold text-primary-900">Informes de prospección</h1>
+        <p class="text-steel-500 mt-2">Señales, posibles clientes y propuestas de contacto recopiladas por Hermes.</p>
+      </div>
+      <a href="/admin/pipeline" class="text-accent-600 font-semibold">Ver oportunidades y señales integradas →</a>
+    </div>
+    <p id="reportStatus" role="status" class="mb-6 text-steel-600">Verificando acceso...</p>
+    <div id="reportsPanel" class="hidden grid lg:grid-cols-[20rem_1fr] gap-6 items-start">
+      <aside class="bg-white rounded-xl border border-steel-100 shadow-sm p-4">
+        <label for="reportSearch" class="block text-sm font-semibold mb-2">Buscar por título o fecha</label>
+        <input id="reportSearch" type="search" placeholder="Ej.: noviembre o 2026-11" class="w-full rounded-lg border border-steel-200 px-3 py-2 mb-4" />
+        <p id="reportCount" class="text-sm text-steel-500 mb-3"></p>
+        <nav id="reportList" aria-label="Informes disponibles" class="space-y-2 max-h-[65vh] overflow-auto"></nav>
+      </aside>
+      <div class="bg-white rounded-xl border border-steel-100 shadow-sm p-5 sm:p-8 min-w-0">
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-5 border-b border-steel-100 pb-4">
+          <p id="reportMeta" class="text-sm text-steel-500"></p>
+          <button id="downloadReport" type="button" disabled class="text-accent-600 font-semibold disabled:opacity-40">Descargar .md</button>
+        </div>
+        <article id="reportContent" aria-live="polite" class="prose prose-steel max-w-none break-words">Selecciona un informe.</article>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  #reportContent :global(table) { display: block; overflow-x: auto; }
+  #reportContent :global(pre) { overflow-x: auto; }
+  #reportList button[aria-current="true"] { background: #eef2ff; border-color: #818cf8; }
+</style>
+
+<script>
+  import { initAdmin } from '../../lib/admin-auth';
+  import { marked } from 'marked';
+  import DOMPurify from 'dompurify';
+
+  type Report = { id: string; title: string; date: string; filename: string; importedAt: string; content?: string };
+  let reports: Report[] = [];
+  let selected: Report | null = null;
+  let api = window.fetch.bind(window);
+  let selectionVersion = 0;
+  const status = document.getElementById('reportStatus')!;
+  const list = document.getElementById('reportList')!;
+  const content = document.getElementById('reportContent')!;
+  const search = document.getElementById('reportSearch') as HTMLInputElement;
+  const download = document.getElementById('downloadReport') as HTMLButtonElement;
+
+  function renderList() {
+    const query = search.value.toLocaleLowerCase('es');
+    const filtered = reports.filter(r => `${r.title} ${r.date} ${r.filename} ${new Date(r.date + 'T12:00:00').toLocaleDateString('es', { month: 'long' })}`.toLocaleLowerCase('es').includes(query));
+    document.getElementById('reportCount')!.textContent = `${filtered.length} de ${reports.length} informes`;
+    list.replaceChildren();
+    for (const report of filtered) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'block w-full text-left border border-steel-100 rounded-lg p-3 hover:bg-steel-50';
+      button.setAttribute('aria-current', String(selected?.id === report.id));
+      const date = document.createElement('span');
+      date.className = 'block text-sm font-semibold text-accent-600';
+      date.textContent = report.date;
+      const title = document.createElement('span');
+      title.className = 'block text-sm mt-1';
+      title.textContent = report.title;
+      button.append(date, title);
+      button.addEventListener('click', () => void openReport(report.id));
+      list.append(button);
+    }
+    if (!filtered.length) list.textContent = 'No hay informes que coincidan con la búsqueda.';
+  }
+
+  async function openReport(id: string) {
+    const version = ++selectionVersion;
+    selected = null;
+    download.disabled = true;
+    content.textContent = 'Cargando informe...';
+    document.getElementById('reportMeta')!.textContent = '';
+    try {
+      const response = await api(`/api/admin/prospeccion?id=${encodeURIComponent(id)}`);
+      if (!response.ok) throw new Error('No se pudo abrir el informe. Vuelve a seleccionarlo para reintentar.');
+      const { report } = await response.json();
+      if (version !== selectionVersion) return;
+      selected = report;
+      const html = await marked.parse(report.content || '');
+      if (version !== selectionVersion) return;
+      content.innerHTML = DOMPurify.sanitize(html, { FORBID_TAGS: ['img', 'style', 'iframe', 'form', 'input', 'button'] });
+      content.querySelectorAll('a').forEach(a => { a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+      document.getElementById('reportMeta')!.textContent = `${report.filename} · Copia de Hermes`;
+      download.disabled = false;
+      const url = new URL(window.location.href);
+      url.searchParams.set('informe', id);
+      window.history.replaceState(null, '', url);
+      renderList();
+    } catch (error) {
+      if (version === selectionVersion) content.textContent = error instanceof Error ? error.message : 'No se pudo abrir el informe.';
+    }
+  }
+
+  download.addEventListener('click', () => {
+    if (!selected) return;
+    const blob = new Blob([selected.content || ''], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = selected.filename;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+  search.addEventListener('input', renderList);
+  (async () => {
+    try {
+      const session = await initAdmin();
+      if (!session.ok) { status.textContent = session.error || 'Acceso reservado a administradores. Inicia sesión para continuar.'; return; }
+      api = session.api;
+      const response = await api('/api/admin/prospeccion');
+      if (!response.ok) throw new Error('No se pudieron cargar los informes. Recarga la página para reintentar.');
+      reports = (await response.json()).reports;
+      status.textContent = reports.length ? `${reports.length} informes disponibles` : 'Todavía no hay informes importados.';
+      document.getElementById('reportsPanel')!.classList.remove('hidden');
+      renderList();
+      const requested = new URL(window.location.href).searchParams.get('informe');
+      if (reports.length) await openReport(reports.find(r => r.id === requested)?.id || reports[0].id);
+    } catch (error) { status.textContent = error instanceof Error ? error.message : 'No se pudieron cargar los informes.'; }
+  })();
+</script>
