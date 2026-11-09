@@ -217,7 +217,10 @@ const breadcrumbSchema = {
   function placeArticleAd(attempts) {
     var ad = document.querySelector('ins.adsbygoogle');
     var body = document.querySelector('.prose');
-    if (!ad || !body) return;
+    if (!ad || !body) {
+      if (attempts > 0) setTimeout(function () { placeArticleAd(attempts - 1); }, 500);
+      return;
+    }
     var ps = body.querySelectorAll('p');
     if (!ps.length) {
       if (attempts > 0) setTimeout(function () { placeArticleAd(attempts - 1); }, 500);
@@ -227,5 +230,5 @@ const breadcrumbSchema = {
     if (ad.parentElement === body && ad.previousElementSibling === anchor) return;
     anchor.insertAdjacentElement('afterend', ad);
   }
-  placeArticleAd(12);
+  placeArticleAd(20);
 </script>
