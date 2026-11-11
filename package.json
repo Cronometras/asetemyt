@@ -11,13 +11,13 @@
     "astro": "astro",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "test:admin": "node --test scripts/admin-regression.test.mjs scripts/d1-admin.test.mjs scripts/d1-worker.test.mjs scripts/auth-session.test.mjs",
-    "test:comparison": "node --test scripts/comparison-regression.test.mjs"
+    "test:comparison": "node --test scripts/comparison-regression.test.mjs",
+    "test:pages-adapter": "node --test scripts/pages-adapter.test.mjs",
+    "test:pages-worker": "node --test scripts/pages-built-worker.test.mjs"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^12.6.13",
-    "@astrojs/tailwind": "^6.0.2",
     "@tailwindcss/typography": "^0.5.19",
-    "astro": "^5.7.0",
+    "astro": "^7.4.10",
     "dompurify": "^3.4.16",
     "firebase": "^11.6.0",
     "firebase-admin": "^13.8.0",
@@ -26,8 +26,13 @@
     "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260505.1",
-    "typescript": "^5.8.3"
+    "@cloudflare/workers-types": "^5.20261110.1",
+    "typescript": "^5.8.3",
+    "tailwindcss": "^3.4.19",
+    "autoprefixer": "^10.4.21",
+    "vite": "^8.3.6",
+    "wrangler": "^4.160.0",
+    "miniflare": "5.20261110.0-beta"
   },
   "overrides": {
     "@grpc/grpc-js": "1.14.7",
@@ -40,5 +45,8 @@
       "postcss-selector-parser@^6": "6.1.6",
       "sharp": "^0.35.5"
     }
+  },
+  "engines": {
+    "node": ">=22.23.4"
   }
 }

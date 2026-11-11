@@ -93,7 +93,7 @@ export const onRequest = defineMiddleware(async ({ url, request, locals, redirec
   try {
     const gen = await getPublicCacheGeneration(getDB(locals));
     const key = new Request(
-      `https://asetemyt-public-cache.internal/html:${url.pathname}${url.search}/g${gen}`
+      `https://asetemyt-public-cache.internal/html/${encodeURIComponent(url.host)}/${import.meta.env.ASETEMYT_HTML_BUILD}:${url.pathname}${url.search}/g${gen}`
     );
     const hit = await cache.match(key);
     if (hit) {

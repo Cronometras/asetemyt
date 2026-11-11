@@ -1,0 +1,25 @@
+{
+  "date": "2026-11-11",
+  "baseline": "c10d645720cade4c796489aa3ac092e0076188f3",
+  "engine": "Astro 7.4.10",
+  "hosting": "Existing Cloudflare Pages project; domains, D1 and encrypted bindings retained",
+  "full_dependency_audit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 8,
+    "high": 0,
+    "critical": 0,
+    "total": 8
+  },
+  "validation": [
+    "Existing admin, sessions and actual D1 migrations/transaction rollback tests",
+    "Comparison and unused image endpoint guards",
+    "Pages request body, cookie, per-request runtime and asset boundary tests",
+    "Compiled Worker in local runtime: public HTML and referenced CSS/JS assets, anonymous admin rejection, valid and invalid Stripe webhook signatures; outbound network disabled",
+    "Pages preview directory and login visually verified; 24 directory links match current production"
+  ],
+  "cache_fix": "HTML cache keys include source/dependency build fingerprint and hostname, preserving listing generation invalidation and authenticated-session bypass. Prevent stale HTML from referencing removed CSS assets across releases.",
+  "data": "No customer records, messages or payment transactions used as tests",
+  "preview": "https://ff652455.asetemyt.pages.dev",
+  "remaining": "Eight moderate dependency advisories; no claim of complete ecosystem audit."
+}

@@ -1,11 +1,11 @@
-import { Miniflare } from 'miniflare';
+import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { createServer } from 'vite';
 import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 test('Cloudflare D1 binding executes migrations, parameterized patches and projection triggers', async () => {
-  const worker = new Miniflare({ modules: true, script: 'export default { fetch() { return new Response("ok"); } }', d1Databases: ['DB'] });
+  const worker = new Miniflare(convertV4MiniflareOptions({ modules: true, script: 'export default { fetch() { return new Response("ok"); } }', d1Databases: ['DB'] }));
   const server = await createServer({ configFile: false, server: { middlewareMode: true }, appType: 'custom' });
   try {
     const DB = await worker.getD1Database('DB');
