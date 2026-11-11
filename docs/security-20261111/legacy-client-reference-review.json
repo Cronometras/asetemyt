@@ -1,0 +1,36 @@
+{
+  "reviewed_source_commit": "168dfa551885b7b5adad319d1429a6fbf9681979",
+  "references": [
+    {
+      "path": "src/lib/firebase.ts",
+      "line": 15,
+      "code": "export const PENDING_CONSULTORES = 'pending_consultores_asetemyt';"
+    },
+    {
+      "path": "src/lib/firestore-rest.ts",
+      "line": 297,
+      "code": "const COLLECTION_PENDING_CONSULTORES = 'pending_consultores_asetemyt';"
+    },
+    {
+      "path": "src/pages/api/admin/moderation.ts",
+      "line": 10,
+      "code": "const collections: Record<string,string> = { reviews: 'reviews_asetemyt', jobs: 'jobs_asetemyt', cases: 'casos_estudio_asetemyt', training: 'formaciones_asetemyt', listings: 'pending_consultores_asetemyt', history: 'admin_audit' };"
+    },
+    {
+      "path": "src/pages/api/admin/bajas.ts",
+      "line": 28,
+      "code": "  for (const collection of ['directorio_consultores_asetemyt','directorio_software_asetemyt','pending_consultores_asetemyt']) {"
+    },
+    {
+      "path": "src/pages/api/directorio/submit.ts",
+      "line": 13,
+      "code": "  const recent=await queryDocuments(env.DB,'pending_consultores_asetemyt','ip','EQUAL',ip);"
+    },
+    {
+      "path": "src/pages/api/directorio/submit.ts",
+      "line": 18,
+      "code": "  await createDocument(env.DB,'pending_consultores_asetemyt',crypto.randomUUID(),{nombre:body.nombre.trim(),slug,tipo:body.tipo,descripcion:body.descripcion.trim(),especialidades:body.especialidades||[],servicios:body.servicios||[],ubicacion:body.ubicacion||{},contacto:body.contacto||{},logo:body.logo||'',lang:body.lang==='en'?'en':'es',verificado:"
+    }
+  ],
+  "scope": "Current web source and public JS; archived maintenance scripts are not client flows."
+}

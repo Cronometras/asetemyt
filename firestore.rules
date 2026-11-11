@@ -14,15 +14,15 @@ service cloud.firestore {
       allow read: if resource.data.status == 'published';
     }
     match /pending_asetemyt/{docId} {
-      allow create: if true;
+      allow create: if false; // Retired client intake; current submissions use Pages/D1.
       allow read: if false;
     }
     match /pending_consultores_asetemyt/{docId} {
-      allow create: if true;
+      allow create: if false; // Retired client intake; current submissions use Pages/D1.
       allow read: if false;
     }
     match /pending_software_asetemyt/{docId} {
-      allow create: if true;
+      allow create: if false; // Retired client intake; current submissions use Pages/D1.
       allow read: if false;
     }
     match /spam_asetemyt/{docId} {

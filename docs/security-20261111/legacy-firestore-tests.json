@@ -1,0 +1,105 @@
+{
+  "project": "asetemyt-ec205",
+  "baseline": "projects/asetemyt-ec205/rulesets/19d0b266-ea92-4055-8e47-b7dfb5b23612",
+  "status": 200,
+  "tests": [
+    {
+      "name": "pending_asetemyt anonymous direct create denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_asetemyt signed-in direct create denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_asetemyt anonymous read denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_asetemyt signed-in read denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_asetemyt update denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_asetemyt delete denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_consultores_asetemyt anonymous direct create denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_consultores_asetemyt signed-in direct create denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_consultores_asetemyt anonymous read denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_consultores_asetemyt signed-in read denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_consultores_asetemyt update denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_consultores_asetemyt delete denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_software_asetemyt anonymous direct create denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_software_asetemyt signed-in direct create denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_software_asetemyt anonymous read denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_software_asetemyt signed-in read denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_software_asetemyt update denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "pending_software_asetemyt delete denied",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "directorio_asetemyt public read preserved",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "directorio_consultores_asetemyt public read preserved",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "directorio_software_asetemyt public read preserved",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "Published articles remain public",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "Draft articles remain private",
+      "state": "SUCCESS"
+    },
+    {
+      "name": "Unknown internal collection private",
+      "state": "SUCCESS"
+    }
+  ],
+  "verifiedAt": "2026-11-11T17:27:50.219Z",
+  "scope": "Retire anonymous legacy client intake only. Current web submit API requires D1 and writes via server. No data changes; public directory and published article reads retained. Authenticated IAM maintenance scripts bypass client rules and are not revoked."
+}
