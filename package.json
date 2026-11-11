@@ -2,7 +2,7 @@
   "name": "asetemyt",
   "type": "module",
   "version": "1.0.0",
-  "description": "Directorio de técnicos y empresas de cronometraje industrial - asetemyt.com",
+  "description": "Directorio de t\u00e9cnicos y empresas de cronometraje industrial - asetemyt.com",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -28,5 +28,17 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260505.1",
     "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.7",
+    "postcss-selector-parser@^6": "6.1.6",
+    "sharp": "^0.35.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@grpc/grpc-js": "1.14.7",
+      "postcss-selector-parser@^6": "6.1.6",
+      "sharp": "^0.35.5"
+    }
   }
 }

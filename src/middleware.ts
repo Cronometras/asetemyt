@@ -68,6 +68,15 @@ function isCacheableResponse(res: Response): boolean {
 }
 
 export const onRequest = defineMiddleware(async ({ url, request, locals, redirect }, next) => {
+  // This site uses original image URLs and has no astro:assets consumers.
+  // Keep the unused image-transform endpoint inaccessible while migrating
+  // the legacy Pages adapter to a supported server engine.
+  let imagePath = url.pathname;
+  try { imagePath = decodeURIComponent(imagePath).replace(/\/+/g, '/'); } catch { /* router handles malformed paths */ }
+  if (imagePath === '/_image' || imagePath.startsWith('/_image/')) {
+    return new Response('Not Found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
+  }
+
   // Scope this to public directory pages; never redirect APIs or form submissions.
   if ((request.method === 'GET' || request.method === 'HEAD') &&
       (url.pathname === '/directorio' || url.pathname.startsWith('/directorio/'))) {

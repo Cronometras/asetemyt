@@ -1,0 +1,113 @@
+{
+  "date": "2026-11-11",
+  "production_baseline": "3e646cf8b61500aff51bcd5c476633cc7c06a494",
+  "validation": [
+    {
+      "command": "npm install --ignore-scripts --no-audit --no-fund",
+      "exit": 0
+    },
+    {
+      "command": "npm exec --yes --package=pnpm@10 -- pnpm import",
+      "exit": 0
+    },
+    {
+      "command": "node --test scripts/security-image-endpoint.test.mjs",
+      "exit": 0
+    },
+    {
+      "command": "npm run test:admin",
+      "exit": 0
+    },
+    {
+      "command": "npm run test:comparison",
+      "exit": 0
+    },
+    {
+      "command": "npm run build",
+      "exit": 0
+    }
+  ],
+  "runtime_audit_counts": {
+    "info": 0,
+    "low": 2,
+    "moderate": 10,
+    "high": 5,
+    "critical": 1,
+    "total": 18
+  },
+  "remaining_runtime_packages": [
+    {
+      "name": "@astrojs/cloudflare",
+      "severity": "moderate"
+    },
+    {
+      "name": "@astrojs/tailwind",
+      "severity": "low"
+    },
+    {
+      "name": "@google-cloud/firestore",
+      "severity": "moderate"
+    },
+    {
+      "name": "@google-cloud/storage",
+      "severity": "moderate"
+    },
+    {
+      "name": "astro",
+      "severity": "critical"
+    },
+    {
+      "name": "esbuild",
+      "severity": "low"
+    },
+    {
+      "name": "firebase-admin",
+      "severity": "moderate"
+    },
+    {
+      "name": "gaxios",
+      "severity": "moderate"
+    },
+    {
+      "name": "google-gax",
+      "severity": "moderate"
+    },
+    {
+      "name": "miniflare",
+      "severity": "high"
+    },
+    {
+      "name": "retry-request",
+      "severity": "moderate"
+    },
+    {
+      "name": "teeny-request",
+      "severity": "moderate"
+    },
+    {
+      "name": "undici",
+      "severity": "high"
+    },
+    {
+      "name": "uuid",
+      "severity": "moderate"
+    },
+    {
+      "name": "wrangler",
+      "severity": "moderate"
+    },
+    {
+      "name": "ws",
+      "severity": "high"
+    },
+    {
+      "name": "zod",
+      "severity": "high"
+    },
+    {
+      "name": "zod-to-ts",
+      "severity": "high"
+    }
+  ],
+  "scope": "Compatible dependency patches and unused /_image route blocked before rendering. No astro:assets consumers exist. Existing auth/forms/cache preserved by regression tests. Legacy Astro/Cloudflare adapter advisories remain; migration to a supported server engine is not completed or claimed."
+}
