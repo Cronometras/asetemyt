@@ -259,8 +259,8 @@ def main():
         if name_root and name_root in seen_in_batch_names:
             reasons.append(f"nombre duplicado dentro del batch (raíz={name_root})")
         # 3. Validaciones de calidad
-        if not email and not e.get("contacto", {}).get("linkedin"):
-            reasons.append("sin email NI linkedin")
+        if not email and not e.get("contacto", {}).get("linkedin") and not e.get("contacto", {}).get("telefono"):
+            reasons.append("sin email NI linkedin NI telefono")
         if desc_len < 600:
             reasons.append(f"desc corta ({desc_len}c)")
         if servicios_n < 6:
@@ -328,6 +328,16 @@ def main():
     time.sleep(1)
     count_after = d1_query(cf_token, account_id, "SELECT COUNT(*) AS n FROM consultores")["results"][0]["n"]
     print(f"\n📊 Conteo consultores DESPUÉS: {count_after} (delta: +{count_after - count_before})")
+
+    # Invalidar la caché pública de la app (contador generacional): sin este bump,
+    # el endpoint público sigue sirviendo el snapshot anterior hasta el TTL (1h).
+    try:
+        d1_query(cf_token, account_id,
+            "INSERT INTO app_migration_state (name, value) VALUES ('public_cache_gen', '1') "
+            "ON CONFLICT(name) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT)")
+        print("♻️  public_cache_gen bumpeado (caché pública invalidada)")
+    except Exception as ex:
+        print(f"⚠️  no se pudo bumpear public_cache_gen: {ex}")
 
     # Guardar log
     log_path = Path("/tmp/d1_insert_log.json")
