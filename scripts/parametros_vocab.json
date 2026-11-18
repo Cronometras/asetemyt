@@ -17,7 +17,19 @@
     "cad-plm",
     "formacion-lean",
     "robotica-vision",
-    "auditorias"
+    "auditorias",
+    "twi-habilidades",
+    "kpi-estrategia",
+    "connected-worker",
+    "dms-gestion-diaria",
+    "tableros-visuales",
+    "cmms-mantenimiento",
+    "mejora-continua",
+    "almacenes-logistica",
+    "prevencion-prl",
+    "evaluacion-ergonomia",
+    "despliegue-estrategico",
+    "lms-gestion-jornada"
   ],
   "metodos": [
     "Cronometraje",
