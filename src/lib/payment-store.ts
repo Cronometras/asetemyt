@@ -1,5 +1,6 @@
 // Optimistic transactions: D1 checks all reads and applies writes in one batch.
 import type { D1Database } from '@cloudflare/workers-types';
+import { PUBLIC_LISTING_COLLECTIONS, publicCacheGenerationUpdate } from './public-cache';
 export class PaymentError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
@@ -36,6 +37,9 @@ export class PaymentTransaction {
       this.db.prepare(`INSERT INTO app_documents (collection, id, data) VALUES (?, ?, ?)
         ON CONFLICT(collection, id) DO UPDATE SET data = excluded.data`)
         .bind(collection, id, JSON.stringify(data)));
+    if ([...this.writes.values()].some(({ collection }) => PUBLIC_LISTING_COLLECTIONS.has(collection))) {
+      writes.push(publicCacheGenerationUpdate(this.db));
+    }
     await this.db.batch([...checks, ...writes]);
   }
 }

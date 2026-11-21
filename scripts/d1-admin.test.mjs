@@ -538,15 +538,30 @@ test('training belongs to its listing owner and requires review after edits',asy
 
 test('public listing submission uses D1 and ignores forged publication permissions',async()=>{
  const {DB,sqlite}=database();
+ const previousFetch = globalThis.fetch;
+ const notifications = [];
  try{
+  globalThis.fetch = async (url, options) => {
+   assert.equal(url, 'https://api.resend.com/emails');
+   const pending = await store.firestoreListAll({DB}, 'pending_consultores_asetemyt');
+   notifications.push({ pending: pending.length, mail: JSON.parse(options.body), key: options.headers['Idempotency-Key'] });
+   if (notifications.length === 1) return new Response(null, { status: 503 });
+   return Response.json({ id: 'mail-id' });
+  };
+  const env = { DB, RESEND_API_KEY: 'test' };
   const body={nombre:'Nueva Empresa',tipo:'empresa',descripcion:'Servicios industriales',contacto:{email:'info@example.com',web:'https://example.com'},verificado:true,status:'published',ownerUid:'forged'};
   assert.equal((await directorySubmit.POST(context({},'POST',body))).status,503);
-  assert.equal((await directorySubmit.POST(context({DB},'POST',{...body,contacto:{web:'javascript:alert(1)'}}))).status,400);
-  for(let i=0;i<3;i++)assert.equal((await directorySubmit.POST(context({DB},'POST',body))).status,201);
-  assert.equal((await directorySubmit.POST(context({DB},'POST',body))).status,429);
+  assert.equal((await directorySubmit.POST(context(env,'POST',{...body,contacto:{web:'javascript:alert(1)'}}))).status,400);
+  for(let i=0;i<3;i++)assert.equal((await directorySubmit.POST(context(env,'POST',body))).status,201);
+  assert.equal((await directorySubmit.POST(context(env,'POST',body))).status,429);
+  assert.deepEqual(notifications.map(({ pending }) => pending), [1, 1, 2, 3]);
+  assert.equal(notifications[0].key, notifications[1].key);
+  assert.notEqual(notifications[1].key, notifications[2].key);
+  assert.deepEqual(notifications[0].mail.to, ['info@asetemyt.com']);
+  assert.match(notifications[0].mail.text, /Nueva Empresa/);
   const rows=await store.firestoreListAll({DB},'pending_consultores_asetemyt');
   assert.equal(rows.length,3);assert.ok(rows.every(row=>row.status==='pending'&&row.verificado===false&&row.ownerUid===undefined));
- }finally{sqlite.close();}
+ }finally{globalThis.fetch = previousFetch;sqlite.close();}
 });
 
 test('listing moderation publishes safely without granting ownership and blocks duplicates',async()=>{
@@ -556,12 +571,16 @@ test('listing moderation publishes safely without granting ownership and blocks 
   const proposal={nombre:'Nueva',slug:'nueva',tipo:'empresa',descripcion:'Servicios',status:'pending',ip:'private',ownerUid:'forged'};
   await store.firestoreCreate(env,'pending_consultores_asetemyt','proposal',fields(proposal));
   const approve=id=>moderation.POST(context(env,'POST',{kind:'listings',id,action:'approve'}));
+  const generation = () => Number(sqlite.prepare("SELECT value FROM app_migration_state WHERE name='public_cache_gen'").get()?.value ?? 0);
+  const before = generation();
   assert.equal((await approve('proposal')).status,200);
+  assert.equal(generation(), before + 1);
   const listing=await store.firestoreGet(env,'directorio_consultores_asetemyt','nueva');
   assert.equal(listing.nombre,'Nueva');assert.equal(listing.verificado,false);assert.equal(listing.ownerUid,undefined);assert.equal(listing.ip,undefined);
   assert.equal((await approve('proposal')).status,409);
   await store.firestoreCreate(env,'pending_consultores_asetemyt','duplicate',fields({...proposal,slug:'existing'}));
   assert.equal((await approve('duplicate')).status,409);
+  assert.equal(generation(), before + 1);
   assert.equal((await store.firestoreGet(env,'pending_consultores_asetemyt','duplicate')).status,'pending');
  }finally{sqlite.close();}
 });

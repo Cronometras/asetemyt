@@ -34,14 +34,17 @@ export async function getPublicCacheGeneration(db: Database): Promise<string> {
 }
 
 /** Invalidate every public cached listing at once. Call after listing writes. */
-export async function bumpPublicCacheGeneration(db: Database): Promise<void> {
-  await db
+export function publicCacheGenerationUpdate(db: Database) {
+  return db
     .prepare(
       "INSERT INTO app_migration_state (name, value) VALUES (?1, '1') " +
         'ON CONFLICT(name) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT)'
     )
-    .bind(GEN_NAME)
-    .run();
+    .bind(GEN_NAME);
+}
+
+export async function bumpPublicCacheGeneration(db: Database): Promise<void> {
+  await publicCacheGenerationUpdate(db).run();
 }
 
 /**
@@ -60,7 +63,7 @@ export async function cachedPublic<T>(
   if (!cache || !keyBase) return fetcher();
 
   const gen = await getPublicCacheGeneration(db);
-  const key = new Request(`https://asetemyt-public-cache.internal/${keyBase}/g${gen}`);
+  const key = new Request(`https://asetemyt-public-cache.internal/v2/${keyBase}/g${gen}`);
   try {
     const hit = await cache.match(key);
     if (hit) return (await hit.json()) as T;
