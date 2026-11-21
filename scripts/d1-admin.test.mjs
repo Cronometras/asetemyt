@@ -565,10 +565,18 @@ test('public listing submission uses D1 and ignores forged publication permissio
 });
 
 test('listing moderation publishes safely without granting ownership and blocks duplicates',async()=>{
- const {DB,sqlite}=database();const env={DB};
+ const {DB,sqlite}=database();const env={DB, RESEND_API_KEY: 'test'};
+ const previousFetch = globalThis.fetch;
+ const notifications = [];
  try{
   user={email:'micaot@gmail.com',emailVerified:true,localId:'admin'};
-  const proposal={nombre:'Nueva',slug:'nueva',tipo:'empresa',descripcion:'Servicios',status:'pending',ip:'private',ownerUid:'forged'};
+  globalThis.fetch = async (url, options) => {
+   if (url !== 'https://api.resend.com/emails') return previousFetch(url, options);
+   const published = await publicStore.getConsultorBySlug(DB, 'nueva');
+   notifications.push({ published: published?.slug, email: JSON.parse(options.body) });
+   return Response.json({ id: 'mail-id' });
+  };
+  const proposal={nombre:'Nueva',slug:'nueva',tipo:'empresa',descripcion:'Servicios',contacto:{email:'empresa@example.com'},status:'pending',ip:'private',ownerUid:'forged'};
   await store.firestoreCreate(env,'pending_consultores_asetemyt','proposal',fields(proposal));
   const approve=id=>moderation.POST(context(env,'POST',{kind:'listings',id,action:'approve'}));
   const generation = () => Number(sqlite.prepare("SELECT value FROM app_migration_state WHERE name='public_cache_gen'").get()?.value ?? 0);
@@ -582,7 +590,13 @@ test('listing moderation publishes safely without granting ownership and blocks 
   assert.equal((await approve('duplicate')).status,409);
   assert.equal(generation(), before + 1);
   assert.equal((await store.firestoreGet(env,'pending_consultores_asetemyt','duplicate')).status,'pending');
- }finally{sqlite.close();}
+  await store.firestoreCreate(env,'pending_consultores_asetemyt','reject',fields({...proposal,slug:'rechazada'}));
+  assert.equal((await moderation.POST(context(env,'POST',{kind:'listings',id:'reject',action:'reject'}))).status,200);
+  assert.equal(notifications.length, 1);
+  assert.equal(notifications[0].published, 'nueva');
+  assert.deepEqual(notifications[0].email.to, ['empresa@example.com']);
+  assert.match(notifications[0].email.text, /https:\/\/asetemyt\.com\/directorio\/nueva/);
+ }finally{globalThis.fetch = previousFetch;sqlite.close();}
 });
 
 test('moderation rejects malformed requests and unsafe legacy listing proposals',async()=>{

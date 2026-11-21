@@ -7,6 +7,7 @@ import { paymentTransaction, PaymentError, paymentFailure } from '../../../lib/p
 import { validTextForm } from '../../../lib/form-validation';
 import { validateListingUpdates } from '../../../lib/listing-validation';
 import { invalidate } from '../../../lib/cache';
+import { sendListingEmail } from '../../../lib/listing-email';
 const collections: Record<string,string> = { reviews: 'reviews_asetemyt', jobs: 'jobs_asetemyt', cases: 'casos_estudio_asetemyt', training: 'formaciones_asetemyt', listings: 'pending_consultores_asetemyt', history: 'admin_audit' };
 export const GET: APIRoute = async ({ request, locals, url }) => {
  const env = (locals as any).runtime?.env || {};
@@ -27,7 +28,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const { kind, id, action } = body;
   if (!Object.hasOwn(collections, kind) || kind === 'history' || typeof id !== 'string' || !['approve','reject'].includes(action)) throw new PaymentError(400, 'Datos no válidos');
   let caseSlug = '';
-  await paymentTransaction(env, async tx => {
+  const approvedListing = await paymentTransaction(env, async tx => {
    const item = await tx.get(collections[kind], id);
    if (!item) throw new PaymentError(404, 'Contenido no encontrado');
    if (kind === 'listings') {
@@ -48,7 +49,21 @@ if (await isDirectoryExcluded(env, listing)) throw new PaymentError(409, 'Esta e
    const status = action === 'reject' ? 'rejected' : kind === 'reviews' ? 'approved' : kind === 'jobs' ? 'active' : 'published';
    await tx.put(collections[kind], id, { ...item, status, reviewedBy: user.user_id, reviewedAt: new Date().toISOString() });
    await tx.put('admin_audit', crypto.randomUUID(), { uid: user.user_id, action, collection: collections[kind], target: id, createdAt: new Date().toISOString() });
+   if (kind === 'listings' && action === 'approve' && item.contacto?.email) {
+    return { email: item.contacto.email, name: item.nombre, slug: item.slug, lang: item.lang };
+   }
   });
+  if (approvedListing) {
+   const { email, name, slug, lang } = approvedListing;
+   const url = `https://asetemyt.com/directorio/${encodeURIComponent(slug)}`;
+   await sendListingEmail(env.RESEND_API_KEY, `listing-approved/${id}`, {
+    to: email,
+    subject: lang === 'en' ? 'Your ASETEMYT listing has been approved' : 'Tu ficha en ASETEMYT ha sido aprobada',
+    text: lang === 'en'
+      ? `Your listing for ${name} has been approved and is now live in the ASETEMYT directory.\n\nView your listing: ${url}`
+      : `La ficha de ${name} ha sido aprobada y ya está publicada en el directorio de ASETEMYT.\n\nVer tu ficha: ${url}`,
+   });
+  }
   if (caseSlug) await invalidate(env, [`cache:cases:slug:v3:${caseSlug}`]);
   return Response.json({ success: true });
  } catch (error) { return paymentFailure(error); }
